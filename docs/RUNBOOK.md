@@ -63,5 +63,15 @@ Fri 14:30 close compose, Fri 15:00 close release, Sun 21:00 learn.
 - 2026-07-03: RLS probe (anon key): zero rows on all tables; non-allowlisted
   OTP rejected by the trigger (500 from auth, neutral message in UI).
   Operator session via admin link: seated reads returned demo rows.
+- 2026-07-03: presence verified with two live realtime clients on the
+  `presence:<day>` channel, each seeing both seats. The build container's
+  egress proxy blocks browser traffic to Supabase, so the two physical
+  browser pass runs on the deployed URL from real devices; the channel code
+  is identical.
+- 2026-07-03: deployed checks at bridge.krishraja.com: unauthenticated rooms
+  307 to /login, manifest with 192/512 and maskable icons, service worker
+  served, wordmark on the door. PWA installability criteria all present
+  (HTTPS, manifest, service worker with fetch handler); formal Lighthouse
+  run lands with the G6 performance pass.
 - iOS Safari mic permission pass: due at G3.
 - Push on installed PWA (one iOS, one Android): due at G4.
