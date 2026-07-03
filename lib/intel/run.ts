@@ -48,8 +48,19 @@ export async function runPipeline(): Promise<RunSummary> {
     statement: a.statement,
   }));
 
-  /* Idempotence: a rerun for the same day replaces the day's deck. */
-  await sb.from("signals").delete().eq("day", day).eq("illustrative", false);
+  /* Idempotence: a rerun for the same day replaces the day's deck.
+     Evidence rows go first or the foreign key blocks the delete. */
+  const { data: todayRows } = await sb
+    .from("signals")
+    .select("id")
+    .eq("day", day)
+    .eq("illustrative", false);
+  const todayIds = (todayRows ?? []).map((r) => r.id);
+  if (todayIds.length > 0) {
+    await sb.from("assumption_evidence").delete().in("signal_id", todayIds);
+    const { error: delErr } = await sb.from("signals").delete().in("id", todayIds);
+    if (delErr) notes.push(`day rebuild delete failed: ${delErr.message}`);
+  }
 
   const raw = await gather(sources);
   const clusters = cluster(raw);
@@ -79,15 +90,34 @@ export async function runPipeline(): Promise<RunSummary> {
 
   const scored = await scoreClusters(kept, centroids);
 
-  /* Synthesize the top survivors in parallel. */
+  /* Synthesize the top survivors, gently: bounded concurrency, retries inside. */
+  const { pool } = await import("./llm");
   const top = scored.slice(0, 16);
-  const drafts = await Promise.all(top.map((c) => synthesizeCard(c, assumptionRefs)));
+  const drafts = await pool(
+    top.map((c) => () => synthesizeCard(c, assumptionRefs, notes)),
+    3,
+  );
   let cards: FinishedCard[] = top.flatMap((c, i) =>
     drafts[i] ? [{ cluster: c, draft: drafts[i]! }] : [],
   );
 
   /* Cited or silent: a card without a source URL does not render. */
   cards = cards.filter((c) => c.cluster.items.length > 0 && c.cluster.items[0].url);
+
+  /* Same story told twice slips token clustering; embeddings catch it. */
+  const { cosine } = await import("./llm");
+  const deduped: FinishedCard[] = [];
+  for (const card of [...cards].sort((a, b) => b.cluster.score - a.cluster.score)) {
+    const dupe = deduped.some(
+      (kept) =>
+        kept.cluster.embedding &&
+        card.cluster.embedding &&
+        cosine(kept.cluster.embedding, card.cluster.embedding) >= 0.85,
+    );
+    if (dupe) notes.push(`deduped: ${card.draft.headline.slice(0, 60)}`);
+    else deduped.push(card);
+  }
+  cards = deduped;
 
   cards = mergeTensions(cards);
   const tensions = cards.filter((c) => c.draft.headline.startsWith("The market is arguing")).length;

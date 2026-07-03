@@ -14,6 +14,7 @@ export interface AssumptionRef {
 export async function synthesizeCard(
   c: ScoredCluster,
   assumptions: AssumptionRef[],
+  notes?: string[],
 ): Promise<CardDraft | null> {
   const system = `You write signal cards for Amperity's leadership office. Amperity is the enterprise customer data platform whose moat is identity resolution; AmpAI is its AI product line.
 Rules: plain speech, no hype, no em dashes, none of these words: ${BANNED_LIST}. Use ONLY facts present in the provided items; invent nothing, not even plausible detail.
@@ -60,7 +61,8 @@ direction 1 supports the assumption, -1 challenges it, 0 neutral. weight: 1 ligh
         : 1) as 1 | 2 | 3,
       lowConfidence: low,
     };
-  } catch {
+  } catch (e) {
+    notes?.push(`synthesis dropped a card: ${(e as Error).message.slice(0, 120)}`);
     return null;
   }
 }

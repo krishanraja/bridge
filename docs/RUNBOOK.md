@@ -73,5 +73,16 @@ Fri 14:30 close compose, Fri 15:00 close release, Sun 21:00 learn.
   served, wordmark on the door. PWA installability criteria all present
   (HTTPS, manifest, service worker with fetch handler); formal Lighthouse
   run lands with the G6 performance pass.
+- 2026-07-03 (G2): full pipeline run on live sources: 135 gathered across
+  GDELT, HN, RSS, Brave; 125 clusters; 33 kept by the haiku filter; 12 cards
+  written, all cited, all embedded, six lanes. Seeded contradiction produced
+  one tension card (unit run). Kill learning: after killing the five cards
+  nearest the state privacy topic, the topic's rerun scores fell from 9.0 to
+  7.5, and the penalty tracked similarity to the killed centroid (0.73
+  similarity lost 1.5 points, 0.44 lost 0.9). Test artifacts rolled back;
+  final deck is clean.
+- Anthropic, OpenAI, and Brave keys rotated 2026-07-03 and verified live.
+  The replacement ElevenLabs key still returns 401; voice synthesis waits
+  on a working key.
 - iOS Safari mic permission pass: due at G3.
 - Push on installed PWA (one iOS, one Android): due at G4.

@@ -12,33 +12,68 @@ interface ClaudeParams {
   system: string;
   user: string;
   maxTokens?: number;
+  thinking?: boolean;
 }
 
 export async function claude({
   model = SYNTH_MODEL,
   system,
   user,
-  maxTokens = 1500,
+  maxTokens = 2000,
+  thinking = false,
 }: ClaudeParams): Promise<string> {
-  const res = await fetch(ANTHROPIC_URL, {
-    method: "POST",
-    headers: {
-      "x-api-key": process.env.ANTHROPIC_API_KEY!,
-      "anthropic-version": "2023-06-01",
-      "content-type": "application/json",
-    },
-    body: JSON.stringify({
-      model,
-      max_tokens: maxTokens,
-      system,
-      messages: [{ role: "user", content: user }],
-    }),
-  });
-  if (!res.ok) {
-    throw new Error(`anthropic ${res.status}: ${(await res.text()).slice(0, 200)}`);
+  let lastErr = "";
+  for (let attempt = 0; attempt < 4; attempt++) {
+    const res = await fetch(ANTHROPIC_URL, {
+      method: "POST",
+      headers: {
+        "x-api-key": process.env.ANTHROPIC_API_KEY!,
+        "anthropic-version": "2023-06-01",
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        model,
+        max_tokens: maxTokens,
+        system,
+        messages: [{ role: "user", content: user }],
+        /* Plumbing calls want fast deterministic JSON, not deliberation. */
+        ...(thinking ? {} : { thinking: { type: "disabled" } }),
+      }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return (data.content ?? [])
+        .filter((b: { type: string }) => b.type === "text")
+        .map((b: { text: string }) => b.text)
+        .join("");
+    }
+    lastErr = `anthropic ${res.status}: ${(await res.text()).slice(0, 160)}`;
+    /* Rate limits and transient errors back off; hard errors stop. */
+    if (res.status === 429 || res.status >= 500) {
+      const retryAfter = Number(res.headers.get("retry-after")) || 2 ** attempt * 4;
+      await new Promise((r) => setTimeout(r, retryAfter * 1000));
+      continue;
+    }
+    break;
   }
-  const data = await res.json();
-  return data.content?.[0]?.text ?? "";
+  throw new Error(lastErr);
+}
+
+/* Run thunks with bounded concurrency; a tier one key cannot take a stampede. */
+export async function pool<T>(
+  thunks: (() => Promise<T>)[],
+  limit: number,
+): Promise<T[]> {
+  const out: T[] = new Array(thunks.length);
+  let next = 0;
+  const workers = Array.from({ length: Math.min(limit, thunks.length) }, async () => {
+    while (next < thunks.length) {
+      const i = next++;
+      out[i] = await thunks[i]();
+    }
+  });
+  await Promise.all(workers);
+  return out;
 }
 
 export const MODELS = { filter: FILTER_MODEL, synth: SYNTH_MODEL };
