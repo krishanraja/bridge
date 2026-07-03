@@ -102,7 +102,7 @@ export function TableRoom({
       </section>
 
       <section className="mx-5 flex items-center justify-between rounded-xl border border-line bg-paper px-3.5 py-2">
-        <span className="eyebrow">Receipts</span>
+        <span className="eyebrow">Who&apos;s caught up</span>
         <div className="flex items-center gap-3">
           {data.receipts.map((r) => (
             <div key={r.seat} className="flex flex-col items-center gap-0.5">

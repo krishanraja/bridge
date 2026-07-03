@@ -120,7 +120,7 @@ export function LedgerDeck({
               <div className="flex min-h-0 flex-col gap-3 overflow-y-auto">
                 {a.rationale && (
                   <div className="flex flex-col gap-1">
-                    <div className="eyebrow">Why we hold this</div>
+                    <div className="eyebrow">Why it matters</div>
                     <p className="text-[14px] leading-snug text-ink2">
                       {a.rationale}
                     </p>

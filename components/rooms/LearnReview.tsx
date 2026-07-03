@@ -44,7 +44,7 @@ export function LearnReview({ proposal }: { proposal: StagedProposal | null }) {
     <section className="mx-5 rounded-xl border border-mint-bd bg-mint-wash px-3.5 py-2.5">
       <div className="flex items-center justify-between">
         <div className="min-w-0 pr-3">
-          <div className="eyebrow">The week's learning, staged</div>
+          <div className="eyebrow">This week's changes, waiting for you</div>
           <p className="truncate text-[13px] text-ink2">{done ?? proposal.summary}</p>
         </div>
         {!done && (
@@ -87,7 +87,7 @@ export function LearnReview({ proposal }: { proposal: StagedProposal | null }) {
 
           {proposal.styleMemo && (
             <div>
-              <div className="eyebrow mb-0.5">Composer note</div>
+              <div className="eyebrow mb-0.5">How the brief is written</div>
               <p className="text-[14px] leading-snug text-ink2">{proposal.styleMemo}</p>
             </div>
           )}

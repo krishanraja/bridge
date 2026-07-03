@@ -147,7 +147,7 @@ export default async function SettingsPage() {
       </section>
 
       <section className="mx-5 rounded-xl border border-line bg-paper p-3.5">
-        <div className="eyebrow mb-1.5">This instrument</div>
+        <div className="eyebrow mb-1.5">What&apos;s running</div>
         <p className="text-[14px] leading-relaxed text-ink2">
           {seedMode
             ? "Running on sample data. Every row is illustrative and marked so. Live mode starts when the database is connected and the sample comes out."
