@@ -76,7 +76,23 @@ brief, the decision, and why it best serves a ninety second phone session.
     required from Krish before the G2 model stages, G3 voice, and G4
     composition can run. Deterministic stages are built and tested.
 
-14. **Grid columns pinned via CSS.** Any grid that declares `grid-rows-*`
+14. **Questions skip the intent router.** Utterances that open with an
+    interrogative (or end in a question mark) go straight to grounded ask
+    without the haiku call. The command grammar never takes that shape, the
+    fallback for a missed command is ask anyway, and first token latency is
+    the product.
+
+15. **Streams carry a text-progress watchdog.** Upstream keeps sockets warm
+    with pings while rate limit pacing can stall token output for minutes.
+    If no new text lands for fifteen seconds the answer ends cleanly where
+    it stands. Socket-activity watchdogs never fire; text-progress ones do.
+
+16. **The latency fixture speaks through OpenAI TTS.** The audit synthesizes
+    the decision utterance to real audio and round trips it, so the check
+    covers actual speech rather than tones, without needing a microphone in
+    CI.
+
+17. **Grid columns pinned via CSS.** Any grid that declares `grid-rows-*`
     gets `grid-template-columns: minmax(0, 1fr)` globally, because truncated
     (nowrap) lines otherwise inflate the implicit column and push the layout
     past the viewport. A future two column grid that also declares rows must
