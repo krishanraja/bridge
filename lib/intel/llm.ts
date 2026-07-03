@@ -13,6 +13,8 @@ interface ClaudeParams {
   user: string;
   maxTokens?: number;
   thinking?: boolean;
+  attempts?: number;
+  maxBackoffSeconds?: number;
 }
 
 export async function claude({
@@ -21,11 +23,14 @@ export async function claude({
   user,
   maxTokens = 2000,
   thinking = false,
+  attempts = 4,
+  maxBackoffSeconds = 60,
 }: ClaudeParams): Promise<string> {
   let lastErr = "";
-  for (let attempt = 0; attempt < 4; attempt++) {
+  for (let attempt = 0; attempt < attempts; attempt++) {
     const res = await fetch(ANTHROPIC_URL, {
       method: "POST",
+      signal: AbortSignal.timeout(45000),
       headers: {
         "x-api-key": process.env.ANTHROPIC_API_KEY!,
         "anthropic-version": "2023-06-01",
@@ -39,6 +44,8 @@ export async function claude({
         /* Plumbing calls want fast deterministic JSON, not deliberation. */
         ...(thinking ? {} : { thinking: { type: "disabled" } }),
       }),
+    }).catch((e) => {
+      throw new Error(`anthropic timeout/network: ${(e as Error).message.slice(0, 80)}`);
     });
     if (res.ok) {
       const data = await res.json();
@@ -48,9 +55,13 @@ export async function claude({
         .join("");
     }
     lastErr = `anthropic ${res.status}: ${(await res.text()).slice(0, 160)}`;
-    /* Rate limits and transient errors back off; hard errors stop. */
+    /* Rate limits and transient errors back off; hard errors stop. Interactive
+       callers cap the backoff so a room never hangs on a rate limit. */
     if (res.status === 429 || res.status >= 500) {
-      const retryAfter = Number(res.headers.get("retry-after")) || 2 ** attempt * 4;
+      const retryAfter = Math.min(
+        Number(res.headers.get("retry-after")) || 2 ** attempt * 4,
+        maxBackoffSeconds,
+      );
       await new Promise((r) => setTimeout(r, retryAfter * 1000));
       continue;
     }
@@ -91,6 +102,7 @@ export async function embed(texts: string[]): Promise<number[][]> {
   if (texts.length === 0) return [];
   const res = await fetch("https://api.openai.com/v1/embeddings", {
     method: "POST",
+    signal: AbortSignal.timeout(10000),
     headers: {
       Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
       "content-type": "application/json",

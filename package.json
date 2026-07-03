@@ -11,7 +11,8 @@
     "seed:live": "tsx scripts/seed-live.ts",
     "audit:noscroll": "tsx scripts/audit-noscroll.ts",
     "check:copy": "bash scripts/check-copy.sh",
-    "audit:rls": "tsx scripts/audit-rls.ts"
+    "audit:rls": "tsx scripts/audit-rls.ts",
+    "audit:voice": "tsx scripts/audit-voice-latency.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.7.0",

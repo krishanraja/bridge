@@ -13,6 +13,7 @@ import type { SeatId } from "@/lib/seats";
 export interface ActionResult {
   ok: boolean;
   message?: string;
+  id?: string;
 }
 
 const DEMO_REFUSAL: ActionResult = {
@@ -230,7 +231,7 @@ export async function logDecision(input: {
   });
   revalidatePath("/table");
   revalidatePath("/today");
-  return { ok: true };
+  return { ok: true, id: data.id };
 }
 
 export async function updateDecision(input: {
@@ -335,6 +336,30 @@ export async function voteAssumption(input: {
   await logEvent(seat, "assumption_vote", "assumption", input.id, { vote, next });
   await logAudit(seat, "assumption_vote", { id: input.id, vote, next });
   revalidatePath("/ledger");
+  return { ok: true };
+}
+
+/* The fifteen second undo on a voice logged decision: the logger can take
+   back their own entry while it is still warm. */
+
+export async function undoRecentDecision(id: string): Promise<ActionResult> {
+  const seat = await seatOrNull();
+  if (!seat) return DEMO_REFUSAL;
+  const { supabaseService } = await import("@/lib/supabase/service");
+  const svc = supabaseService();
+  const { data: d } = await svc
+    .from("decisions")
+    .select("logged_by, created_at")
+    .eq("id", id)
+    .single();
+  if (!d || d.logged_by !== seat) return { ok: false, message: "Not yours to undo." };
+  if (Date.now() - new Date(d.created_at).getTime() > 60000) {
+    return { ok: false, message: "The undo window has closed. Drop it from the log instead." };
+  }
+  await svc.from("decisions").delete().eq("id", id);
+  await logEvent(seat, "decision_undo", "decision", id);
+  revalidatePath("/table");
+  revalidatePath("/today");
   return { ok: true };
 }
 

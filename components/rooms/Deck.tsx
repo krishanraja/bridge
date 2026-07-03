@@ -3,7 +3,7 @@
 /* The signal deck: snap-paged cards, lane filter, three actions.
    Act, Hold, Kill act on the local deal now; they feed the learning loop at gate two. */
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type { Signal } from "@/lib/types";
@@ -139,12 +139,49 @@ function SignalCard({
   onAction: (id: string, kind: "act" | "hold" | "kill") => void;
 }) {
   const lane = LANES[s.lane];
+  const holdTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [speaking, setSpeaking] = useState(false);
+
+  /* Long press reads the card aloud; the text is already on screen. */
+  const readAloud = async () => {
+    if (speaking) return;
+    setSpeaking(true);
+    tick();
+    try {
+      const text = `${s.headline}. For Amperity: ${s.for_amperity}${s.posture ? ` The move: ${s.posture}` : ""}`;
+      const res = await fetch("/api/voice/speak", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ text }),
+      });
+      if (res.ok && audioRef.current) {
+        const { url } = (await res.json()) as { url: string };
+        audioRef.current.src = url;
+        await audioRef.current.play();
+      }
+    } finally {
+      setSpeaking(false);
+    }
+  };
+
+  const pressStart = () => {
+    holdTimer.current = setTimeout(() => void readAloud(), 650);
+  };
+  const pressEnd = () => {
+    if (holdTimer.current) clearTimeout(holdTimer.current);
+  };
+
   return (
     <div className="snap-page px-5 pb-3">
       <article
+        onPointerDown={pressStart}
+        onPointerUp={pressEnd}
+        onPointerLeave={pressEnd}
         className="grid h-full min-h-0 grid-rows-[auto_auto_1fr_auto_auto] gap-2 rounded-xl border border-line bg-paper p-4"
         style={{ borderLeft: `3px solid var(${lane.cssVar})` }}
       >
+        <audio ref={audioRef} className="hidden" />
         <div className="flex items-center gap-1.5">
           <Chip color={`var(${lane.cssVar})`}>{lane.glyph}</Chip>
           <Chip>

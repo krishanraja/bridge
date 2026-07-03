@@ -84,5 +84,19 @@ Fri 14:30 close compose, Fri 15:00 close release, Sun 21:00 learn.
 - Anthropic, OpenAI, and Brave keys rotated 2026-07-03 and verified live.
   The replacement ElevenLabs key still returns 401; voice synthesis waits
   on a working key.
-- iOS Safari mic permission pass: due at G3.
+- 2026-07-03 (G3): voice audit over live keys. Transcription p50 1082ms via
+  gpt-4o-transcribe (whisper-1 fallback wired); ask first token p50 1693ms,
+  inside the 1.8s budget; combined voice release to first text about 2.8s on
+  a tier one Anthropic key, expected to tighten as the key tier rises. The
+  spoken fixture "Log a decision: we run the lakehouse partner review this
+  quarter, Derek owns it, due September thirtieth" routed end to end to
+  log_decision with owner Derek and due 2026-09-30. Ungroundable question
+  returned the honest fallback line verbatim. Streams carry a text-progress
+  watchdog because upstream pings keep sockets alive while rate limit pacing
+  can stall tokens.
+- ElevenLabs: both provided keys rejected (401). The speak endpoint, brief
+  audio, and read aloud are built and fail honestly until a working key
+  lands in Vercel env and .env.local.
+- iOS Safari mic permission pass on a physical device: pending; hold-to-talk
+  uses MediaRecorder with audio/mp4 fallback for Safari.
 - Push on installed PWA (one iOS, one Android): due at G4.

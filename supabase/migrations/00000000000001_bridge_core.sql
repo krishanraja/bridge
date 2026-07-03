@@ -341,3 +341,38 @@ alter publication supabase_realtime add table decisions;
 -- Principals read their own events so their radar verdicts shape their own deck.
 create policy events_read_own on events for select to authenticated
   using (seat = public.current_seat());
+
+-- Ask grounding: nearest signals by embedding, recency favored.
+create or replace function public.match_signals(
+  query_embedding vector(1536),
+  match_count int default 6,
+  days_back int default 30
+)
+returns table (
+  id uuid,
+  day date,
+  lane int,
+  headline text,
+  for_amperity text,
+  posture text,
+  cluster jsonb,
+  similarity float
+)
+language sql stable security definer
+set search_path = public
+as $$
+  select s.id, s.day, s.lane, s.headline, s.for_amperity, s.posture, s.cluster,
+         1 - (s.embedding <=> query_embedding) as similarity
+  from signals s
+  where s.embedding is not null
+    and s.day >= current_date - days_back
+  order by (s.embedding <=> query_embedding) asc, s.day desc
+  limit match_count;
+$$;
+
+revoke all on function public.match_signals from anon;
+
+-- Private bucket for brief audio and read-aloud clips.
+insert into storage.buckets (id, name, public)
+values ('audio', 'audio', false)
+on conflict (id) do nothing;

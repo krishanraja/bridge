@@ -7,5 +7,5 @@ export const dynamic = "force-dynamic";
 export default async function AskPage() {
   const seat = await currentSeat();
   if (!seat) redirect("/login");
-  return <AskRoom />;
+  return <AskRoom operator={seat === 4} />;
 }
