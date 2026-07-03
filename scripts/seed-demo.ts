@@ -72,12 +72,9 @@ async function wipe() {
     "assumptions",
     "sources",
   ]) {
-    const { error } = await sb.from(table).delete().gte("created_at", "1970-01-01");
-    if (error && !/does not exist/.test(error.message)) {
-      /* receipts keys on seen_at, sources has no created_at; fall back to a full delete */
-      const fallback = await sb.from(table).delete().neq("id", -1 as never);
-      if (fallback.error) console.warn(`wipe ${table}: ${fallback.error.message}`);
-    }
+    const col = table === "receipts" ? "seen_at" : "created_at";
+    const { error } = await sb.from(table).delete().gte(col, "1970-01-01");
+    if (error) console.warn(`wipe ${table}: ${error.message}`);
   }
 }
 
