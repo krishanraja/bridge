@@ -285,6 +285,69 @@ export async function votePulse(
   return { ok: true };
 }
 
+/* Threads: the relationships lane. The operator creates and edits; any seat
+   can move the status of a thread they can see. Surfaced on a priority's
+   linked items and as an eligible Today focus. */
+
+export async function createThread(input: {
+  name: string;
+  org: string;
+  seat_owner: SeatId;
+  next_touch_date?: string | null;
+  next_touch_note?: string | null;
+  linked_priority_id?: string | null;
+}): Promise<ActionResult> {
+  const seat = await seatOrNull();
+  if (!seat) return DEMO_REFUSAL;
+  if (seat !== 4) return { ok: false, message: "Only the operator opens threads." };
+  const sb = await supabaseServer();
+  const name = input.name.trim();
+  const org = input.org.trim();
+  if (!name || !org) return { ok: false, message: "A thread needs a name and an org." };
+
+  const { error } = await sb.from("threads").insert({
+    name,
+    org,
+    seat_owner: input.seat_owner,
+    next_touch_date: input.next_touch_date || null,
+    next_touch_note: input.next_touch_note?.trim() || null,
+    linked_priority_id: input.linked_priority_id || null,
+  });
+  if (error) return { ok: false, message: "That did not save. Try again." };
+
+  await logAudit(seat, "thread_create", { name, org });
+  revalidatePath("/priorities");
+  revalidatePath("/today");
+  return { ok: true };
+}
+
+export async function updateThread(input: {
+  id: string;
+  status?: "advancing" | "stalled" | "dormant";
+  next_touch_date?: string | null;
+  next_touch_note?: string | null;
+  last_touch_date?: string | null;
+}): Promise<ActionResult> {
+  const seat = await seatOrNull();
+  if (!seat) return DEMO_REFUSAL;
+  const sb = await supabaseServer();
+
+  const patch: Record<string, unknown> = {};
+  if (input.status !== undefined) patch.status = input.status;
+  if (input.next_touch_date !== undefined) patch.next_touch_date = input.next_touch_date || null;
+  if (input.next_touch_note !== undefined)
+    patch.next_touch_note = input.next_touch_note?.trim() || null;
+  if (input.last_touch_date !== undefined) patch.last_touch_date = input.last_touch_date || null;
+
+  const { error } = await sb.from("threads").update(patch).eq("id", input.id);
+  if (error) return { ok: false, message: "That did not save. Try again." };
+
+  await logEvent(seat, "thread_update", "thread", input.id, patch);
+  revalidatePath("/priorities");
+  revalidatePath("/today");
+  return { ok: true };
+}
+
 /* Radar verdicts: Act routes to the operator, Hold archives, Kill teaches. */
 
 export async function signalVerdict(input: {

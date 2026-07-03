@@ -217,6 +217,8 @@ export async function demoToday(): Promise<TodayData> {
           script: brief.script,
           audioPath: null,
           released: true,
+          lineRefs: [],
+          refLabels: {},
         }
       : null,
     focus: deriveFocus({
@@ -230,6 +232,7 @@ export async function demoToday(): Promise<TodayData> {
     }),
     topSignals: topSignals(signals, 3),
     weekMoves: weekMoveDots(priorities, moves, week),
+    review: null,
     demo: true,
   };
 }
@@ -245,6 +248,7 @@ export async function demoDeck(): Promise<Signal[]> {
 export async function demoPriorityViews() {
   const { priorities, moves, blockers } = demoPriorities();
   const pulses = demoPulses();
+  const threads = demoThreads();
   const week = currentIsoWeek();
   return derivePriorityViews(
     priorities,
@@ -253,6 +257,7 @@ export async function demoPriorityViews() {
     week,
     isoWeekShift(week, -1),
     blockers,
+    threads,
   );
 }
 

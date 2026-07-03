@@ -92,7 +92,30 @@ brief, the decision, and why it best serves a ninety second phone session.
     covers actual speech rather than tones, without needing a microphone in
     CI.
 
-17. **Grid columns pinned via CSS.** Any grid that declares `grid-rows-*`
+17. **Brief reference codes frozen at compose time.** The composer assigns
+    codes (S1, P4) positionally as it assembles records; the reader's query
+    order differs, so re-resolving would misalign. A `refs` jsonb column on
+    briefs stores the code-to-label map at compose time, and the reader reads
+    it directly. One added column, zero ordering bugs.
+
+18. **The weekly loop is one endpoint with a step parameter.** `/api/loop`
+    takes drift, pulse_open, close_notify, and morning_notify; brief compose
+    and release are their own routes. Nine Vercel Pro crons express the ET
+    schedule in UTC. Fewer route files, one auth check, one place to reason
+    about the cadence.
+
+19. **Push ration enforced against the events log, not hoped for.** Every
+    send writes a push_sent event; the next send of that kind checks the
+    window (a day for the daily beats, a week for interrupts) before firing.
+    The ration is a database fact.
+
+20. **Threads managed from Settings, surfaced in two existing places.** No
+    sixth room and no fourth zone on Table, per decision 20.5: the operator's
+    thread desk is a sheet in Settings, threads render on a priority's linked
+    items, and a thread whose next touch is today is eligible for the single
+    Today focus slot.
+
+21. **Grid columns pinned via CSS.** Any grid that declares `grid-rows-*`
     gets `grid-template-columns: minmax(0, 1fr)` globally, because truncated
     (nowrap) lines otherwise inflate the implicit column and push the layout
     past the viewport. A future two column grid that also declares rows must

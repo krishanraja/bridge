@@ -1,12 +1,59 @@
 "use client";
 
-/* The play block. Audio when a rendered brief exists; the text twin is always one tap away. */
+/* The play block. Audio when a rendered brief exists; the text twin is always
+   one tap away, carrying the citation chips that trace each line to its record. */
 
 import { useRef, useState } from "react";
 import type { BriefView } from "@/lib/data/views";
 import { Sheet } from "@/components/ui/Sheet";
+import { Chip } from "@/components/ui/Chip";
 import { tick } from "@/lib/haptics";
 import { markBriefSeen } from "@/app/actions";
+
+function BriefText({ brief }: { brief: BriefView }) {
+  const lines = brief.script.split("\n").filter((l) => l.trim().length > 0);
+  const refsForLine = (raw: string): { label: string; url: string | null }[] => {
+    const codes = [...raw.matchAll(/\[([A-Z]\d+)\]/g)].map((m) => m[1]);
+    return codes
+      .map((c) => brief.refLabels[c])
+      .filter((r): r is { label: string; url: string | null } => Boolean(r));
+  };
+  const HEADERS = /^(Market|The house|The week|The call)\b/i;
+
+  return (
+    <div className="flex flex-col gap-3 pt-1">
+      {lines.map((line, i) => {
+        const clean = line.replace(/\s*\[[A-Z]\d+\]/g, "").trim();
+        const cites = refsForLine(line);
+        if (HEADERS.test(clean) && clean.length < 16) {
+          return (
+            <div key={i} className="eyebrow pt-1">
+              {clean}
+            </div>
+          );
+        }
+        return (
+          <div key={i} className="flex flex-col gap-1">
+            <p className="text-[14px] leading-relaxed text-ink">{clean}</p>
+            {cites.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {cites.map((c, j) =>
+                  c.url ? (
+                    <a key={j} href={c.url} target="_blank" rel="noopener noreferrer">
+                      <Chip>{c.label.slice(0, 30)}</Chip>
+                    </a>
+                  ) : (
+                    <Chip key={j}>{c.label.slice(0, 30)}</Chip>
+                  ),
+                )}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 export function BriefBlock({ brief }: { brief: BriefView | null }) {
   const [open, setOpen] = useState(false);
@@ -96,13 +143,7 @@ export function BriefBlock({ brief }: { brief: BriefView | null }) {
       )}
 
       <Sheet open={open} onClose={() => setOpen(false)} title="The morning read">
-        <div className="flex flex-col gap-3 pt-1">
-          {brief.script.split("\n\n").map((para, i) => (
-            <p key={i} className="text-[14px] leading-relaxed text-ink">
-              {para}
-            </p>
-          ))}
-        </div>
+        <BriefText brief={brief} />
       </Sheet>
     </section>
   );

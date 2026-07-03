@@ -118,6 +118,7 @@ export function derivePriorityViews(
   isoWeek: string,
   prevIsoWeek: string,
   blockers: Record<string, { text: string; owner: SeatId } | undefined> = {},
+  threads: Thread[] = [],
 ): PriorityView[] {
   return priorities
     .filter((p) => !p.retired_at)
@@ -137,6 +138,17 @@ export function derivePriorityViews(
         blocker: blockers[p.id]?.text ?? null,
         blockerOwner: blockers[p.id]?.owner ?? null,
         history,
+        threads: threads
+          .filter((t) => t.linked_priority_id === p.id)
+          .map((t) => ({
+            id: t.id,
+            name: t.name,
+            org: t.org,
+            seatOwner: t.seat_owner,
+            status: t.status,
+            nextTouchDate: t.next_touch_date,
+            nextTouchNote: t.next_touch_note,
+          })),
       };
     });
 }

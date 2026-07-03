@@ -194,10 +194,51 @@ export function PriorityBoard({
                 ))}
               </div>
             ) : (
-              <p className="text-[12px] leading-relaxed text-ink3">
-                Signals, decisions, and threads that touch this priority land
-                here as the pipeline and the log link them.
-              </p>
+              <div className="flex flex-col gap-2">
+                <div className="eyebrow">Threads</div>
+                {detail.threads.length === 0 ? (
+                  <p className="text-[12px] leading-relaxed text-ink3">
+                    No relationships linked yet. The operator ties a thread to
+                    this priority from Settings.
+                  </p>
+                ) : (
+                  detail.threads.map((t) => (
+                    <div key={t.id} className="rounded-lg border border-line px-3 py-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[12px] font-medium text-ink">
+                          {t.name}
+                        </span>
+                        <span
+                          className="eyebrow"
+                          style={{
+                            color:
+                              t.status === "advancing"
+                                ? "var(--mint-deep)"
+                                : t.status === "stalled"
+                                  ? "var(--risk)"
+                                  : "var(--ink-3)",
+                          }}
+                        >
+                          {t.status}
+                        </span>
+                      </div>
+                      <p className="text-[10.5px] text-ink3">
+                        {t.org}
+                        {t.nextTouchDate ? ` · next touch ${t.nextTouchDate}` : ""}
+                      </p>
+                      {t.nextTouchNote && (
+                        <p className="mt-0.5 text-[11px] leading-snug text-ink2">
+                          {t.nextTouchNote}
+                        </p>
+                      )}
+                    </div>
+                  ))
+                )}
+                <p className="mt-1 text-[10.5px] leading-relaxed text-ink3">
+                  Linked signals and decisions join these as the pipeline and
+                  the log connect them.
+                </p>
+              </div>
             )}
           </div>
         )}

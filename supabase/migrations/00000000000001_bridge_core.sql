@@ -376,3 +376,7 @@ revoke all on function public.match_signals from anon;
 insert into storage.buckets (id, name, public)
 values ('audio', 'audio', false)
 on conflict (id) do nothing;
+
+-- The composer's reference code map, frozen at compose time so the reader
+-- never has to reconstruct the ordering.
+alter table briefs add column if not exists refs jsonb not null default '{}';

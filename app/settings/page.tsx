@@ -3,9 +3,56 @@ import { currentSeat } from "@/lib/auth";
 import { SEATS, SEAT_IDS, allowlistedEmails, type SeatId } from "@/lib/seats";
 import { useSeedData } from "@/lib/mode";
 import { SignOutButton } from "@/components/rooms/SignOutButton";
+import { ThreadsManager, type ThreadRow } from "@/components/rooms/ThreadsManager";
+import { PushToggle } from "@/components/rooms/PushToggle";
 import { Chip } from "@/components/ui/Chip";
 
 export const dynamic = "force-dynamic";
+
+async function threadsData(
+  seedMode: boolean,
+): Promise<{ threads: ThreadRow[]; priorities: { id: string; name: string }[] }> {
+  if (seedMode) {
+    const { demoThreads, demoPriorities } = await import("@/lib/data/demo");
+    const { priorities } = demoPriorities();
+    const names = new Map(priorities.map((p) => [p.id, p.name]));
+    return {
+      threads: demoThreads().map((t) => ({
+        id: t.id,
+        name: t.name,
+        org: t.org,
+        seatOwner: t.seat_owner,
+        status: t.status,
+        nextTouchDate: t.next_touch_date,
+        linkedPriorityName: t.linked_priority_id
+          ? (names.get(t.linked_priority_id) ?? null)
+          : null,
+      })),
+      priorities: priorities.map((p) => ({ id: p.id, name: p.name })),
+    };
+  }
+  const { supabaseServer } = await import("@/lib/supabase/server");
+  const sb = await supabaseServer();
+  const [threadsQ, prioritiesQ] = await Promise.all([
+    sb.from("threads").select("*").order("next_touch_date", { nullsFirst: false }),
+    sb.from("priorities").select("id, name").is("retired_at", null),
+  ]);
+  const names = new Map((prioritiesQ.data ?? []).map((p) => [p.id, p.name]));
+  return {
+    threads: (threadsQ.data ?? []).map((t) => ({
+      id: t.id,
+      name: t.name,
+      org: t.org,
+      seatOwner: t.seat_owner,
+      status: t.status,
+      nextTouchDate: t.next_touch_date,
+      linkedPriorityName: t.linked_priority_id
+        ? (names.get(t.linked_priority_id) ?? null)
+        : null,
+    })),
+    priorities: (prioritiesQ.data ?? []).map((p) => ({ id: p.id, name: p.name })),
+  };
+}
 
 interface AuditRow {
   id: number;
@@ -33,9 +80,10 @@ export default async function SettingsPage() {
   const emails = allowlistedEmails();
   const seated = new Set(emails.values());
   const audit = await auditLog(seedMode);
+  const { threads, priorities } = await threadsData(seedMode);
 
   return (
-    <div className="grid h-full min-h-0 grid-rows-[auto_auto_auto_1fr_auto] gap-2 pb-3">
+    <div className="grid h-full min-h-0 auto-rows-min gap-2 overflow-hidden pb-3">
       <header className="px-5 pt-4">
         <div className="eyebrow">Settings</div>
       </header>
@@ -70,10 +118,18 @@ export default async function SettingsPage() {
             : "Live. Notification times, lane muting, source tuning, and the audit trail arrive with the later gates."}
         </p>
         <p className="mt-1.5 text-[10.5px] text-ink3">
-          Gate zero build. Operator curation, the pipeline, voice, the weekly
-          loop, and learning land in order.
+          The market pipeline, voice, and the weekly loop are live. Learning
+          lands next.
         </p>
       </section>
+
+      {!seedMode && <PushToggle />}
+
+      <ThreadsManager
+        threads={threads}
+        priorities={priorities}
+        isOperator={seat === 4}
+      />
 
       <section className="mx-5 min-h-0 overflow-hidden rounded-xl border border-line bg-paper p-3.5">
         <div className="eyebrow mb-1.5">The audit trail</div>

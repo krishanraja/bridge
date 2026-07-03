@@ -10,11 +10,26 @@ import type {
 } from "@/lib/types";
 import type { SeatId } from "@/lib/seats";
 
+export interface BriefLineRef {
+  line: number;
+  refs: string[];
+}
+
 export interface BriefView {
   day: string;
   script: string;
   audioPath: string | null;
   released: boolean;
+  lineRefs: BriefLineRef[];
+  refLabels: Record<string, { label: string; url: string | null }>;
+}
+
+export interface OperatorReview {
+  day: string;
+  kind: "morning" | "close";
+  script: string;
+  windowOpen: boolean;
+  releaseAt: string;
 }
 
 export interface WeekMoveDot {
@@ -28,6 +43,7 @@ export interface TodayData {
   focus: FocusItem | null;
   topSignals: Signal[];
   weekMoves: WeekMoveDot[];
+  review: OperatorReview | null;
   demo: boolean;
 }
 
@@ -37,6 +53,17 @@ export interface PriorityView extends Priority {
   blockerOwner: SeatId | null;
   confidenceDelta: number | null;
   history: Move[];
+  threads: LinkedThread[];
+}
+
+export interface LinkedThread {
+  id: string;
+  name: string;
+  org: string;
+  seatOwner: SeatId;
+  status: string;
+  nextTouchDate: string | null;
+  nextTouchNote: string | null;
 }
 
 export interface VoteView {

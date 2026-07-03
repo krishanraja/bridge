@@ -1,8 +1,13 @@
 {
   "crons": [
-    {
-      "path": "/api/pipeline/run",
-      "schedule": "30 9 * * *"
-    }
+    { "path": "/api/pipeline/run", "schedule": "30 9 * * *" },
+    { "path": "/api/brief/compose", "schedule": "45 10 * * 1-5" },
+    { "path": "/api/loop?step=morning_notify", "schedule": "30 11 * * 1-5" },
+    { "path": "/api/brief/release", "schedule": "25 11 * * 1-5" },
+    { "path": "/api/loop?step=pulse_open", "schedule": "30 11 * * 1" },
+    { "path": "/api/loop?step=drift", "schedule": "0 16 * * 3" },
+    { "path": "/api/brief/compose?kind=close", "schedule": "30 18 * * 5" },
+    { "path": "/api/brief/release?kind=close", "schedule": "0 19 * * 5" },
+    { "path": "/api/loop?step=close_notify", "schedule": "0 19 * * 5" }
   ]
 }

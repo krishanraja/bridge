@@ -32,7 +32,7 @@ export async function dbToday(): Promise<TodayData> {
       sb.from("threads").select("*"),
       sb
         .from("briefs")
-        .select("*")
+        .select("day, script, audio_path, line_refs, refs")
         .eq("day", day)
         .eq("kind", "morning")
         .not("released_at", "is", null)
@@ -45,15 +45,54 @@ export async function dbToday(): Promise<TodayData> {
   const decisions = (decisionsQ.data ?? []) as Decision[];
   const threads = (threadsQ.data ?? []) as Thread[];
 
+  let audioUrl: string | null = null;
+  if (briefQ.data?.audio_path) {
+    const signed = await sb.storage
+      .from("audio")
+      .createSignedUrl(briefQ.data.audio_path, 600);
+    audioUrl = signed.data?.signedUrl ?? null;
+  }
+
+  /* Operator review: an unreleased morning draft waiting on the review window.
+     Only the operator sees it. */
+  let review = null;
+  const { data: userData } = await sb.auth.getUser();
+  const { seatForEmail } = await import("@/lib/seats");
+  const viewer = userData.user?.email ? seatForEmail(userData.user.email) : null;
+  if (viewer === 4) {
+    const { data: draft } = await sb
+      .from("briefs")
+      .select("day, kind, script")
+      .eq("day", day)
+      .eq("kind", "morning")
+      .is("released_at", null)
+      .maybeSingle();
+    if (draft) {
+      review = {
+        day: draft.day,
+        kind: draft.kind as "morning" | "close",
+        script: draft.script,
+        windowOpen: true,
+        releaseAt: "07:25",
+      };
+    }
+  }
+
   return {
     brief: briefQ.data
       ? {
           day: briefQ.data.day,
           script: briefQ.data.script,
-          audioPath: briefQ.data.audio_path,
+          audioPath: audioUrl,
           released: true,
+          lineRefs: (briefQ.data.line_refs ?? []) as { line: number; refs: string[] }[],
+          refLabels: (briefQ.data.refs ?? {}) as Record<
+            string,
+            { label: string; url: string | null }
+          >,
         }
       : null,
+    review,
     focus: deriveFocus({
       decisions,
       priorities,
@@ -101,10 +140,11 @@ export async function dbPriorityViews(): Promise<PriorityView[]> {
   const prevWeek = isoWeekShift(week, -1);
   const weeks = Array.from({ length: 6 }, (_, i) => isoWeekShift(week, -i));
 
-  const [prioritiesQ, movesQ, pulsesQ] = await Promise.all([
+  const [prioritiesQ, movesQ, pulsesQ, threadsQ] = await Promise.all([
     sb.from("priorities").select("*").is("retired_at", null),
     sb.from("moves").select("*").in("iso_week", weeks),
     sb.from("pulses").select("*").in("iso_week", [week, prevWeek]),
+    sb.from("threads").select("*").not("linked_priority_id", "is", null),
   ]);
 
   const priorities = (prioritiesQ.data ?? []) as (Priority & {
@@ -125,6 +165,7 @@ export async function dbPriorityViews(): Promise<PriorityView[]> {
     week,
     prevWeek,
     blockers,
+    (threadsQ.data ?? []) as Thread[],
   );
 }
 

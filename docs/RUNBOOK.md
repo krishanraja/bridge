@@ -99,4 +99,18 @@ Fri 14:30 close compose, Fri 15:00 close release, Sun 21:00 learn.
   lands in Vercel env and .env.local.
 - iOS Safari mic permission pass on a physical device: pending; hold-to-talk
   uses MediaRecorder with audio/mp4 fallback for Safari.
-- Push on installed PWA (one iOS, one Android): due at G4.
+- 2026-07-03 (G4): a scripted week ran against the live endpoints and passed
+  all twelve checks. Monday's opus brief composed at 246 words, held
+  unreleased for the review window, and released on the 07:25 check; every
+  citation code in the script resolved to a stored record. Wednesday's drift
+  check was silent with nothing drifted and fired exactly one drift when a
+  move was forced back to proposed. Friday's close carried the correct
+  scorecard ("Four of five moves shipped... the retention move does not")
+  with the two-week miss pattern named. A thread with today's next touch won
+  the Today focus over a lower-urgency move, and the linked priority carried
+  its thread. Real composed briefs read in the office voice with sourced
+  citation chips.
+- Web Push: VAPID keys are set; the service worker handles push and click.
+  Delivery to a physical installed PWA (one iOS, one Android) is pending a
+  device pass. The ration is enforced server side against the events log.
+- Push on installed PWA (one iOS, one Android): device pass pending.

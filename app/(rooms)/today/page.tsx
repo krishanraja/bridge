@@ -3,7 +3,7 @@ import { currentSeat } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { PresenceDots } from "@/components/rooms/PresenceDots";
 import { BriefBlock } from "@/components/rooms/BriefBlock";
-import { Chip } from "@/components/ui/Chip";
+import { ReviewCard } from "@/components/rooms/ReviewCard";
 import { LANES } from "@/lib/copy/lanes";
 import Link from "next/link";
 
@@ -34,7 +34,7 @@ export default async function TodayPage() {
         </div>
       </header>
 
-      <BriefBlock brief={data.brief} />
+      {data.review ? <ReviewCard review={data.review} /> : <BriefBlock brief={data.brief} />}
 
       {data.focus && (
         <section className="mx-5 rounded-xl border border-mint-bd bg-mint-wash px-4 py-3">
