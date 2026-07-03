@@ -114,3 +114,11 @@ Fri 14:30 close compose, Fri 15:00 close release, Sun 21:00 learn.
   Delivery to a physical installed PWA (one iOS, one Android) is pending a
   device pass. The ration is enforced server side against the events log.
 - Push on installed PWA (one iOS, one Android): device pass pending.
+- 2026-07-03 (G5): a biased fortnight simulation passed all nine checks. Six
+  acted signals from one source and six killed from another moved the EMA in
+  the right directions, every proposed weight stayed within 0.5x and 1.6x, a
+  skipped proposal changed nothing, and an approved one applied. The self
+  retro ran a live retrospective sweep and cited a real missed story with a
+  URL ("US state privacy law landscape expands to 24 states") that the week's
+  deck did not carry. The Sunday learn cron runs Monday 01:00 UTC (Sunday
+  21:00 ET).

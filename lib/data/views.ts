@@ -116,6 +116,12 @@ export interface AssumptionView extends Assumption {
   delta30: number;
 }
 
+export interface RetroView {
+  lines: string[];
+  missedUrl: string | null;
+}
+
 export interface LedgerData {
   assumptions: AssumptionView[];
+  retro: RetroView | null;
 }

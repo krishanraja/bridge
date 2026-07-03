@@ -24,7 +24,7 @@ export default async function LedgerPage() {
           Back to radar
         </Link>
       </header>
-      <LedgerDeck assumptions={data.assumptions} />
+      <LedgerDeck assumptions={data.assumptions} retro={data.retro} />
     </div>
   );
 }

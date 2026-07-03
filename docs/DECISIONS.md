@@ -115,7 +115,15 @@ brief, the decision, and why it best serves a ninety second phone session.
     items, and a thread whose next touch is today is eligible for the single
     Today focus slot.
 
-21. **Grid columns pinned via CSS.** Any grid that declares `grid-rows-*`
+21. **Learning proposes; the operator releases; the retro is separate.** The
+    Sunday job stages one operator-facing proposal (source weights, lane
+    appetite, style memo) plus two auto-applied records keyed with a colon
+    suffix (`:centroids`, `:retro`) that the operator never has to approve:
+    resonance centroids are pure math and the retro is a public memo. The
+    Settings query filters staged proposals to those without a colon so the
+    review card only shows the human decision.
+
+22. **Grid columns pinned via CSS.** Any grid that declares `grid-rows-*`
     gets `grid-template-columns: minmax(0, 1fr)` globally, because truncated
     (nowrap) lines otherwise inflate the implicit column and push the layout
     past the viewport. A future two column grid that also declares rows must

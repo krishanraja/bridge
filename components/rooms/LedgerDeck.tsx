@@ -5,7 +5,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import type { AssumptionView } from "@/lib/data/views";
+import type { AssumptionView, RetroView } from "@/lib/data/views";
 import { Dial } from "@/components/dial/Dial";
 import { Chip } from "@/components/ui/Chip";
 import { Sheet } from "@/components/ui/Sheet";
@@ -20,7 +20,13 @@ const STATUS: Record<string, { label: string; color: string }> = {
   retired: { label: "Retired", color: "var(--ink-3)" },
 };
 
-export function LedgerDeck({ assumptions }: { assumptions: AssumptionView[] }) {
+export function LedgerDeck({
+  assumptions,
+  retro,
+}: {
+  assumptions: AssumptionView[];
+  retro: RetroView | null;
+}) {
   const router = useRouter();
   const [voting, setVoting] = useState<AssumptionView | null>(null);
   const [voteValue, setVoteValue] = useState(60);
@@ -43,6 +49,37 @@ export function LedgerDeck({ assumptions }: { assumptions: AssumptionView[] }) {
 
   return (
     <div className="snap-pager">
+      {retro && (
+        <div className="snap-page px-5 pb-3">
+          <article className="grid h-full min-h-0 grid-rows-[auto_1fr] gap-3 rounded-xl border border-line bg-paper p-4">
+            <div className="flex items-center justify-between">
+              <Chip color="var(--mint-deep)">The radar, grading itself</Chip>
+              <span className="eyebrow">This week</span>
+            </div>
+            <div className="flex min-h-0 flex-col justify-center gap-2.5 overflow-hidden">
+              {retro.lines.map((line, i) => (
+                <p
+                  key={i}
+                  className="text-[14px] leading-snug"
+                  style={{ color: i === retro.lines.length - 1 ? "var(--ink-3)" : "var(--ink)" }}
+                >
+                  {line}
+                </p>
+              ))}
+              {retro.missedUrl && (
+                <a
+                  href={retro.missedUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[12px] text-mint-deep underline underline-offset-2"
+                >
+                  Read the story it missed
+                </a>
+              )}
+            </div>
+          </article>
+        </div>
+      )}
       {beliefs.map((a) => {
         const st = STATUS[a.status] ?? STATUS.holding;
         return (

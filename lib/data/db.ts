@@ -215,16 +215,27 @@ export async function dbTable(): Promise<TableData> {
 
 export async function dbLedger(): Promise<LedgerData> {
   const sb = await supabaseServer();
-  const [assumptionsQ, evidenceQ] = await Promise.all([
+  const [assumptionsQ, evidenceQ, retroQ] = await Promise.all([
     sb.from("assumptions").select("*").is("retired_at", null),
     sb
       .from("assumption_evidence")
       .select("*, signals(headline, cluster, day)")
       .order("created_at", { ascending: false }),
+    sb
+      .from("learn_proposals")
+      .select("proposal")
+      .like("week", "%:retro")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
   ]);
 
   const evidence = evidenceQ.data ?? [];
+  const retroData = retroQ.data?.proposal as { lines?: string[]; missedUrl?: string | null } | undefined;
   return {
+    retro: retroData?.lines
+      ? { lines: retroData.lines, missedUrl: retroData.missedUrl ?? null }
+      : null,
     assumptions: (assumptionsQ.data ?? []).map((a) => ({
       id: a.id,
       statement: a.statement,

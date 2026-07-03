@@ -280,7 +280,18 @@ export async function demoTable(): Promise<TableData> {
 export async function demoLedger(): Promise<LedgerData> {
   const assumptions = demoAssumptions();
   const signals = demoSignals();
+  const retro = {
+    lines: [
+      "Acted on 3, led by the Databricks CustomerLake read.",
+      "Killed 2, including a low-signal funding rumor.",
+      "Missed one: a Salesforce Data Cloud identity update the deck did not carry.",
+      "This week I would trust Business Wire more and the generic aggregators less.",
+      "Approve the changes in Settings, or skip and nothing moves.",
+    ],
+    missedUrl: null,
+  };
   return {
+    retro,
     assumptions: assumptions.map((a) => {
       const ev = signals
         .filter((s) => s.assumption_id === a.id && s.assumption_direction)

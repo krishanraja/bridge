@@ -5,6 +5,7 @@ import { useSeedData } from "@/lib/mode";
 import { SignOutButton } from "@/components/rooms/SignOutButton";
 import { ThreadsManager, type ThreadRow } from "@/components/rooms/ThreadsManager";
 import { PushToggle } from "@/components/rooms/PushToggle";
+import { LearnReview, type StagedProposal } from "@/components/rooms/LearnReview";
 import { Chip } from "@/components/ui/Chip";
 
 export const dynamic = "force-dynamic";
@@ -73,6 +74,40 @@ async function auditLog(seedMode: boolean): Promise<AuditRow[]> {
   return (data ?? []) as AuditRow[];
 }
 
+async function operatorLearning(seedMode: boolean, seat: number) {
+  if (seedMode || seat !== 4) return { proposal: null, metrics: null };
+  const { supabaseServer } = await import("@/lib/supabase/server");
+  const { learnMetrics } = await import("@/lib/loop/metrics");
+  const sb = await supabaseServer();
+  const { data: staged } = await sb
+    .from("learn_proposals")
+    .select("id, proposal, week")
+    .eq("status", "staged")
+    .not("week", "like", "%:%")
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  let proposal: StagedProposal | null = null;
+  if (staged) {
+    const p = staged.proposal as {
+      summary: string;
+      sourceWeights: { name: string; from: number; to: number }[];
+      laneAppetite: unknown[];
+      styleMemo: string | null;
+    };
+    proposal = {
+      id: staged.id,
+      summary: p.summary,
+      sourceWeights: p.sourceWeights ?? [],
+      laneCount: (p.laneAppetite ?? []).length,
+      styleMemo: p.styleMemo ?? null,
+    };
+  }
+  const metrics = await learnMetrics();
+  return { proposal, metrics };
+}
+
 export default async function SettingsPage() {
   const seat = await currentSeat();
   if (!seat) redirect("/login");
@@ -81,6 +116,7 @@ export default async function SettingsPage() {
   const seated = new Set(emails.values());
   const audit = await auditLog(seedMode);
   const { threads, priorities } = await threadsData(seedMode);
+  const { proposal, metrics } = await operatorLearning(seedMode, seat);
 
   return (
     <div className="grid h-full min-h-0 auto-rows-min gap-2 overflow-hidden pb-3">
@@ -115,13 +151,27 @@ export default async function SettingsPage() {
         <p className="text-[12px] leading-relaxed text-ink2">
           {seedMode
             ? "Running on sample data. Every row is illustrative and marked so. Live mode starts when the database is connected and the sample comes out."
-            : "Live. Notification times, lane muting, source tuning, and the audit trail arrive with the later gates."}
+            : "Live. The pipeline, voice, the weekly loop, and the learning approvals all run against real data."}
         </p>
         <p className="mt-1.5 text-[10.5px] text-ink3">
           The market pipeline, voice, and the weekly loop are live. Learning
           lands next.
         </p>
       </section>
+
+      {proposal && <LearnReview proposal={proposal} />}
+
+      {metrics && (metrics.actRate != null || metrics.killRate != null) && (
+        <section className="mx-5 rounded-xl border border-line bg-paper px-3.5 py-2.5">
+          <div className="eyebrow mb-1.5">How it is learning</div>
+          <div className="flex justify-between">
+            <Metric label="Act rate" value={metrics.actRate != null ? `${metrics.actRate}%` : "-"} />
+            <Metric label="Kill rate" value={metrics.killRate != null ? `${metrics.killRate}%` : "-"} />
+            <Metric label="Briefs" value={metrics.briefCompletion != null ? `${metrics.briefCompletion}/4` : "-"} />
+            <Metric label="Missed" value={metrics.missedStories != null ? String(metrics.missedStories) : "-"} />
+          </div>
+        </section>
+      )}
 
       {!seedMode && <PushToggle />}
 
@@ -161,4 +211,17 @@ export default async function SettingsPage() {
       </div>
     </div>
   );
+}
+
+function Metric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex flex-col items-center">
+      <span className="num-display text-[20px] font-medium">{value}</span>
+      <span className="eyebrow">{label}</span>
+    </div>
+  );
+}
+
+function SettingsClose() {
+  return null;
 }

@@ -4,11 +4,13 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 import { detectDrift } from "@/lib/loop/drift";
+import { computeLearning, stageProposal } from "@/lib/loop/learn";
+import { writeRetro } from "@/lib/loop/retro";
 import { pushToSeat } from "@/lib/push/send";
 import { hasSupabaseEnv, isDemoMode } from "@/lib/mode";
 import { SEAT_IDS } from "@/lib/seats";
 
-export const maxDuration = 60;
+export const maxDuration = 120;
 export const dynamic = "force-dynamic";
 
 function cronAuthorized(req: NextRequest): boolean {
@@ -64,6 +66,13 @@ async function step(name: string) {
       results.push({ seat, ...r });
     }
     return NextResponse.json({ step: "close_notify", results });
+  }
+
+  if (name === "learn") {
+    const proposal = await computeLearning();
+    const id = await stageProposal(proposal);
+    const retro = await writeRetro(proposal);
+    return NextResponse.json({ step: "learn", proposalId: id, summary: proposal.summary, retro });
   }
 
   if (name === "morning_notify") {

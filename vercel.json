@@ -8,6 +8,7 @@
     { "path": "/api/loop?step=drift", "schedule": "0 16 * * 3" },
     { "path": "/api/brief/compose?kind=close", "schedule": "30 18 * * 5" },
     { "path": "/api/brief/release?kind=close", "schedule": "0 19 * * 5" },
-    { "path": "/api/loop?step=close_notify", "schedule": "0 19 * * 5" }
+    { "path": "/api/loop?step=close_notify", "schedule": "0 19 * * 5" },
+    { "path": "/api/loop?step=learn", "schedule": "0 1 * * 1" }
   ]
 }
