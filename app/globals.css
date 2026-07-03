@@ -27,11 +27,11 @@
 
   --tabbar-h: 72px;
   --dial-arc: var(--mint-deep);
-  /* The phone frame. The app is a phone-sized instrument; on any viewport
-     larger than this (a low-density phone reporting wide CSS px, a tablet, a
-     desktop) it renders as a centered frame rather than a stretched sheet. */
-  --frame-w: 440px;
-  --frame-h: 940px;
+  /* Canonical phone design width. A head script zooms the document root so
+     this width maps onto the real viewport, whatever CSS width the device
+     reports. Fixed-pixel type and spacing then scale as one, so the app fills
+     any screen and always reads as a correctly proportioned phone. */
+  --design-w: 412;
 }
 
 /* Night variant: auto 21:00 to 06:00 local and during audio playback. Ink scales invert, mint holds. */
@@ -79,35 +79,23 @@ body {
   font-family: var(--font-body), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  /* Center the phone frame. Gutters show the page background. */
-  display: grid;
-  place-items: center;
 }
 
-/* The one app frame. It is phone sized at every viewport: it fills a true
-   phone and centers as a frame on anything larger, so type is never tiny and
-   the layout never balloons. Content region is a grid that never overflows. */
+/* The one app frame. The root zoom (set in a head script) makes the design
+   width fill the viewport, so the shell simply fills its width and height and
+   never overflows. */
 .app-shell,
 .app-frame {
   width: 100%;
-  max-width: var(--frame-w);
-  height: min(100dvh, var(--frame-h));
-  margin: 0 auto;
+  /* Percent, not dvh: under the root zoom, viewport units (dvh) are multiplied
+     by the zoom factor and overshoot, but percentages resolve correctly. */
+  height: 100%;
 }
 
 .app-shell {
   display: grid;
   grid-template-rows: 1fr var(--tabbar-h);
   padding-top: env(safe-area-inset-top);
-}
-
-/* Once the viewport is wider than the frame, draw its edges so it reads as a
-   deliberate frame and not a narrow accident. */
-@media (min-width: 460px) {
-  .app-shell,
-  .app-frame {
-    border-inline: 1px solid var(--line);
-  }
 }
 
 .room {

@@ -44,6 +44,12 @@ export const viewport: Viewport = {
 
 const nightScript = `(function(){try{var h=new Date().getHours();if(h>=21||h<6){document.documentElement.dataset.night="1";}}catch(e){}})();`;
 
+/* Scale the whole app so the 412px phone design fills the real viewport,
+   whatever CSS width the device reports (a low pixel-ratio or screen-zoom
+   phone can report ~900px). Runs before paint to avoid a flash, and re-fits on
+   resize and rotation. Capped so it never blows up on a true desktop. */
+const fitScript = `(function(){function f(){try{document.documentElement.style.zoom=Math.min(2.6,window.innerWidth/412);}catch(e){}}f();window.addEventListener("resize",f);window.addEventListener("orientationchange",f);})();`;
+
 const swScript = `if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("/sw.js").catch(function(){})})}`;
 
 export default function RootLayout({
@@ -52,6 +58,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable}`}>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: fitScript }} />
         <script dangerouslySetInnerHTML={{ __html: nightScript }} />
       </head>
       <body>

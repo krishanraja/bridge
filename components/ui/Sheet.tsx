@@ -33,7 +33,7 @@ export function Sheet({ open, onClose, title, children }: SheetProps) {
         onClick={onClose}
       />
       <div
-        className="absolute inset-x-0 bottom-0 mx-auto flex max-h-[82dvh] w-full max-w-[430px] flex-col rounded-t-2xl border-t border-line bg-paper"
+        className="absolute inset-x-0 bottom-0 mx-auto flex max-h-[82%] w-full max-w-[430px] flex-col rounded-t-2xl border-t border-line bg-paper"
         style={{
           paddingBottom: "env(safe-area-inset-bottom)",
           animation: "sheet-up 200ms ease-out",

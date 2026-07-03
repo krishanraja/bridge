@@ -43,20 +43,30 @@ async function main() {
           failures++;
           continue;
         }
-        const m = await page.evaluate(() => ({
-          scrollH: document.documentElement.scrollHeight,
-          scrollW: document.documentElement.scrollWidth,
-          innerH: window.innerHeight,
-          innerW: window.innerWidth,
-          bodyScrollH: document.body.scrollHeight,
-        }));
-        const vOk = m.scrollH <= m.innerH + 1 && m.bodyScrollH <= m.innerH + 1;
+        const m = await page.evaluate(() => {
+          /* The real invariant is that the page cannot scroll. body.scrollHeight
+             is not reliable under the root zoom (it reports design-space pixels
+             while innerHeight is visual), so probe an actual scroll attempt. */
+          const y0 = window.scrollY;
+          const x0 = window.scrollX;
+          window.scrollTo(x0 + 2000, y0 + 2000);
+          const moved = window.scrollY !== y0 || window.scrollX !== x0;
+          window.scrollTo(x0, y0);
+          return {
+            scrollH: document.documentElement.scrollHeight,
+            scrollW: document.documentElement.scrollWidth,
+            innerH: window.innerHeight,
+            innerW: window.innerWidth,
+            canScroll: moved,
+          };
+        });
+        const vOk = m.scrollH <= m.innerH + 1 && !m.canScroll;
         const hOk = m.scrollW <= m.innerW + 1;
         if (vOk && hOk) {
           console.log(`✓ ${vp.label} ${route}`);
         } else {
           console.error(
-            `✗ ${vp.label} ${route} overflows: scrollH=${m.scrollH} innerH=${m.innerH} scrollW=${m.scrollW} innerW=${m.innerW}`,
+            `✗ ${vp.label} ${route} overflows: scrollH=${m.scrollH} innerH=${m.innerH} scrollW=${m.scrollW} innerW=${m.innerW} canScroll=${m.canScroll}`,
           );
           failures++;
         }
