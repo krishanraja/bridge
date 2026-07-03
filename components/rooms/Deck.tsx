@@ -4,18 +4,22 @@
    Act, Hold, Kill act on the local deal now; they feed the learning loop at gate two. */
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type { Signal } from "@/lib/types";
 import { LANES, LANE_IDS, type LaneId } from "@/lib/copy/lanes";
 import { Chip } from "@/components/ui/Chip";
 import { Sheet } from "@/components/ui/Sheet";
 import { tick, confirm as confirmHaptic } from "@/lib/haptics";
+import { signalVerdict } from "@/app/actions";
 
 export function Deck({ signals, operator }: { signals: Signal[]; operator: boolean }) {
+  const router = useRouter();
   const [lane, setLane] = useState<LaneId | null>(null);
   const [gone, setGone] = useState<Set<string>>(new Set());
   const [sources, setSources] = useState<Signal | null>(null);
   const [acted, setActed] = useState<string | null>(null);
+  const [sweeping, setSweeping] = useState(false);
 
   const deck = useMemo(
     () =>
@@ -29,9 +33,20 @@ export function Deck({ signals, operator }: { signals: Signal[]; operator: boole
     if (kind === "act") confirmHaptic();
     else tick();
     setGone((g) => new Set(g).add(id));
+    void signalVerdict({ signal_id: id, kind });
     if (kind === "act") {
       setActed("Routed to the operator as a draft move.");
       setTimeout(() => setActed(null), 2600);
+    }
+  };
+
+  const sweep = async () => {
+    setSweeping(true);
+    try {
+      const res = await fetch("/api/pipeline/run", { method: "POST" });
+      if (res.ok) router.refresh();
+    } finally {
+      setSweeping(false);
     }
   };
 
@@ -62,7 +77,13 @@ export function Deck({ signals, operator }: { signals: Signal[]; operator: boole
             clears the bar. That is a fact, not a failure.
           </p>
           {operator && (
-            <span className="eyebrow">A sweep can be run from Ask</span>
+            <button
+              onClick={sweep}
+              disabled={sweeping}
+              className="rounded-full bg-ink px-4 py-2 text-[12px] font-medium text-bg disabled:opacity-60"
+            >
+              {sweeping ? "Sweeping. This takes a minute." : "Run a sweep now"}
+            </button>
           )}
         </div>
       ) : (

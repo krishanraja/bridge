@@ -284,6 +284,60 @@ export async function votePulse(
   return { ok: true };
 }
 
+/* Radar verdicts: Act routes to the operator, Hold archives, Kill teaches. */
+
+export async function signalVerdict(input: {
+  signal_id: string;
+  kind: "act" | "hold" | "kill";
+}): Promise<ActionResult> {
+  const seat = await seatOrNull();
+  if (!seat) return { ok: true };
+  await logEvent(seat, `signal_${input.kind}`, "signal", input.signal_id);
+  revalidatePath("/radar");
+  revalidatePath("/today");
+  return { ok: true };
+}
+
+export async function openCard(signal_id: string): Promise<ActionResult> {
+  const seat = await seatOrNull();
+  if (!seat) return { ok: true };
+  await logEvent(seat, "card_open", "signal", signal_id);
+  return { ok: true };
+}
+
+/* A principal reweights a belief: their vote pulls confidence, logged in full. */
+
+export async function voteAssumption(input: {
+  id: string;
+  confidence: number;
+}): Promise<ActionResult> {
+  const seat = await seatOrNull();
+  if (!seat) return DEMO_REFUSAL;
+  const vote = Math.max(0, Math.min(100, Math.round(input.confidence)));
+
+  const { supabaseService } = await import("@/lib/supabase/service");
+  const svc = supabaseService();
+  const { data: a } = await svc
+    .from("assumptions")
+    .select("confidence, history")
+    .eq("id", input.id)
+    .single();
+  if (!a) return { ok: false, message: "That belief is not in the ledger." };
+
+  const next = Math.round(0.7 * Number(a.confidence) + 0.3 * vote);
+  const day = new Date().toISOString().slice(0, 10);
+  const history = [
+    ...((a.history ?? []) as { day: string; confidence: number }[]),
+    { day, confidence: next },
+  ].slice(-120);
+  await svc.from("assumptions").update({ confidence: next, history }).eq("id", input.id);
+
+  await logEvent(seat, "assumption_vote", "assumption", input.id, { vote, next });
+  await logAudit(seat, "assumption_vote", { id: input.id, vote, next });
+  revalidatePath("/ledger");
+  return { ok: true };
+}
+
 /* Receipts: seen facts for the brief and the pulse only. */
 
 export async function markBriefSeen(day: string): Promise<ActionResult> {

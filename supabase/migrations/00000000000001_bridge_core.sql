@@ -337,3 +337,7 @@ create policy audit_insert on audit_log for insert to authenticated
 alter publication supabase_realtime add table receipts;
 alter publication supabase_realtime add table pulses;
 alter publication supabase_realtime add table decisions;
+
+-- Principals read their own events so their radar verdicts shape their own deck.
+create policy events_read_own on events for select to authenticated
+  using (seat = public.current_seat());

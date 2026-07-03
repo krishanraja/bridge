@@ -1,10 +1,16 @@
 "use client";
 
-/* The Assumption Ledger: one belief per viewport. The dial, the trend, the evidence. */
+/* The Assumption Ledger: one belief per viewport. The dial, the trend, the
+   evidence, and a seat's own read when they disagree with the number. */
 
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import type { AssumptionView } from "@/lib/data/views";
 import { Dial } from "@/components/dial/Dial";
 import { Chip } from "@/components/ui/Chip";
+import { Sheet } from "@/components/ui/Sheet";
+import { confirm as confirmHaptic } from "@/lib/haptics";
+import { voteAssumption } from "@/app/actions";
 
 const STATUS: Record<string, { label: string; color: string }> = {
   holding: { label: "Holding", color: "var(--ink-2)" },
@@ -15,6 +21,11 @@ const STATUS: Record<string, { label: string; color: string }> = {
 };
 
 export function LedgerDeck({ assumptions }: { assumptions: AssumptionView[] }) {
+  const router = useRouter();
+  const [voting, setVoting] = useState<AssumptionView | null>(null);
+  const [voteValue, setVoteValue] = useState(60);
+  const [pending, startTransition] = useTransition();
+
   if (assumptions.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center gap-2 px-8 text-center">
@@ -39,7 +50,17 @@ export function LedgerDeck({ assumptions }: { assumptions: AssumptionView[] }) {
             <article className="grid h-full min-h-0 grid-rows-[auto_auto_1fr] gap-3 rounded-xl border border-line bg-paper p-4">
               <div className="flex items-center justify-between">
                 <Chip>{a.kind === "assumption" ? "Assumption" : "Watch item"}</Chip>
-                <Chip color={st.color}>{st.label}</Chip>
+                <div className="flex items-center gap-1.5">
+                  <Chip
+                    onClick={() => {
+                      setVoting(a);
+                      setVoteValue(Math.round(a.confidence));
+                    }}
+                  >
+                    Cast your read
+                  </Chip>
+                  <Chip color={st.color}>{st.label}</Chip>
+                </div>
               </div>
 
               <div className="flex items-center gap-4">
@@ -100,6 +121,53 @@ export function LedgerDeck({ assumptions }: { assumptions: AssumptionView[] }) {
           </div>
         );
       })}
+
+      <Sheet
+        open={voting !== null}
+        onClose={() => setVoting(null)}
+        title="Your read"
+      >
+        {voting && (
+          <div className="flex flex-col gap-3 pt-1">
+            <p className="text-[13px] leading-snug text-ink">{voting.statement}</p>
+            <div className="flex items-center gap-4">
+              <input
+                type="range"
+                min={0}
+                max={100}
+                value={voteValue}
+                onChange={(e) => setVoteValue(Number(e.target.value))}
+                className="w-full accent-[var(--mint-deep)]"
+              />
+              <span className="num-display w-10 text-right text-[22px] font-medium">
+                {voteValue}
+              </span>
+            </div>
+            <p className="text-[11px] text-ink3">
+              Your vote pulls the house number and lands in the audit trail.
+            </p>
+            <button
+              disabled={pending}
+              onClick={() =>
+                startTransition(async () => {
+                  const res = await voteAssumption({
+                    id: voting.id,
+                    confidence: voteValue,
+                  });
+                  if (res.ok) {
+                    confirmHaptic();
+                    setVoting(null);
+                    router.refresh();
+                  }
+                })
+              }
+              className="rounded-full bg-ink py-2.5 text-[13px] font-medium text-bg disabled:opacity-60"
+            >
+              {pending ? "Casting" : "Cast it"}
+            </button>
+          </div>
+        )}
+      </Sheet>
     </div>
   );
 }

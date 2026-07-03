@@ -71,13 +71,28 @@ export async function dbToday(): Promise<TodayData> {
 
 export async function dbDeck(): Promise<Signal[]> {
   const sb = await supabaseServer();
-  const { data } = await sb
-    .from("signals")
-    .select("*")
-    .eq("day", todayISO())
-    .order("score", { ascending: false })
-    .limit(12);
-  return (data ?? []) as Signal[];
+  const day = todayISO();
+  const [signalsQ, verdictsQ, seatQ] = await Promise.all([
+    sb
+      .from("signals")
+      .select("*")
+      .eq("day", day)
+      .order("score", { ascending: false })
+      .limit(12),
+    sb
+      .from("events")
+      .select("subject_id, seat, type")
+      .in("type", ["signal_act", "signal_hold", "signal_kill"])
+      .gte("created_at", `${day}T00:00:00Z`),
+    sb.auth.getUser(),
+  ]);
+  const email = seatQ.data.user?.email?.toLowerCase();
+  const { seatForEmail } = await import("@/lib/seats");
+  const seat = email ? seatForEmail(email) : null;
+  const dismissed = new Set(
+    (verdictsQ.data ?? []).filter((v) => v.seat === seat).map((v) => v.subject_id),
+  );
+  return ((signalsQ.data ?? []) as Signal[]).filter((s) => !dismissed.has(s.id));
 }
 
 export async function dbPriorityViews(): Promise<PriorityView[]> {

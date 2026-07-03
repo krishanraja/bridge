@@ -21,8 +21,9 @@ else
 fi
 
 echo "Checking for banned vocabulary."
+# lib/copy/banned.ts is the one sanctioned home of the list itself.
 banned='excited|thrilled|seamless|robust|journey|empower|revolutionary|cutting-edge|game-changer|deep dive|unpack|transformative|synergy|holistic|moreover|furthermore|best-in-class|mission-critical'
-if grep -riE "\b($banned)\b" --include='*.ts' --include='*.tsx' --include='*.json' --include='*.md' app components lib supabase/seed docs 2>/dev/null; then
+if grep -riE "\b($banned)\b" --include='*.ts' --include='*.tsx' --include='*.json' --include='*.md' --exclude='banned.ts' app components lib supabase/seed docs 2>/dev/null; then
   echo "FAIL: banned vocabulary found."
   fail=1
 else
