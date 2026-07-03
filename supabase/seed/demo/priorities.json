@@ -1,0 +1,179 @@
+[
+  {
+    "key": "pri-1",
+    "name": "Win the lakehouse partner motion",
+    "sponsor_seat": 2,
+    "state": "driving",
+    "display_order": 1,
+    "blocker": null,
+    "blocker_owner_seat": null,
+    "moves": [
+      {
+        "week_offset": 0,
+        "text": "Ship the CustomerLake coexistence brief to the Databricks alliance team.",
+        "owner_seat": 2,
+        "state": "agreed"
+      },
+      {
+        "week_offset": -1,
+        "text": "Close the Snowflake Marketplace listing gap.",
+        "owner_seat": 2,
+        "state": "shipped"
+      },
+      {
+        "week_offset": -2,
+        "text": "Name the lakehouse pattern in one public reference architecture.",
+        "owner_seat": 2,
+        "state": "shipped"
+      },
+      {
+        "week_offset": -3,
+        "text": "Book the Databricks partner summit slot.",
+        "owner_seat": 2,
+        "state": "shipped"
+      }
+    ]
+  },
+  {
+    "key": "pri-2",
+    "name": "Land three lighthouse AmpAI logos",
+    "sponsor_seat": 1,
+    "state": "driving",
+    "display_order": 2,
+    "blocker": null,
+    "blocker_owner_seat": null,
+    "moves": [
+      {
+        "week_offset": 0,
+        "text": "Get a verbal commitment from the second lighthouse retail logo.",
+        "owner_seat": 1,
+        "state": "agreed"
+      },
+      {
+        "week_offset": -1,
+        "text": "Run the AmpAI pricing pilot review with the first logo.",
+        "owner_seat": 1,
+        "state": "shipped"
+      },
+      {
+        "week_offset": -2,
+        "text": "Sign the first lighthouse logo.",
+        "owner_seat": 1,
+        "state": "shipped"
+      },
+      {
+        "week_offset": -3,
+        "text": "Shortlist five lighthouse candidates with named champions.",
+        "owner_seat": 1,
+        "state": "shipped"
+      }
+    ]
+  },
+  {
+    "key": "pri-3",
+    "name": "Hold retention above 90 in the top fifty",
+    "sponsor_seat": 3,
+    "state": "at_risk",
+    "display_order": 3,
+    "blocker": "Usage data for six accounts still sits in the old warehouse.",
+    "blocker_owner_seat": 3,
+    "moves": [
+      {
+        "week_offset": 0,
+        "text": "Stand up the churn risk war room for the six watch accounts.",
+        "owner_seat": 3,
+        "state": "proposed"
+      },
+      {
+        "week_offset": -1,
+        "text": "Deliver the renewal save plan for the two red accounts.",
+        "owner_seat": 3,
+        "state": "missed",
+        "outcome_note": "Exec sponsor pulled into the audit; plan slipped a week."
+      },
+      {
+        "week_offset": -2,
+        "text": "Score the top fifty on renewal risk.",
+        "owner_seat": 3,
+        "state": "missed",
+        "outcome_note": "Data pull blocked on the usage warehouse migration."
+      },
+      {
+        "week_offset": -3,
+        "text": "Agree the retention definition the board will see.",
+        "owner_seat": 3,
+        "state": "shipped"
+      }
+    ]
+  },
+  {
+    "key": "pri-4",
+    "name": "Ship the agentic identity roadmap",
+    "sponsor_seat": 2,
+    "state": "driving",
+    "display_order": 4,
+    "blocker": null,
+    "blocker_owner_seat": null,
+    "moves": [
+      {
+        "week_offset": 0,
+        "text": "Lock the Q3 scope for agent facing identity APIs.",
+        "owner_seat": 2,
+        "state": "shipped"
+      },
+      {
+        "week_offset": -1,
+        "text": "Prototype the agent permission handshake.",
+        "owner_seat": 2,
+        "state": "shipped"
+      },
+      {
+        "week_offset": -2,
+        "text": "Write the one page agentic identity thesis.",
+        "owner_seat": 2,
+        "state": "shipped"
+      },
+      {
+        "week_offset": -3,
+        "text": "Audit the API surface agents would touch.",
+        "owner_seat": 2,
+        "state": "shipped"
+      }
+    ]
+  },
+  {
+    "key": "pri-5",
+    "name": "One story: identity is the AI substrate",
+    "sponsor_seat": 1,
+    "state": "driving",
+    "display_order": 5,
+    "blocker": null,
+    "blocker_owner_seat": null,
+    "moves": [
+      {
+        "week_offset": 0,
+        "text": "Land the substrate story in one tier one press conversation.",
+        "owner_seat": 1,
+        "state": "agreed"
+      },
+      {
+        "week_offset": -1,
+        "text": "Retire the legacy CDP deck from the field.",
+        "owner_seat": 1,
+        "state": "shipped"
+      },
+      {
+        "week_offset": -2,
+        "text": "Ship the substrate narrative one pager.",
+        "owner_seat": 1,
+        "state": "shipped"
+      },
+      {
+        "week_offset": -3,
+        "text": "Align the four seats on the one story.",
+        "owner_seat": 1,
+        "state": "shipped"
+      }
+    ]
+  }
+]

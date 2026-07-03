@@ -1,0 +1,181 @@
+@import "tailwindcss";
+
+/* Design tokens. Brief section 14.2. One mint, used only for meaning. */
+:root {
+  --bg: #f5f4ef;
+  --paper: #ffffff;
+  --ink: #0c1c2c;
+  --ink-2: #42505c;
+  --ink-3: #7c8893;
+  --line: #e6e5de;
+  --mint: #7ef4c2;
+  --mint-deep: #1c8c63;
+  --mint-wash: #eafbf3;
+  --mint-bd: #cfeedf;
+  --risk: #c2452d;
+  --risk-wash: #fbeeea;
+
+  /* Lane hues: muted, between ink and mint. Defined once, used in chips and card edges only. */
+  --lane-1: #1f6b57;
+  --lane-2: #33566e;
+  --lane-3: #575a74;
+  --lane-4: #23815f;
+  --lane-5: #6e5a43;
+  --lane-6: #5f6b45;
+  --lane-7: #64516b;
+  --lane-8: #4e6a62;
+
+  --tabbar-h: 64px;
+  --dial-arc: var(--mint-deep);
+}
+
+/* Night variant: auto 21:00 to 06:00 local and during audio playback. Ink scales invert, mint holds. */
+:root[data-night="1"] {
+  --bg: #0b141f;
+  --paper: #101b28;
+  --ink: #f0efe9;
+  --ink-2: #aeb8c2;
+  --ink-3: #6d7a86;
+  --line: #1e2a38;
+  --mint-wash: rgba(126, 244, 194, 0.09);
+  --mint-bd: rgba(126, 244, 194, 0.28);
+  --risk-wash: rgba(194, 69, 45, 0.14);
+  --dial-arc: var(--mint);
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-paper: var(--paper);
+  --color-ink: var(--ink);
+  --color-ink2: var(--ink-2);
+  --color-ink3: var(--ink-3);
+  --color-line: var(--line);
+  --color-mint: var(--mint);
+  --color-mint-deep: var(--mint-deep);
+  --color-mint-wash: var(--mint-wash);
+  --color-mint-bd: var(--mint-bd);
+  --color-risk: var(--risk);
+  --color-risk-wash: var(--risk-wash);
+  --font-display: var(--font-space-grotesk);
+  --font-body: var(--font-inter);
+}
+
+/* Layout laws. Brief section 14.7: the app never scrolls the page. */
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+  background: var(--bg);
+  color: var(--ink);
+}
+
+body {
+  font-family: var(--font-body), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* The one app frame. Content region is a grid that never overflows. */
+.app-shell {
+  height: 100dvh;
+  display: grid;
+  grid-template-rows: 1fr var(--tabbar-h);
+  padding-top: env(safe-area-inset-top);
+}
+
+.room {
+  overflow: hidden;
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-height: 0;
+}
+
+/* Single-column room grids declare rows only. Pin their implicit column to the
+   viewport so nowrap content (truncated lines) cannot inflate the layout. */
+[class*="grid-rows-"] {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.tabbar {
+  height: var(--tabbar-h);
+  padding-bottom: env(safe-area-inset-bottom);
+  box-sizing: content-box;
+  border-top: 1px solid var(--line);
+  background: var(--paper);
+}
+
+/* Type scale: 28 / 22 / 17 / 14 / 12 / 10.5. Numbers are the heroes. */
+.eyebrow {
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 500;
+}
+
+.num-display {
+  font-family: var(--font-display), sans-serif;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+/* Desktop: one breakpoint. Center the phone column, no desktop features. */
+@media (min-width: 1280px) {
+  .app-shell {
+    max-width: 430px;
+    margin: 0 auto;
+    border-left: 1px solid var(--line);
+    border-right: 1px solid var(--line);
+  }
+}
+
+/* Motion: 150 to 220ms ease-out only. Reduced motion collapses to fades. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Brand marks swap with the night variant. */
+.logo-on-dark {
+  display: none;
+}
+:root[data-night="1"] .logo-on-light {
+  display: none;
+}
+:root[data-night="1"] .logo-on-dark {
+  display: block;
+}
+
+@keyframes sheet-up {
+  from {
+    transform: translateY(24px);
+    opacity: 0.6;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Snap paging inside rooms that deal cards. The container is fixed, children page. */
+.snap-pager {
+  height: 100%;
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;
+  scrollbar-width: none;
+}
+.snap-pager::-webkit-scrollbar {
+  display: none;
+}
+.snap-page {
+  height: 100%;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}

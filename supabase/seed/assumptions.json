@@ -1,0 +1,88 @@
+{
+  "assumptions": [
+    {
+      "key": "identity-substrate",
+      "statement": "Identity is the substrate AI runs on.",
+      "rationale": "Agents acting on customer data are only as good as the identity layer beneath them. Amperity's resolution accuracy is the moat; if identity stays hard, the company sits under every AI budget in the category.",
+      "sponsor_seat": 2,
+      "confidence": 72,
+      "status": "holding"
+    },
+    {
+      "key": "judgment-holds",
+      "statement": "Repeatable work automates; judgment does not.",
+      "rationale": "Models take the repeatable middle of customer data work. The buying decision, the taste, and the accountability stay human. Product and go-to-market should split along that line.",
+      "sponsor_seat": 1,
+      "confidence": 68,
+      "status": "holding"
+    },
+    {
+      "key": "trust-asset",
+      "statement": "Trust and retention are the asset.",
+      "rationale": "In a consolidating category the installed base is the balance sheet. Every quarter of retention above 90 buys another quarter of optionality on the AI story.",
+      "sponsor_seat": 3,
+      "confidence": 74,
+      "status": "holding"
+    },
+    {
+      "key": "speed-beats-polish",
+      "statement": "Speed beats polish in a turnaround.",
+      "rationale": "The founders came back to move. Shipping a credible answer in a week beats shipping the complete answer in a quarter, because the market is pricing the company's pace, not its roadmap.",
+      "sponsor_seat": 1,
+      "confidence": 70,
+      "status": "holding"
+    },
+    {
+      "key": "category-consolidates",
+      "statement": "The category consolidates around platforms.",
+      "rationale": "Databricks, Snowflake, Salesforce, and Adobe absorb the stack around them. Independents either become the identity layer platforms depend on, or become features.",
+      "sponsor_seat": 3,
+      "confidence": 66,
+      "status": "strengthening"
+    }
+  ],
+  "forces": [
+    {
+      "key": "squeezed-both-sides",
+      "statement": "Amperity is squeezed from both sides.",
+      "rationale": "Platforms build identity down from the warehouse while composable tools build activation up from it. The middle only holds if accuracy stays visibly better.",
+      "confidence": 62,
+      "status": "holding"
+    },
+    {
+      "key": "ai-changed-purpose",
+      "statement": "AI changed what customer data is for.",
+      "rationale": "Customer data used to feed dashboards and campaigns. Now it feeds agents that act. The buyer, the budget line, and the proof of value all move with that shift.",
+      "confidence": 78,
+      "status": "strengthening"
+    },
+    {
+      "key": "composable-direction",
+      "statement": "Composable is the direction of travel.",
+      "rationale": "The stack keeps decomposing onto the warehouse. Fighting it loses; being the best identity layer inside it wins.",
+      "confidence": 71,
+      "status": "holding"
+    },
+    {
+      "key": "identity-commoditize",
+      "statement": "Identity could commoditize.",
+      "rationale": "If platform-native resolution gets good enough for most brands, the premium for accuracy collapses. This is the bear case worth watching weekly.",
+      "confidence": 44,
+      "status": "weakening"
+    },
+    {
+      "key": "budget-moving",
+      "statement": "The budget is moving.",
+      "rationale": "Martech line items are being folded into data platform and AI line items. Selling into the old budget gets harder every quarter.",
+      "confidence": 63,
+      "status": "holding"
+    },
+    {
+      "key": "assist-to-execution",
+      "statement": "AI is moving from assist to execution.",
+      "rationale": "Copilots draft; agents do. When the agent executes the campaign, the system of record for customer identity becomes the system of trust.",
+      "confidence": 80,
+      "status": "strengthening"
+    }
+  ]
+}

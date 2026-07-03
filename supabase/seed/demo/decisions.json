@@ -1,0 +1,57 @@
+[
+  {
+    "key": "dec-customerlake",
+    "day_offset": -1,
+    "text": "We answer CustomerLake publicly this week with the coexistence line, not silence.",
+    "owner_seat": 1,
+    "due_in_days": 1,
+    "state": "open",
+    "logged_by": 4,
+    "logged_via": "typed",
+    "transcript": null
+  },
+  {
+    "key": "dec-emea-pause",
+    "day_offset": -4,
+    "text": "Pause the EMEA event sponsorships until the Q3 review.",
+    "owner_seat": 3,
+    "due_in_days": 89,
+    "state": "open",
+    "logged_by": 1,
+    "logged_via": "voice",
+    "transcript": "Log a decision: we are pausing the EMEA event sponsorships until the Q3 review. Amy owns it, due end of quarter."
+  },
+  {
+    "key": "dec-board-lakehouse",
+    "day_offset": -3,
+    "text": "Take the lakehouse partner review to the board in October.",
+    "owner_seat": 2,
+    "due_in_days": 20,
+    "state": "open",
+    "logged_by": 4,
+    "logged_via": "typed",
+    "transcript": null
+  },
+  {
+    "key": "dec-pricing-pilot",
+    "day_offset": -6,
+    "text": "Run the AmpAI pricing pilot with two lighthouse accounts before any broad rollout.",
+    "owner_seat": 3,
+    "due_in_days": null,
+    "state": "done",
+    "logged_by": 3,
+    "logged_via": "typed",
+    "transcript": null
+  },
+  {
+    "key": "dec-monday-sync",
+    "day_offset": -9,
+    "text": "Move the weekly leadership sync to Mondays at nine eastern.",
+    "owner_seat": 4,
+    "due_in_days": null,
+    "state": "done",
+    "logged_by": 4,
+    "logged_via": "typed",
+    "transcript": null
+  }
+]

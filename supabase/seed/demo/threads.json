@@ -1,0 +1,35 @@
+[
+  {
+    "key": "thr-databricks",
+    "name": "Databricks alliance follow up",
+    "org": "Databricks",
+    "seat_owner": 2,
+    "next_touch_in_days": 3,
+    "next_touch_note": "Close the marketplace listing question before the summit.",
+    "last_touch_days_ago": 4,
+    "status": "advancing",
+    "linked_priority_key": "pri-1"
+  },
+  {
+    "key": "thr-snowflake",
+    "name": "Snowflake partner summit debrief",
+    "org": "Snowflake",
+    "seat_owner": 2,
+    "next_touch_in_days": 7,
+    "next_touch_note": "Walk the alliance lead through the leader report placement.",
+    "last_touch_days_ago": 9,
+    "status": "advancing",
+    "linked_priority_key": "pri-1"
+  },
+  {
+    "key": "thr-lighthouse-cmo",
+    "name": "Lighthouse CMO champion",
+    "org": "Retail lighthouse two",
+    "seat_owner": 1,
+    "next_touch_in_days": 2,
+    "next_touch_note": "Confirm the verbal before the pricing pilot readout.",
+    "last_touch_days_ago": 6,
+    "status": "advancing",
+    "linked_priority_key": "pri-2"
+  }
+]

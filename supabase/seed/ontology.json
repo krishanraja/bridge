@@ -1,0 +1,164 @@
+{
+  "source": "public",
+  "illustrative": false,
+  "entities": {
+    "competitors": [
+      "Segment",
+      "Salesforce Data Cloud",
+      "Adobe Real-Time CDP",
+      "Treasure Data",
+      "ActionIQ",
+      "Hightouch",
+      "Census",
+      "mParticle",
+      "RudderStack"
+    ],
+    "partners": ["Databricks", "Snowflake", "AWS", "NVIDIA"],
+    "customers_and_lookalikes": [
+      "Alaska Airlines",
+      "Home Depot",
+      "Patagonia",
+      "Starbucks",
+      "Virgin Atlantic",
+      "DICK'S Sporting Goods",
+      "Dr. Martens",
+      "Kendra Scott",
+      "Stanley",
+      "Wyndham"
+    ],
+    "acquirer_archetypes": [
+      "martech majors",
+      "data platform majors",
+      "growth PE"
+    ],
+    "self": [
+      "Amperity",
+      "AmpAI",
+      "Chuck Data",
+      "Stitch",
+      "Contextual Identity Graphs",
+      "Journeys"
+    ]
+  },
+  "lanes": {
+    "1": {
+      "name": "Identity and the moat",
+      "queries": [
+        "identity resolution",
+        "identity graph",
+        "customer identity matching",
+        "entity resolution accuracy",
+        "identity resolution patent"
+      ]
+    },
+    "2": {
+      "name": "Partner platforms",
+      "queries": [
+        "Databricks launch",
+        "Snowflake launch",
+        "Databricks marketplace",
+        "Snowflake marketplace",
+        "AWS data platform",
+        "NVIDIA enterprise AI"
+      ]
+    },
+    "3": {
+      "name": "The category",
+      "queries": [
+        "customer data platform",
+        "CDP funding",
+        "composable CDP",
+        "reverse ETL",
+        "Segment Twilio",
+        "Hightouch",
+        "ActionIQ",
+        "mParticle",
+        "RudderStack",
+        "Treasure Data"
+      ]
+    },
+    "4": {
+      "name": "Agentic AI",
+      "queries": [
+        "AI agents enterprise",
+        "agentic AI customer data",
+        "agent framework enterprise adoption",
+        "model release enterprise",
+        "AI cost per token"
+      ]
+    },
+    "5": {
+      "name": "Customers and verticals",
+      "queries": [
+        "retail earnings loyalty",
+        "travel loyalty program",
+        "CMO appointment retail",
+        "chief digital officer travel",
+        "personalization program retail"
+      ]
+    },
+    "6": {
+      "name": "Capital and consolidation",
+      "queries": [
+        "martech acquisition",
+        "data infrastructure acquisition",
+        "martech funding round",
+        "private equity software rollup",
+        "data platform valuation"
+      ]
+    },
+    "7": {
+      "name": "Trust and regulation",
+      "queries": [
+        "state privacy law",
+        "consent management regulation",
+        "AI governance rules",
+        "EU AI Act",
+        "data privacy enforcement"
+      ]
+    },
+    "8": {
+      "name": "Talent and org signal",
+      "queries": [
+        "CDP executive hire",
+        "martech executive departure",
+        "Databricks executive",
+        "Snowflake executive",
+        "identity resolution founder"
+      ]
+    }
+  },
+  "sources": [
+    { "name": "GDELT", "kind": "gdelt", "url": "https://api.gdeltproject.org/api/v2/doc/doc", "lane": null, "tier": 1 },
+    { "name": "Hacker News", "kind": "hn", "url": "https://hn.algolia.com/api/v1/search_by_date", "lane": null, "tier": 2 },
+    { "name": "Brave Search", "kind": "brave", "url": "https://api.search.brave.com/res/v1/web/search", "lane": null, "tier": 1 },
+    { "name": "Amperity Newsroom", "kind": "rss", "url": "https://amperity.com/newsroom/rss.xml", "lane": null, "tier": 3 },
+    { "name": "Amperity Blog", "kind": "rss", "url": "https://amperity.com/blog/rss.xml", "lane": null, "tier": 3 },
+    { "name": "Databricks Blog", "kind": "rss", "url": "https://www.databricks.com/feed", "lane": 2, "tier": 3 },
+    { "name": "Snowflake Blog", "kind": "rss", "url": "https://www.snowflake.com/feed/", "lane": 2, "tier": 3 },
+    { "name": "AWS Big Data Blog", "kind": "rss", "url": "https://aws.amazon.com/blogs/big-data/feed/", "lane": 2, "tier": 3 },
+    { "name": "NVIDIA Newsroom", "kind": "rss", "url": "https://nvidianews.nvidia.com/rss", "lane": 2, "tier": 3 },
+    { "name": "MarTech.org", "kind": "rss", "url": "https://martech.org/feed/", "lane": 3, "tier": 3 },
+    { "name": "AdExchanger", "kind": "rss", "url": "https://www.adexchanger.com/feed/", "lane": 3, "tier": 3 },
+    { "name": "CMSWire", "kind": "rss", "url": "https://www.cmswire.com/rss/", "lane": 3, "tier": 2 },
+    { "name": "The Drum", "kind": "rss", "url": "https://www.thedrum.com/rss.xml", "lane": 3, "tier": 2 },
+    { "name": "Segment Blog", "kind": "rss", "url": "https://segment.com/blog/rss.xml", "lane": 3, "tier": 3 },
+    { "name": "Hightouch Blog", "kind": "rss", "url": "https://hightouch.com/blog/rss.xml", "lane": 3, "tier": 3 },
+    { "name": "Census Blog", "kind": "rss", "url": "https://www.getcensus.com/blog/rss.xml", "lane": 3, "tier": 2 },
+    { "name": "RudderStack Blog", "kind": "rss", "url": "https://www.rudderstack.com/blog/rss.xml", "lane": 3, "tier": 2 },
+    { "name": "TechCrunch Enterprise", "kind": "rss", "url": "https://techcrunch.com/category/enterprise/feed/", "lane": 4, "tier": 3 },
+    { "name": "VentureBeat AI", "kind": "rss", "url": "https://venturebeat.com/category/ai/feed/", "lane": 4, "tier": 2 },
+    { "name": "Anthropic News", "kind": "rss", "url": "https://www.anthropic.com/news/rss.xml", "lane": 4, "tier": 3 },
+    { "name": "OpenAI News", "kind": "rss", "url": "https://openai.com/news/rss.xml", "lane": 4, "tier": 3 },
+    { "name": "Retail Dive", "kind": "rss", "url": "https://www.retaildive.com/feeds/news/", "lane": 5, "tier": 3 },
+    { "name": "Skift", "kind": "rss", "url": "https://skift.com/feed/", "lane": 5, "tier": 3 },
+    { "name": "Modern Retail", "kind": "rss", "url": "https://www.modernretail.co/feed/", "lane": 5, "tier": 2 },
+    { "name": "PhocusWire", "kind": "rss", "url": "https://www.phocuswire.com/rss", "lane": 5, "tier": 2 },
+    { "name": "TechCrunch Venture", "kind": "rss", "url": "https://techcrunch.com/category/venture/feed/", "lane": 6, "tier": 2 },
+    { "name": "PE Hub", "kind": "rss", "url": "https://www.pehub.com/feed/", "lane": 6, "tier": 2 },
+    { "name": "IAPP News", "kind": "rss", "url": "https://iapp.org/news/rss", "lane": 7, "tier": 3 },
+    { "name": "IAB Tech Lab", "kind": "rss", "url": "https://iabtechlab.com/feed/", "lane": 7, "tier": 2 },
+    { "name": "GeekWire", "kind": "rss", "url": "https://www.geekwire.com/feed/", "lane": 8, "tier": 2 },
+    { "name": "Business Wire Tech", "kind": "rss", "url": "https://feed.businesswire.com/rss/home/?rss=G1QFDERJXkJeEFpRWQ==", "lane": 8, "tier": 1 }
+  ]
+}

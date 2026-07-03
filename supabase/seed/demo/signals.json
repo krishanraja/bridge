@@ -1,0 +1,592 @@
+[
+  {
+    "key": "sig-customerlake",
+    "day_offset": 0,
+    "lane": 1,
+    "headline": "Databricks enters the CDP market with CustomerLake and agentic identity resolution",
+    "for_amperity": "A partner platform is now building identity resolution into the lakehouse itself, with HP, Circle K, and AB InBev already in private preview.",
+    "posture": "Put a CustomerLake teardown in front of the partner team this week and write the coexistence line before Databricks writes it for us.",
+    "score": 13.8,
+    "corroboration": 2,
+    "cluster": [
+      {
+        "title": "Databricks enters marketing industry with CustomerLake, agentic customer data platform",
+        "url": "https://www.databricks.com/company/newsroom/press-releases/databricks-enters-marketing-industry-customerlake-agentic-customer",
+        "source": "Databricks Newsroom"
+      },
+      {
+        "title": "Databricks launches an agentic challenger to traditional CDPs",
+        "url": "https://www.adweek.com/media/databricks-launches-an-agentic-challenger-to-traditional-cdps/",
+        "source": "Adweek"
+      }
+    ],
+    "assumption_key": "identity-substrate",
+    "assumption_direction": -1,
+    "assumption_weight": 3
+  },
+  {
+    "key": "sig-snowflake-idres",
+    "day_offset": 0,
+    "lane": 1,
+    "headline": "Snowflake details native identity resolution with four matching passes",
+    "for_amperity": "Snowflake now resolves first party and partner identities in-platform, with LiveRamp, Experian, Acxiom, and TransUnion graphs as native apps.",
+    "posture": "Benchmark our match accuracy against the native pass publicly, because the moat only counts if buyers can see it.",
+    "score": 12.6,
+    "corroboration": 1,
+    "cluster": [
+      {
+        "title": "Snowflake: one platform for first-party and partner identity resolution",
+        "url": "https://medium.com/snowflake/snowflake-one-platform-for-first-party-and-partner-identity-resolution-8ed134b56cc5",
+        "source": "Snowflake Builders Blog"
+      }
+    ],
+    "assumption_key": "identity-commoditize",
+    "assumption_direction": 1,
+    "assumption_weight": 2
+  },
+  {
+    "key": "sig-snowflake-aws",
+    "day_offset": 0,
+    "lane": 2,
+    "headline": "Snowflake commits 6 billion dollars to AWS for agentic AI compute",
+    "for_amperity": "Its largest infrastructure deal ever signals where the enterprise data gravity and the agent workloads will sit for the next five years.",
+    "posture": "Keep the Snowflake alignment loud in the field while the platform spends to make agents on governed data the default.",
+    "score": 12.1,
+    "corroboration": 2,
+    "cluster": [
+      {
+        "title": "Snowflake expands AWS collaboration with $6B commitment to accelerate enterprise agentic AI adoption",
+        "url": "https://www.snowflake.com/en/news/press-releases/snowflake-expands-aws-collaboration-with-6b-commitment-to-accelerate-enterprise-agentic-ai-adoption/",
+        "source": "Snowflake Newsroom"
+      },
+      {
+        "title": "Snowflake expands AWS collaboration",
+        "url": "https://press.aboutamazon.com/2026/5/snowflake-expands-aws-collaboration-with-6b-commitment-to-accelerate-enterprise-agentic-ai-adoption",
+        "source": "Amazon Press"
+      }
+    ],
+    "assumption_key": "category-consolidates",
+    "assumption_direction": 1,
+    "assumption_weight": 2
+  },
+  {
+    "key": "sig-hightouch-lifecycle",
+    "day_offset": 0,
+    "lane": 3,
+    "headline": "Hightouch ships Lifecycle Studio, agentic campaigns promptable from Claude",
+    "for_amperity": "The composable side now sells finished agentic marketing workflows on top of the warehouse, not just pipes.",
+    "posture": "Sharpen the line that agents are only as good as the identity under them, and prove it with a match-rate story.",
+    "score": 11.4,
+    "corroboration": 2,
+    "cluster": [
+      {
+        "title": "Hightouch launches Lifecycle Studio to reinvent lifecycle marketing with agentic AI",
+        "url": "https://www.businesswire.com/news/home/20260624319021/en/Hightouch-Launches-Lifecycle-Studio-to-Reinvent-Lifecycle-Marketing-with-Agentic-AI",
+        "source": "Business Wire"
+      },
+      {
+        "title": "Introducing Lifecycle Studio",
+        "url": "https://hightouch.com/blog/introducing-lifecycle-studio",
+        "source": "Hightouch"
+      }
+    ],
+    "assumption_key": "assist-to-execution",
+    "assumption_direction": 1,
+    "assumption_weight": 2
+  },
+  {
+    "key": "sig-mparticle-engine",
+    "day_offset": 0,
+    "lane": 3,
+    "headline": "Rokt mParticle launches an audience agent claiming big ad match-rate gains",
+    "for_amperity": "A direct competitor is selling autonomous audience building with match uplift numbers attached, which is our accuracy story told their way.",
+    "posture": "Publish our own match benchmark with a named methodology so the category compares on evidence, not claims.",
+    "score": 10.8,
+    "corroboration": 2,
+    "cluster": [
+      {
+        "title": "Rokt mParticle launches Performance Engine led by Audience Agent",
+        "url": "https://www.prnewswire.com/news-releases/rokt-mparticle-launches-performance-engine-led-by-audience-agent-302810947.html",
+        "source": "PR Newswire"
+      },
+      {
+        "title": "Rokt mParticle launches Performance Engine",
+        "url": "https://www.enterprisetimes.co.uk/2026/06/30/rokt-mparticle-launches-performance-engine-led-by-audience-agent/",
+        "source": "Enterprise Times"
+      }
+    ],
+    "assumption_key": "identity-commoditize",
+    "assumption_direction": 1,
+    "assumption_weight": 1
+  },
+  {
+    "key": "sig-treasure-ai",
+    "day_offset": 0,
+    "lane": 3,
+    "headline": "Treasure Data rebrands as Treasure AI and repositions as an agentic platform",
+    "for_amperity": "A top-five CDP just abandoned the category label, confirming the budget is moving from CDP to agentic customer experience.",
+    "posture": "Hold our naming discipline: sell the identity substrate for AI rather than chase the rebrand wave.",
+    "score": 10.2,
+    "corroboration": 1,
+    "cluster": [
+      {
+        "title": "So long Treasure Data, welcome Treasure AI",
+        "url": "https://www.cmswire.com/customer-data-platforms/so-long-treasure-data-welcome-treasure-ai/",
+        "source": "CMSWire"
+      }
+    ],
+    "assumption_key": "budget-moving",
+    "assumption_direction": 1,
+    "assumption_weight": 1
+  },
+  {
+    "key": "sig-cortex-claude",
+    "day_offset": 0,
+    "lane": 4,
+    "headline": "Snowflake says Claude in Cortex is its fastest growing product ever",
+    "for_amperity": "Enterprises are adopting governed AI on the data platform at record pace, which is exactly the surface AmpAI needs to meet.",
+    "posture": "Ship the Cortex integration proof point while the adoption curve is the headline.",
+    "score": 11.0,
+    "corroboration": 2,
+    "cluster": [
+      {
+        "title": "Snowflake and Anthropic accelerate enterprise AI adoption",
+        "url": "https://www.snowflake.com/en/news/press-releases/snowflake-and-anthropic-accelerate-enterprise-ai-adoption-driven-by-rising-demand-for-governed-ai/",
+        "source": "Snowflake Newsroom"
+      },
+      {
+        "title": "Snowflake and Anthropic accelerate enterprise AI adoption driven by rising demand for governed AI",
+        "url": "https://www.businesswire.com/news/home/20260601623088/en/Snowflake-and-Anthropic-Accelerate-Enterprise-AI-Adoption-Driven-by-Rising-Demand-for-Governed-AI",
+        "source": "Business Wire"
+      }
+    ],
+    "assumption_key": "assist-to-execution",
+    "assumption_direction": 1,
+    "assumption_weight": 2
+  },
+  {
+    "key": "sig-marriott-bonvoy",
+    "day_offset": 0,
+    "lane": 5,
+    "headline": "Marriott rolls out Ask Bonvoy, an AI trip planner grounded in loyalty data",
+    "for_amperity": "A flagship travel brand just made loyalty data the grounding layer for a consumer AI product, the pattern our travel accounts will copy.",
+    "posture": "Take the Ask Bonvoy pattern to the top three travel accounts as the reference architecture conversation.",
+    "score": 10.4,
+    "corroboration": 2,
+    "cluster": [
+      {
+        "title": "Marriott begins rollout of AI trip planner on site and app",
+        "url": "https://skift.com/2026/06/16/marriott-begins-rollout-of-ai-trip-planner-on-site-and-app/",
+        "source": "Skift"
+      },
+      {
+        "title": "Marriott International introduces Ask Bonvoy",
+        "url": "https://www.prnewswire.com/news-releases/marriott-international-introduces-ask-bonvoy-a-new-ai-powered-search-experience-transforming-travel-exploration-302801647.html",
+        "source": "PR Newswire"
+      }
+    ],
+    "assumption_key": "ai-changed-purpose",
+    "assumption_direction": 1,
+    "assumption_weight": 1
+  },
+  {
+    "key": "sig-panther",
+    "day_offset": 0,
+    "lane": 6,
+    "headline": "Databricks agrees to buy Panther Labs, its third security acquisition",
+    "for_amperity": "The lakehouse keeps buying adjacent categories, and customer data infrastructure sits inside its acquisition radius.",
+    "posture": "Refresh the acquirer map with Databricks moved up a tier and decide what we want to be true if the call ever comes.",
+    "score": 10.6,
+    "corroboration": 2,
+    "cluster": [
+      {
+        "title": "Databricks agrees to acquire Panther, further establishing security",
+        "url": "https://www.databricks.com/company/newsroom/press-releases/databricks-agrees-acquire-panther-further-establishing-security",
+        "source": "Databricks Newsroom"
+      },
+      {
+        "title": "Databricks acquires Panther Labs cybersecurity AI",
+        "url": "https://thenextweb.com/news/databricks-acquires-panther-labs-cybersecurity-ai",
+        "source": "The Next Web"
+      }
+    ],
+    "assumption_key": "category-consolidates",
+    "assumption_direction": 1,
+    "assumption_weight": 1
+  },
+  {
+    "key": "sig-eu-omnibus",
+    "day_offset": 0,
+    "lane": 7,
+    "headline": "EU deal delays high-risk AI Act duties to late 2027; transparency still lands in August",
+    "for_amperity": "Enterprise buyers get regulatory breathing room on AI deployments, but the transparency rules arriving next month still favor governed data.",
+    "posture": "Fold the August transparency date into the trust-layer pitch for EU-exposed accounts.",
+    "score": 9.8,
+    "corroboration": 2,
+    "cluster": [
+      {
+        "title": "Artificial intelligence: Council and Parliament agree to simplify and streamline rules",
+        "url": "https://www.consilium.europa.eu/en/press/press-releases/2026/05/07/artificial-intelligence-council-and-parliament-agree-to-simplify-and-streamline-rules/",
+        "source": "Council of the EU"
+      },
+      {
+        "title": "Rules for high-risk AI delayed under EU omnibus deal",
+        "url": "https://www.pinsentmasons.com/out-law/news/rules-high-risk-ai-delayed-under-eu-omnibus-deal",
+        "source": "Pinsent Masons"
+      }
+    ],
+    "assumption_key": "trust-asset",
+    "assumption_direction": 1,
+    "assumption_weight": 1
+  },
+  {
+    "key": "sig-airship-cro",
+    "day_offset": 0,
+    "lane": 8,
+    "headline": "Airship names LiveRamp veteran Laura Zwahlen chief revenue officer",
+    "for_amperity": "Identity-fluent revenue leadership is landing at mobile engagement vendors, a sign the activation layer wants our vocabulary.",
+    "posture": "Add Zwahlen to the partner conversation list for the activation alliances review.",
+    "score": 9.2,
+    "corroboration": 2,
+    "cluster": [
+      {
+        "title": "Airship appoints Laura Zwahlen as chief revenue officer",
+        "url": "https://www.businesswire.com/news/home/20260623145620/en/Airship-Appoints-Laura-Zwahlen-as-Chief-Revenue-Officer",
+        "source": "Business Wire"
+      },
+      {
+        "title": "Airship appoints Laura Zwahlen as CRO",
+        "url": "https://www.airship.com/newsroom/airship-appoints-laura-zwahlen-as-chief-revenue-officer/",
+        "source": "Airship"
+      }
+    ],
+    "assumption_key": null,
+    "assumption_direction": 0,
+    "assumption_weight": 0
+  },
+  {
+    "key": "sig-genie-one",
+    "day_offset": -1,
+    "lane": 2,
+    "headline": "Databricks launches Genie One, an agentic coworker with a self-improving ontology",
+    "for_amperity": "The lakehouse now ships a general agentic interface for business teams, raising the bar for what data-native agents feel like.",
+    "posture": "Study the Genie Ontology pattern for AmpAI grounding before our next roadmap review.",
+    "score": 11.2,
+    "corroboration": 2,
+    "cluster": [
+      {
+        "title": "Databricks launches Genie One, all-new agentic coworker for every team",
+        "url": "https://www.databricks.com/company/newsroom/press-releases/databricks-launches-genie-one-all-new-agentic-coworker-every-team",
+        "source": "Databricks Newsroom"
+      },
+      {
+        "title": "Databricks releases agentic coworker Genie One",
+        "url": "https://sdtimes.com/data/databricks-releases-agentic-coworker-genie-one/",
+        "source": "SD Times"
+      }
+    ],
+    "assumption_key": "assist-to-execution",
+    "assumption_direction": 1,
+    "assumption_weight": 2
+  },
+  {
+    "key": "sig-twilio-shani",
+    "day_offset": -1,
+    "lane": 8,
+    "headline": "Twilio product chief Inbal Shani joins the DailyPay board",
+    "for_amperity": "Segment's parent keeps lending product leadership outward, worth reading alongside any Segment roadmap slowdown.",
+    "posture": "Watch Segment release velocity this quarter for confirmation either way.",
+    "score": 8.6,
+    "corroboration": 1,
+    "cluster": [
+      {
+        "title": "DailyPay appoints Twilio chief product officer Inbal Shani to board",
+        "url": "https://www.citybiz.co/article/868032/dailypay-appoints-twilio-chief-product-officer-inbal-shani-to-board/",
+        "source": "citybiz"
+      }
+    ],
+    "assumption_key": null,
+    "assumption_direction": 0,
+    "assumption_weight": 0
+  },
+  {
+    "key": "sig-connecticut",
+    "day_offset": -2,
+    "lane": 7,
+    "headline": "Connecticut privacy law expands July 1 with LLM training disclosure duties",
+    "for_amperity": "State law now asks brands whether personal data trains models, which makes governed identity a compliance answer, not just a marketing one.",
+    "posture": "Brief the field on the disclosure question so it lands as our setup, not our surprise.",
+    "score": 9.4,
+    "corroboration": 2,
+    "cluster": [
+      {
+        "title": "Major changes to Connecticut consumer privacy law take effect July 1, 2026",
+        "url": "https://www.wiley.law/alert-Major-Changes-to-Connecticut-Consumer-Privacy-Law-Will-Take-Effect-July-1-2026",
+        "source": "Wiley Rein"
+      },
+      {
+        "title": "Connecticut broadens Data Privacy Act requirements effective July 1, 2026",
+        "url": "https://www.beneschlaw.com/insight/connecticut-broadens-data-privacy-act-requirements-effective-july-1-2026/",
+        "source": "Benesch"
+      }
+    ],
+    "assumption_key": "trust-asset",
+    "assumption_direction": 1,
+    "assumption_weight": 2
+  },
+  {
+    "key": "sig-dicks-q1",
+    "day_offset": -3,
+    "lane": 5,
+    "headline": "DICK'S posts 5.17 billion dollar quarter in first full period with Foot Locker",
+    "for_amperity": "A named account just doubled its customer file overnight, and merged loyalty bases are the hardest identity problem in retail.",
+    "posture": "Bring the merged-file identity story to the DICK'S account team while integration budgets are open.",
+    "score": 10.1,
+    "corroboration": 2,
+    "cluster": [
+      {
+        "title": "DICK'S Sporting Goods earnings Q1 2026",
+        "url": "https://www.cnbc.com/2026/05/27/dicks-sporting-goods-dks-earnings-q1-2026.html",
+        "source": "CNBC"
+      },
+      {
+        "title": "DICK'S Sporting Goods reports first quarter results",
+        "url": "https://www.prnewswire.com/news-releases/dicks-sporting-goods-inc-reports-first-quarter-results-302782458.html",
+        "source": "PR Newswire"
+      }
+    ],
+    "assumption_key": "trust-asset",
+    "assumption_direction": 1,
+    "assumption_weight": 1
+  },
+  {
+    "key": "sig-homedepot-q1",
+    "day_offset": -4,
+    "lane": 5,
+    "headline": "Home Depot grows sales 4.8 percent and holds guidance despite housing pressure",
+    "for_amperity": "A flagship retail account is spending carefully, so retention math beats expansion math in the near-term account plan.",
+    "posture": "Anchor the renewal conversation in measured lifetime value rather than new module expansion.",
+    "score": 9.6,
+    "corroboration": 2,
+    "cluster": [
+      {
+        "title": "Home Depot announces first quarter 2026 earnings",
+        "url": "https://corporate.homedepot.com/news/earnings/home-depot-announces-first-quarter-2026-earnings",
+        "source": "Home Depot Newsroom"
+      },
+      {
+        "title": "Home Depot tops first quarter estimates",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/home-depot-tops-first-quarter-160400348.html",
+        "source": "Yahoo Finance"
+      }
+    ],
+    "assumption_key": "trust-asset",
+    "assumption_direction": 1,
+    "assumption_weight": 1
+  },
+  {
+    "key": "sig-token-efficiency",
+    "day_offset": -5,
+    "lane": 4,
+    "headline": "Enterprise AI buyers shift from token volume to efficiency, pressuring model vendors",
+    "for_amperity": "AI line items are being audited like cloud bills now, so AmpAI pricing should sell outcomes per dollar, not usage.",
+    "posture": "Stress-test AmpAI pricing against an efficiency-minded buyer before the fall selling season.",
+    "score": 9.9,
+    "corroboration": 1,
+    "cluster": [
+      {
+        "title": "OpenAI, Anthropic face new AI spending reality as users shift to efficiency",
+        "url": "https://www.cnbc.com/2026/06/26/openai-anthropic-new-ai-spending-reality-as-users-shift-to-efficiency.html",
+        "source": "CNBC"
+      }
+    ],
+    "assumption_key": "budget-moving",
+    "assumption_direction": 1,
+    "assumption_weight": 2
+  },
+  {
+    "key": "sig-nvidia-agents",
+    "day_offset": -6,
+    "lane": 4,
+    "headline": "NVIDIA opens an agent platform and ships Nemotron 3 Ultra for enterprise agents",
+    "for_amperity": "The silicon layer is standardizing long-running enterprise agents, pulling the whole stack toward execution-grade AI.",
+    "posture": "Track which agent framework our partner platforms adopt before committing AmpAI to one.",
+    "score": 9.7,
+    "corroboration": 2,
+    "cluster": [
+      {
+        "title": "Enterprise software leaders build AI agents with NVIDIA",
+        "url": "https://nvidianews.nvidia.com/news/enterprise-software-leaders-build-ai-agents-with-nvidia",
+        "source": "NVIDIA Newsroom"
+      },
+      {
+        "title": "NVIDIA partners with software leaders to build secure autonomous AI agents",
+        "url": "https://www.hpcwire.com/aiwire/2026/06/01/nvidia-partners-with-software-leaders-to-build-secure-autonomous-ai-agents/",
+        "source": "HPCwire"
+      }
+    ],
+    "assumption_key": "assist-to-execution",
+    "assumption_direction": 1,
+    "assumption_weight": 1
+  },
+  {
+    "key": "sig-natoma",
+    "day_offset": -7,
+    "lane": 6,
+    "headline": "Snowflake moves to buy Natoma for governed agent connectivity",
+    "for_amperity": "The platform is buying the plumbing that lets agents touch enterprise systems safely, the same trust surface we sell.",
+    "posture": "Map where Amperity identity slots into a Natoma-governed agent stack and take it to the Snowflake alliance team.",
+    "score": 10.0,
+    "corroboration": 2,
+    "cluster": [
+      {
+        "title": "Snowflake announces intent to acquire Natoma",
+        "url": "https://www.snowflake.com/en/news/press-releases/snowflake-announces-intent-to-acquire-natoma-providing-secure-connectivity-for-the-agentic-enterprise/",
+        "source": "Snowflake Newsroom"
+      },
+      {
+        "title": "Snowflake buys Natoma to govern the agents acting on its data",
+        "url": "https://www.forbes.com/sites/janakirammsv/2026/05/31/snowflake-buys-natoma-to-govern-the-agents-acting-on-its-data/",
+        "source": "Forbes"
+      }
+    ],
+    "assumption_key": "assist-to-execution",
+    "assumption_direction": 1,
+    "assumption_weight": 1
+  },
+  {
+    "key": "sig-fivetran-dbt",
+    "day_offset": -8,
+    "lane": 6,
+    "headline": "Fivetran and dbt Labs complete their merger into one data infrastructure company",
+    "for_amperity": "The composable stack is consolidating into fewer, bigger vendors, which reshapes who we partner with and who we price against.",
+    "posture": "Rerun the partner map with the merged entity as one column and find the integration we should own first.",
+    "score": 10.3,
+    "corroboration": 2,
+    "cluster": [
+      {
+        "title": "Fivetran and dbt Labs complete merger to create the data infrastructure for trusted AI agents",
+        "url": "https://www.fivetran.com/press/fivetran-dbt-labs-complete-merger-to-create-the-data-infrastructure-for-trusted-ai-agents",
+        "source": "Fivetran"
+      },
+      {
+        "title": "Fivetran, dbt Labs complete merger to form data layer for AI",
+        "url": "https://www.techtarget.com/searchdatamanagement/news/366643590/Fivetran-DBT-Labs-complete-merger-to-form-data-layer-for-AI",
+        "source": "TechTarget"
+      }
+    ],
+    "assumption_key": "category-consolidates",
+    "assumption_direction": 1,
+    "assumption_weight": 2
+  },
+  {
+    "key": "sig-salesforce-dbx",
+    "day_offset": -9,
+    "lane": 2,
+    "headline": "Salesforce and Databricks add federated identity and shared permissions for agents",
+    "for_amperity": "Two giants are wiring identity mapping between their platforms, deciding defaults for how agent permissions follow people.",
+    "posture": "Publish our stance on cross-platform identity for agents before the default hardens without us.",
+    "score": 10.5,
+    "corroboration": 1,
+    "cluster": [
+      {
+        "title": "Salesforce and Databricks: shared foundation of human agent work",
+        "url": "https://www.salesforce.com/news/stories/salesforce-databricks-shared-foundation-of-human-agent-work-announcement/",
+        "source": "Salesforce Newsroom"
+      }
+    ],
+    "assumption_key": "category-consolidates",
+    "assumption_direction": 1,
+    "assumption_weight": 2
+  },
+  {
+    "key": "sig-hightouch-d",
+    "day_offset": -10,
+    "lane": 3,
+    "headline": "Hightouch raises 150 million dollars at a 2.75 billion valuation",
+    "for_amperity": "Goldman and Bain just priced the composable activation layer at unicorn multiples, funding a direct rival's AI roadmap.",
+    "posture": "Expect Hightouch in every AI-forward deal this year and arm the field with the identity accuracy wedge.",
+    "score": 11.6,
+    "corroboration": 2,
+    "cluster": [
+      {
+        "title": "Hightouch raises $150 million to reinvent how marketing works using AI",
+        "url": "https://www.businesswire.com/news/home/20260427054567/en/Hightouch-Raises-$150-Million-to-Reinvent-How-Marketing-Works-Using-AI",
+        "source": "Business Wire"
+      },
+      {
+        "title": "Hightouch funding Series D",
+        "url": "https://hightouch.com/blog/hightouch-funding-series-d",
+        "source": "Hightouch"
+      }
+    ],
+    "assumption_key": "squeezed-both-sides",
+    "assumption_direction": 1,
+    "assumption_weight": 2
+  },
+  {
+    "key": "sig-amperity-snowflake",
+    "day_offset": -11,
+    "lane": 2,
+    "headline": "Amperity named a leader in data and identity in Snowflake's marketing stack report",
+    "for_amperity": "The partner platform itself just ranked us the identity leader in its ecosystem, third-party proof for the substrate story.",
+    "posture": "Put the Snowflake ranking in every lakehouse-adjacent deck this quarter.",
+    "score": 10.9,
+    "corroboration": 1,
+    "cluster": [
+      {
+        "title": "Amperity recognized as leader in Snowflake's Modern Marketing Data Stack report",
+        "url": "https://www.businesswire.com/news/home/20260622705311/en/Amperity-Recognized-as-Leader-in-Snowflakes-Modern-Marketing-Data-Stack-Report",
+        "source": "Business Wire"
+      }
+    ],
+    "assumption_key": "identity-substrate",
+    "assumption_direction": 1,
+    "assumption_weight": 2
+  },
+  {
+    "key": "sig-amperity-amplify",
+    "day_offset": -12,
+    "lane": 4,
+    "headline": "Amperity ships real-time context and AI assistants at Amplify 2026",
+    "for_amperity": "Our own release moved the product from batch identity to real-time context plus decisioning, the exact surface agents need.",
+    "posture": "Turn the Amplify launch into two named customer proof points before the fall pipeline builds.",
+    "score": 10.7,
+    "corroboration": 1,
+    "cluster": [
+      {
+        "title": "Amperity turns real-time customer context into meaningful brand experiences",
+        "url": "https://www.businesswire.com/news/home/20260506444429/en/Amperity-Turns-Real-Time-Customer-Context-into-Meaningful-Brand-Experiences",
+        "source": "Business Wire"
+      }
+    ],
+    "assumption_key": "identity-substrate",
+    "assumption_direction": 1,
+    "assumption_weight": 2
+  },
+  {
+    "key": "sig-anthropic-services",
+    "day_offset": -13,
+    "lane": 4,
+    "headline": "Anthropic and PE giants stand up a 1.5 billion dollar enterprise AI services firm",
+    "for_amperity": "Capital is industrializing agent rollouts inside mid-market firms, growing the population of buyers who need trustworthy customer data under their agents.",
+    "posture": "Get Amperity onto the reference architecture lists these deployment firms carry into accounts.",
+    "score": 10.0,
+    "corroboration": 2,
+    "cluster": [
+      {
+        "title": "Anthropic, Goldman, Blackstone AI venture",
+        "url": "https://www.cnbc.com/2026/05/04/anthropic-goldman-blackstone-ai-venture.html",
+        "source": "CNBC"
+      },
+      {
+        "title": "Enterprise AI services company",
+        "url": "https://www.anthropic.com/news/enterprise-ai-services-company",
+        "source": "Anthropic"
+      }
+    ],
+    "assumption_key": "ai-changed-purpose",
+    "assumption_direction": 1,
+    "assumption_weight": 1
+  }
+]

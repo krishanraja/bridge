@@ -1,0 +1,6 @@
+[
+  { "seat": 1, "brief": true, "pulse": true },
+  { "seat": 2, "brief": true, "pulse": false },
+  { "seat": 3, "brief": false, "pulse": true },
+  { "seat": 4, "brief": true, "pulse": true }
+]
