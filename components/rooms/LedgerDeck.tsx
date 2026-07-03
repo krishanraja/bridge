@@ -35,7 +35,7 @@ export function LedgerDeck({
   if (assumptions.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center gap-2 px-8 text-center">
-        <p className="text-[14px] leading-relaxed text-ink2">
+        <p className="text-[16px] leading-relaxed text-ink2">
           The ledger is empty. The operator seeds the beliefs the strategy
           rests on, and the market argues with them from there.
         </p>
@@ -56,11 +56,11 @@ export function LedgerDeck({
               <Chip color="var(--mint-deep)">The radar, grading itself</Chip>
               <span className="eyebrow">This week</span>
             </div>
-            <div className="flex min-h-0 flex-col justify-center gap-2.5 overflow-hidden">
+            <div className="flex min-h-0 flex-col justify-start gap-2.5 overflow-y-auto">
               {retro.lines.map((line, i) => (
                 <p
                   key={i}
-                  className="text-[14px] leading-snug"
+                  className="text-[16px] leading-snug"
                   style={{ color: i === retro.lines.length - 1 ? "var(--ink-3)" : "var(--ink)" }}
                 >
                   {line}
@@ -71,7 +71,7 @@ export function LedgerDeck({
                   href={retro.missedUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[12px] text-mint-deep underline underline-offset-2"
+                  className="text-[14px] text-mint-deep underline underline-offset-2"
                 >
                   Read the story it missed
                 </a>
@@ -108,7 +108,7 @@ export function LedgerDeck({
                   delta={a.delta30}
                 />
                 <div className="min-w-0 flex-1">
-                  <h2 className="text-[17px] font-medium leading-snug text-ink">
+                  <h2 className="text-[20px] font-medium leading-snug text-ink">
                     {a.statement}
                   </h2>
                   {a.history && a.history.length > 1 && (
@@ -120,7 +120,7 @@ export function LedgerDeck({
               <div className="flex min-h-0 flex-col gap-1.5 overflow-hidden">
                 <div className="eyebrow">Evidence</div>
                 {a.evidence.length === 0 ? (
-                  <p className="text-[12px] leading-snug text-ink3">
+                  <p className="text-[14px] leading-snug text-ink3">
                     Nothing has argued with this yet. Quiet counts as weak
                     support, so confidence drifts toward fifty until the market
                     speaks.
@@ -135,7 +135,7 @@ export function LedgerDeck({
                       className="flex items-start gap-2"
                     >
                       <span
-                        className="num-display mt-0.5 text-[12px] font-semibold"
+                        className="num-display mt-0.5 text-[14px] font-semibold"
                         style={{
                           color: e.direction > 0 ? "var(--mint-deep)" : "var(--risk)",
                         }}
@@ -143,10 +143,10 @@ export function LedgerDeck({
                         {e.direction > 0 ? "▲" : "▼"}
                       </span>
                       <span className="min-w-0">
-                        <span className="block truncate text-[12px] leading-snug text-ink2">
+                        <span className="block truncate text-[14px] leading-snug text-ink2">
                           {e.headline}
                         </span>
-                        <span className="text-[10.5px] text-ink3">
+                        <span className="text-[12px] text-ink3">
                           {e.source} · {e.day}
                         </span>
                       </span>
@@ -166,7 +166,7 @@ export function LedgerDeck({
       >
         {voting && (
           <div className="flex flex-col gap-3 pt-1">
-            <p className="text-[13px] leading-snug text-ink">{voting.statement}</p>
+            <p className="text-[15px] leading-snug text-ink">{voting.statement}</p>
             <div className="flex items-center gap-4">
               <input
                 type="range"
@@ -176,11 +176,11 @@ export function LedgerDeck({
                 onChange={(e) => setVoteValue(Number(e.target.value))}
                 className="w-full accent-[var(--mint-deep)]"
               />
-              <span className="num-display w-10 text-right text-[22px] font-medium">
+              <span className="num-display w-10 text-right text-[27px] font-medium">
                 {voteValue}
               </span>
             </div>
-            <p className="text-[11px] text-ink3">
+            <p className="text-[13px] text-ink3">
               Your vote pulls the house number and lands in the audit trail.
             </p>
             <button
@@ -198,9 +198,9 @@ export function LedgerDeck({
                   }
                 })
               }
-              className="rounded-full bg-ink py-2.5 text-[13px] font-medium text-bg disabled:opacity-60"
+              className="rounded-full bg-ink py-2.5 text-[15px] font-medium text-bg disabled:opacity-60"
             >
-              {pending ? "Casting" : "Cast it"}
+              {pending ? "Saving" : "Cast it"}
             </button>
           </div>
         )}

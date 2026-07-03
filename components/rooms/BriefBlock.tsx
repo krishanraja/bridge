@@ -34,7 +34,7 @@ function BriefText({ brief }: { brief: BriefView }) {
         }
         return (
           <div key={i} className="flex flex-col gap-1">
-            <p className="text-[14px] leading-relaxed text-ink">{clean}</p>
+            <p className="text-[16px] leading-relaxed text-ink">{clean}</p>
             {cites.length > 0 && (
               <div className="flex flex-wrap gap-1">
                 {cites.map((c, j) =>
@@ -70,9 +70,8 @@ export function BriefBlock({ brief }: { brief: BriefView | null }) {
   if (!brief) {
     return (
       <section className="mx-5 flex flex-col items-center justify-center rounded-xl border border-line bg-paper px-6 py-4 text-center">
-        <p className="text-[12px] leading-snug text-ink3">
-          No brief yet. The composer runs at 06:45 and the morning read lands at
-          07:30.
+        <p className="text-[14px] leading-snug text-ink3">
+          The morning read is not ready yet. It lands each weekday around half past seven.
         </p>
       </section>
     );
@@ -128,7 +127,7 @@ export function BriefBlock({ brief }: { brief: BriefView | null }) {
             markSeen();
             setOpen(true);
           }}
-          className="mt-0.5 text-[12px] text-ink3 underline underline-offset-2"
+          className="mt-0.5 text-[14px] text-ink3 underline underline-offset-2"
         >
           Read it instead
         </button>

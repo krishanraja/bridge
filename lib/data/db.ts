@@ -18,14 +18,32 @@ function todayISO(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
+/* The freshest day that actually carries signals, on or before today. The deck
+   is dealt by a morning cron; before it runs, or on a genuinely quiet day, the
+   radar should still show the last real deck rather than go dark. */
+async function latestSignalDay(
+  sb: Awaited<ReturnType<typeof supabaseServer>>,
+  onOrBefore: string,
+): Promise<string | null> {
+  const { data } = await sb
+    .from("signals")
+    .select("day")
+    .lte("day", onOrBefore)
+    .order("day", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  return data?.day ?? null;
+}
+
 export async function dbToday(): Promise<TodayData> {
   const sb = await supabaseServer();
   const day = todayISO();
   const week = currentIsoWeek();
+  const deckDay = (await latestSignalDay(sb, day)) ?? day;
 
   const [signalsQ, prioritiesQ, movesQ, decisionsQ, threadsQ, briefQ] =
     await Promise.all([
-      sb.from("signals").select("*").eq("day", day),
+      sb.from("signals").select("*").eq("day", deckDay),
       sb.from("priorities").select("*").is("retired_at", null),
       sb.from("moves").select("*").eq("iso_week", week),
       sb.from("decisions").select("*").eq("state", "open"),
@@ -110,7 +128,7 @@ export async function dbToday(): Promise<TodayData> {
 
 export async function dbDeck(): Promise<Signal[]> {
   const sb = await supabaseServer();
-  const day = todayISO();
+  const day = (await latestSignalDay(sb, todayISO())) ?? todayISO();
   const [signalsQ, verdictsQ, seatQ] = await Promise.all([
     sb
       .from("signals")

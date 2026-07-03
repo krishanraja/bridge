@@ -25,7 +25,7 @@
   --lane-7: #64516b;
   --lane-8: #4e6a62;
 
-  --tabbar-h: 64px;
+  --tabbar-h: 72px;
   --dial-arc: var(--mint-deep);
 }
 
@@ -106,13 +106,19 @@ body {
   background: var(--paper);
 }
 
-/* Type scale: 28 / 22 / 17 / 14 / 12 / 10.5. Numbers are the heroes. */
+/* Mobile-native type: primary body 16, secondary 14-15, labels 13, eyebrow 11.5.
+   Larger and warmer than a dashboard; the numbers still lead. */
+body {
+  font-size: 16px;
+  line-height: 1.4;
+}
+
 .eyebrow {
-  font-size: 10.5px;
-  letter-spacing: 0.14em;
+  font-size: 11.5px;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--ink-3);
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .num-display {

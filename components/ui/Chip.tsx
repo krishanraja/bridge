@@ -20,7 +20,7 @@ export function Chip({ children, color, filled, onClick, active }: ChipProps) {
       : { border: "1px solid var(--line)", color: "var(--ink-2)" };
 
   const cls =
-    "inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-0.5 text-[10.5px] font-medium tracking-[0.02em] whitespace-nowrap";
+    "inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-0.5 text-[12px] font-medium tracking-[0.02em] whitespace-nowrap";
 
   if (onClick) {
     return (

@@ -68,8 +68,8 @@ export function deriveFocus(args: {
     const d = openDecisions[0];
     return {
       kind: "decision",
-      text: `${d.text} ${SEATS[d.owner_seat].shortName} owns it, due ${formatDue(d.due_date!)}.`,
-      actionLabel: "Open decisions",
+      text: `${d.text} Feels like ${SEATS[d.owner_seat].shortName}'s call, ideally ${formatDue(d.due_date!)}.`,
+      actionLabel: "Take a look",
       href: "/table",
     };
   }
@@ -79,12 +79,13 @@ export function deriveFocus(args: {
     const m = moves.find(
       (mv) => mv.priority_id === atRisk.id && mv.iso_week === isoWeek,
     );
+    const label = atRisk.state === "blocked" ? "is stuck" : "could use some attention";
     return {
       kind: "move",
       text: m
-        ? `${atRisk.name} is ${atRisk.state === "blocked" ? "blocked" : "at risk"}. This week: ${m.text}`
-        : `${atRisk.name} is ${atRisk.state === "blocked" ? "blocked" : "at risk"} and has no move this week.`,
-      actionLabel: "Open priorities",
+        ? `${atRisk.name} ${label}. This week the plan is: ${m.text}`
+        : `${atRisk.name} ${label}, and there is no move set for it yet.`,
+      actionLabel: "Take a look",
       href: "/priorities",
     };
   }
@@ -93,8 +94,8 @@ export function deriveFocus(args: {
   if (redFlag) {
     return {
       kind: "signal",
-      text: redFlag.headline,
-      actionLabel: "Open radar",
+      text: `Worth a look: ${redFlag.headline}`,
+      actionLabel: "See the radar",
       href: "/radar",
     };
   }
@@ -102,8 +103,8 @@ export function deriveFocus(args: {
   if (dueThread) {
     return {
       kind: "thread",
-      text: `${dueThread.name} at ${dueThread.org}: ${dueThread.next_touch_note ?? "touch scheduled today"}.`,
-      actionLabel: "Open priorities",
+      text: `A good day to reach out to ${dueThread.name} at ${dueThread.org}${dueThread.next_touch_note ? `: ${dueThread.next_touch_note}` : ""}.`,
+      actionLabel: "Take a look",
       href: "/priorities",
     };
   }

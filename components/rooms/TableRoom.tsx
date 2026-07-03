@@ -57,7 +57,7 @@ export function TableRoom({
           )}
         </div>
         <AlignmentPlot data={data} onDot={(id) => { tick(); setVotesFor(id); }} />
-        <p className="text-[11px] leading-snug text-ink2">
+        <p className="text-[13px] leading-snug text-ink2">
           {data.widestSplit ? (
             <>
               Widest split this week: {data.widestSplit.priorityName},{" "}
@@ -66,7 +66,7 @@ export function TableRoom({
               at {data.widestSplit.highVal}. Worth ten minutes on Monday.
             </>
           ) : (
-            "No pulse votes yet this week. The Monday vote takes forty seconds."
+            "No reads in yet this week. Adding yours takes about a minute."
           )}
         </p>
       </section>
@@ -79,7 +79,7 @@ export function TableRoom({
               onClick={() => setDecisionOpen(true)}
               className="eyebrow underline underline-offset-2"
             >
-              Log one
+              Add one
             </button>
             <button
               onClick={() => setLogOpen(true)}
@@ -91,8 +91,8 @@ export function TableRoom({
         </div>
         <div className="flex flex-col gap-1.5">
           {data.decisions.length === 0 && (
-            <p className="text-[12px] text-ink3">
-              Nothing logged yet. Speak one in Ask, or log one here.
+            <p className="text-[14px] text-ink3">
+              Nothing logged yet. You can say one in Ask, or add it here.
             </p>
           )}
           {data.decisions.map((d) => (
@@ -106,7 +106,7 @@ export function TableRoom({
         <div className="flex items-center gap-3">
           {data.receipts.map((r) => (
             <div key={r.seat} className="flex flex-col items-center gap-0.5">
-              <span className="text-[10.5px] font-medium text-ink2">
+              <span className="text-[12px] font-medium text-ink2">
                 {SEATS[r.seat].initials}
               </span>
               <div className="flex gap-1">
@@ -184,16 +184,16 @@ export function TableRoom({
               key={v.seat}
               className="flex items-center justify-between rounded-lg border border-line px-3 py-2"
             >
-              <span className="text-[12px] font-medium text-ink">
+              <span className="text-[14px] font-medium text-ink">
                 {SEATS[v.seat].name}
               </span>
-              <span className="num-display text-[17px] font-medium">
+              <span className="num-display text-[20px] font-medium">
                 {v.confidence}
               </span>
             </div>
           ))}
           {votes && votes.votes.length === 0 && (
-            <p className="text-[12px] text-ink3">No votes this week yet.</p>
+            <p className="text-[14px] text-ink3">No votes this week yet.</p>
           )}
         </div>
       </Sheet>
@@ -242,11 +242,11 @@ function DecisionRow({
       />
       <div className="min-w-0 flex-1">
         <p
-          className={`text-[12px] leading-snug text-ink ${full ? "" : "truncate"}`}
+          className={`text-[14px] leading-snug text-ink ${full ? "" : "truncate"}`}
         >
           {d.text}
         </p>
-        <p className="text-[10.5px] text-ink3">
+        <p className="text-[12px] text-ink3">
           {SEATS[d.owner_seat].shortName} owns it
           {d.due_date ? ` · due ${d.due_date}` : ""} · logged by{" "}
           {SEATS[d.logged_by].shortName} ({d.logged_via})
@@ -262,7 +262,7 @@ function DecisionRow({
                   onClosed?.();
                 })
               }
-              className="rounded-full border border-mint-bd bg-mint-wash px-2.5 py-0.5 text-[10.5px] font-medium text-ink"
+              className="rounded-full border border-mint-bd bg-mint-wash px-2.5 py-0.5 text-[12px] font-medium text-ink"
             >
               Mark done
             </button>
@@ -275,7 +275,7 @@ function DecisionRow({
                   onClosed?.();
                 })
               }
-              className="rounded-full border border-line px-2.5 py-0.5 text-[10.5px] text-ink3"
+              className="rounded-full border border-line px-2.5 py-0.5 text-[12px] text-ink3"
             >
               Drop it
             </button>
@@ -312,17 +312,16 @@ function PulseSheet({
   return (
     <Sheet open={open} onClose={onClose} title="This week's pulse">
       <div className="flex flex-col gap-3 pt-1">
-        <p className="text-[11px] leading-snug text-ink3">
-          Your confidence in each priority, 0 to 100. Forty seconds, once a
-          week, and the table sees where it disagrees.
+        <p className="text-[13px] leading-snug text-ink3">
+          How confident you feel about each priority, zero to a hundred. A minute a week, and the table can see where it lines up and where it does not.
         </p>
         {data.plot.map((p) => (
           <div key={p.priorityId} className="flex flex-col gap-1">
             <div className="flex items-center justify-between">
-              <span className="min-w-0 truncate pr-3 text-[12px] font-medium text-ink">
+              <span className="min-w-0 truncate pr-3 text-[14px] font-medium text-ink">
                 {p.name}
               </span>
-              <span className="num-display text-[17px] font-medium">
+              <span className="num-display text-[20px] font-medium">
                 {current(p.priorityId)}
               </span>
             </div>
@@ -339,7 +338,7 @@ function PulseSheet({
             />
           </div>
         ))}
-        {note && <p className="text-[12px] text-risk">{note}</p>}
+        {note && <p className="text-[14px] text-risk">{note}</p>}
         <button
           disabled={pending}
           onClick={() =>
@@ -358,9 +357,9 @@ function PulseSheet({
               }
             })
           }
-          className="rounded-full bg-ink py-2.5 text-[13px] font-medium text-bg disabled:opacity-60"
+          className="rounded-full bg-ink py-2.5 text-[15px] font-medium text-bg disabled:opacity-60"
         >
-          {pending ? "Casting" : "Cast the pulse"}
+          {pending ? "Saving" : "Save my read"}
         </button>
       </div>
     </Sheet>
@@ -390,7 +389,7 @@ function DecisionSheet({
           onChange={(e) => setText(e.target.value)}
           placeholder="What was decided, in one sentence."
           rows={3}
-          className="w-full rounded-xl border border-line bg-paper px-3 py-2.5 text-[13px] text-ink outline-none focus:border-ink"
+          className="w-full rounded-xl border border-line bg-paper px-3 py-2.5 text-[15px] text-ink outline-none focus:border-ink"
         />
         <div>
           <div className="eyebrow mb-1">Owner</div>
@@ -408,10 +407,10 @@ function DecisionSheet({
             type="date"
             value={due}
             onChange={(e) => setDue(e.target.value)}
-            className="rounded-xl border border-line bg-paper px-3 py-2 text-[13px] text-ink outline-none focus:border-ink"
+            className="rounded-xl border border-line bg-paper px-3 py-2 text-[15px] text-ink outline-none focus:border-ink"
           />
         </div>
-        {note && <p className="text-[12px] text-risk">{note}</p>}
+        {note && <p className="text-[14px] text-risk">{note}</p>}
         <button
           disabled={pending || !text.trim()}
           onClick={() =>
@@ -432,9 +431,9 @@ function DecisionSheet({
               }
             })
           }
-          className="rounded-full bg-ink py-2.5 text-[13px] font-medium text-bg disabled:opacity-60"
+          className="rounded-full bg-ink py-2.5 text-[15px] font-medium text-bg disabled:opacity-60"
         >
-          {pending ? "Logging" : "Log it"}
+          {pending ? "Logging" : "Save it"}
         </button>
       </div>
     </Sheet>

@@ -64,7 +64,7 @@ export function PushToggle() {
     <section className="mx-5 flex items-center justify-between rounded-xl border border-line bg-paper px-3.5 py-2.5">
       <div>
         <div className="eyebrow">Notifications</div>
-        <p className="text-[11px] text-ink3">
+        <p className="text-[13px] text-ink3">
           {state === "on"
             ? "On. One morning read, the Monday pulse, the Friday close."
             : "Off. The rationed few only, never a stream."}
@@ -74,7 +74,7 @@ export function PushToggle() {
         <button
           onClick={enable}
           disabled={busy}
-          className="rounded-full bg-ink px-3.5 py-1.5 text-[12px] font-medium text-bg disabled:opacity-60"
+          className="rounded-full bg-ink px-3.5 py-1.5 text-[14px] font-medium text-bg disabled:opacity-60"
         >
           {busy ? "Enabling" : "Turn on"}
         </button>

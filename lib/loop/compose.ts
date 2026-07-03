@@ -6,6 +6,7 @@ import "server-only";
 import { supabaseService } from "@/lib/supabase/service";
 import { claude, extractJson } from "@/lib/intel/llm";
 import { BANNED_LIST } from "@/lib/copy/banned";
+import { VOICE } from "@/lib/copy/voice";
 import { STYLE_PROFILES } from "@/lib/copy/styles";
 import { currentIsoWeek, isoWeekShift } from "@/lib/weeks";
 import { SEATS, type SeatId } from "@/lib/seats";
@@ -140,17 +141,21 @@ export async function compose(
   const refList = refs.map((r) => r.ref).join(", ");
   const system =
     kind === "morning"
-      ? `You are the voice of BRIDGE, Amperity's leadership office. Write the Monday-through-Friday morning brief: a spoken read of 220 to 280 words in four sections, in this order and with these exact headers: Market, The house, The week, The call.
-Market: at most three items from the deck.
-The house: one line on the belief that moved most.
-The week: the state of this week's moves, name any priority missed twice.
-The call: the single thing that needs a decision today.
-Delivery for this seat: ${style.memo}
-Register: short sentences then a longer one, name mechanisms, end on a plain verdict. No hype. No em dashes. None of these words: ${BANNED_LIST}.
+      ? `${VOICE}
+
+Write the morning brief: a spoken read of 220 to 280 words the four leaders hear over coffee. Four short sections with these exact headers: Market, The house, The week, The call.
+Market: the two or three things that actually moved, in plain language, and a light word on why each matters to us.
+The house: how our thinking is holding up, one belief that shifted.
+The week: where the moves stand. If something slipped, say so kindly, without blame.
+The call: the one thing worth deciding today. Offer it as a suggestion and say whose call it feels like. Never tell them what they will do.
+This reader likes it delivered like this: ${style.memo}
+Sound like a warm colleague talking, not a report. No em dashes. Do not use any of these words: ${BANNED_LIST}.
 Every sentence must trace to a record. After each sentence, append the reference codes that support it in square brackets, like [S1] or [P4]. Use only these codes: ${refList}.
 Reply with ONLY JSON: {"script": "the full brief with reference codes inline", "line_refs": [{"line": 0, "refs": ["S1"]}]} where line is the zero-based index of each non-empty line and refs are the codes on that line.`
-      : `You are the voice of BRIDGE, Amperity's leadership office. Write the Friday close: a spoken read of 120 to 160 words, drier than the morning. Report the week's moves shipped or missed, the scorecard line (how many of the moves shipped, name any pattern), the one belief that moved, and next week's single most important open thread.
-Register: dry, factual, a plain verdict. No hype. No em dashes. None of these words: ${BANNED_LIST}.
+      : `${VOICE}
+
+Write the Friday close: a warm, easy 120 to 160 word wrap on the week for the four leaders. Cover how the moves landed (shipped or slipped, said kindly), a simple count of how many shipped and any pattern worth noticing, the one belief that shifted, and the one thing carrying into next week. End on an encouraging, human note, not a verdict.
+No em dashes. Do not use any of these words: ${BANNED_LIST}.
 Every sentence traces to a record with reference codes in square brackets. Use only: ${refList}.
 Reply with ONLY JSON: {"script": "...", "line_refs": [{"line": 0, "refs": ["P1"]}]}.`;
 

@@ -33,14 +33,13 @@ export function PriorityBoard({
   if (priorities.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center gap-3 px-8 text-center">
-        <p className="text-[14px] leading-relaxed text-ink2">
-          No priorities yet. The table sets three to five, each with one
-          sponsor and one move a week.
+        <p className="text-[16px] leading-relaxed text-ink2">
+          No priorities set yet. The table usually keeps three to five going, each with someone leading it.
         </p>
         {operator && (
           <button
             onClick={() => setAdding(true)}
-            className="rounded-full bg-ink px-4 py-2 text-[12px] font-medium text-bg"
+            className="rounded-full bg-ink px-4 py-2 text-[14px] font-medium text-bg"
           >
             Seed the first one
           </button>
@@ -74,7 +73,7 @@ export function PriorityBoard({
                 style={{ borderLeft: `3px solid ${st.color}` }}
               >
                 <div className="min-w-0 flex-1">
-                  <div className="truncate text-[14px] font-medium leading-snug text-ink">
+                  <div className="truncate text-[16px] font-medium leading-snug text-ink">
                     {p.name}
                   </div>
                   <div className="mt-0.5 flex items-center gap-2">
@@ -103,7 +102,7 @@ export function PriorityBoard({
           {operator && priorities.length < 5 && (
             <button
               onClick={() => setAdding(true)}
-              className="rounded-xl border border-dashed border-line py-1.5 text-[11px] text-ink3"
+              className="rounded-xl border border-dashed border-line py-1.5 text-[13px] text-ink3"
             >
               Add a priority ({priorities.length} of 5)
             </button>
@@ -141,7 +140,7 @@ export function PriorityBoard({
             <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={() => setDetailPage(0)}
-                className="rounded-full border py-1.5 text-[12px] font-medium"
+                className="rounded-full border py-1.5 text-[14px] font-medium"
                 style={{
                   borderColor: detailPage === 0 ? "var(--ink)" : "var(--line)",
                   color: detailPage === 0 ? "var(--ink)" : "var(--ink-3)",
@@ -151,7 +150,7 @@ export function PriorityBoard({
               </button>
               <button
                 onClick={() => setDetailPage(1)}
-                className="rounded-full border py-1.5 text-[12px] font-medium"
+                className="rounded-full border py-1.5 text-[14px] font-medium"
                 style={{
                   borderColor: detailPage === 1 ? "var(--ink)" : "var(--line)",
                   color: detailPage === 1 ? "var(--ink)" : "var(--ink-3)",
@@ -164,8 +163,8 @@ export function PriorityBoard({
             {detailPage === 0 ? (
               <div className="flex flex-col gap-2">
                 {detail.history.length === 0 && (
-                  <p className="text-[12px] text-ink3">
-                    No moves yet. The first one is proposed on Monday.
+                  <p className="text-[14px] text-ink3">
+                    No moves yet. The first one gets suggested on Monday.
                   </p>
                 )}
                 {detail.history.map((m) => (
@@ -182,11 +181,11 @@ export function PriorityBoard({
                         {MOVE_STATE[m.state].label}
                       </span>
                     </div>
-                    <p className="mt-1 text-[12px] leading-snug text-ink">
+                    <p className="mt-1 text-[14px] leading-snug text-ink">
                       {m.text}
                     </p>
                     {m.outcome_note && (
-                      <p className="mt-0.5 text-[10.5px] text-ink3">
+                      <p className="mt-0.5 text-[12px] text-ink3">
                         {m.outcome_note}
                       </p>
                     )}
@@ -197,7 +196,7 @@ export function PriorityBoard({
               <div className="flex flex-col gap-2">
                 <div className="eyebrow">Threads</div>
                 {detail.threads.length === 0 ? (
-                  <p className="text-[12px] leading-relaxed text-ink3">
+                  <p className="text-[14px] leading-relaxed text-ink3">
                     No relationships linked yet. The operator ties a thread to
                     this priority from Settings.
                   </p>
@@ -205,7 +204,7 @@ export function PriorityBoard({
                   detail.threads.map((t) => (
                     <div key={t.id} className="rounded-lg border border-line px-3 py-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-[12px] font-medium text-ink">
+                        <span className="text-[14px] font-medium text-ink">
                           {t.name}
                         </span>
                         <span
@@ -222,19 +221,19 @@ export function PriorityBoard({
                           {t.status}
                         </span>
                       </div>
-                      <p className="text-[10.5px] text-ink3">
+                      <p className="text-[12px] text-ink3">
                         {t.org}
                         {t.nextTouchDate ? ` · next touch ${t.nextTouchDate}` : ""}
                       </p>
                       {t.nextTouchNote && (
-                        <p className="mt-0.5 text-[11px] leading-snug text-ink2">
+                        <p className="mt-0.5 text-[13px] leading-snug text-ink2">
                           {t.nextTouchNote}
                         </p>
                       )}
                     </div>
                   ))
                 )}
-                <p className="mt-1 text-[10.5px] leading-relaxed text-ink3">
+                <p className="mt-1 text-[12px] leading-relaxed text-ink3">
                   Linked signals and decisions join these as the pipeline and
                   the log connect them.
                 </p>
@@ -291,7 +290,7 @@ function PriorityCard({
       </div>
 
       <div className="flex items-center justify-between gap-3">
-        <h2 className="num-display min-w-0 text-[22px] font-medium leading-tight text-ink">
+        <h2 className="num-display min-w-0 text-[27px] font-medium leading-tight text-ink">
           {p.name}
         </h2>
         {p.confidence != null && (
@@ -309,7 +308,7 @@ function PriorityCard({
           <div className="eyebrow mb-0.5">This week&apos;s move</div>
           {p.move ? (
             <div>
-              <p className="text-[13px] leading-snug text-ink">{p.move.text}</p>
+              <p className="text-[15px] leading-snug text-ink">{p.move.text}</p>
               <div className="mt-1 flex items-center gap-2">
                 <span className="eyebrow">{SEATS[p.move.owner_seat].initials}</span>
                 <span
@@ -360,7 +359,7 @@ function PriorityCard({
             </div>
           ) : (
             <div>
-              <p className="text-[13px] text-ink3">
+              <p className="text-[15px] text-ink3">
                 No move set. Monday&apos;s brief proposes one.
               </p>
               {operator && (
@@ -379,13 +378,13 @@ function PriorityCard({
             <div className="eyebrow mb-0.5" style={{ color: "var(--risk)" }}>
               Blocker · {p.blockerOwner ? SEATS[p.blockerOwner].shortName : ""}
             </div>
-            <p className="text-[12px] leading-snug text-ink">{p.blocker}</p>
+            <p className="text-[14px] leading-snug text-ink">{p.blocker}</p>
           </div>
         )}
 
         <div className="flex items-center gap-2">
           <span className="eyebrow">Sponsor</span>
-          <span className="text-[12px] font-medium text-ink2">
+          <span className="text-[14px] font-medium text-ink2">
             {SEATS[p.sponsor_seat].name}
           </span>
         </div>
@@ -394,7 +393,7 @@ function PriorityCard({
       <button
         onClick={onDetail}
         disabled={pending}
-        className="rounded-full border border-line py-2 text-[12px] font-medium text-ink2"
+        className="rounded-full border border-line py-2 text-[14px] font-medium text-ink2"
       >
         History and links
       </button>
@@ -480,7 +479,7 @@ function PriorityEditor({
           onChange={(e) => setName(e.target.value)}
           maxLength={60}
           placeholder="The priority, sixty characters or fewer."
-          className="w-full rounded-xl border border-line bg-paper px-3 py-2.5 text-[13px] text-ink outline-none focus:border-ink"
+          className="w-full rounded-xl border border-line bg-paper px-3 py-2.5 text-[15px] text-ink outline-none focus:border-ink"
         />
         <div>
           <div className="eyebrow mb-1">Sponsor</div>
@@ -512,16 +511,16 @@ function PriorityEditor({
                 value={blocker}
                 onChange={(e) => setBlocker(e.target.value)}
                 placeholder="One sentence, or leave empty."
-                className="w-full rounded-xl border border-line bg-paper px-3 py-2.5 text-[13px] text-ink outline-none focus:border-ink"
+                className="w-full rounded-xl border border-line bg-paper px-3 py-2.5 text-[15px] text-ink outline-none focus:border-ink"
               />
             </div>
           </>
         )}
-        {note && <p className="text-[12px] text-risk">{note}</p>}
+        {note && <p className="text-[14px] text-risk">{note}</p>}
         <button
           disabled={pending || !name.trim()}
           onClick={save}
-          className="rounded-full bg-ink py-2.5 text-[13px] font-medium text-bg disabled:opacity-60"
+          className="rounded-full bg-ink py-2.5 text-[15px] font-medium text-bg disabled:opacity-60"
         >
           {pending ? "Saving" : priority ? "Save" : "Add it"}
         </button>
@@ -576,7 +575,7 @@ function MoveEditor({
           onChange={(e) => setText(e.target.value)}
           rows={2}
           placeholder="One sentence with a verb and an owner."
-          className="w-full rounded-xl border border-line bg-paper px-3 py-2.5 text-[13px] text-ink outline-none focus:border-ink"
+          className="w-full rounded-xl border border-line bg-paper px-3 py-2.5 text-[15px] text-ink outline-none focus:border-ink"
         />
         {!priority.move && operator && (
           <div>
@@ -590,11 +589,11 @@ function MoveEditor({
             </div>
           </div>
         )}
-        {note && <p className="text-[12px] text-risk">{note}</p>}
+        {note && <p className="text-[14px] text-risk">{note}</p>}
         <button
           disabled={pending || !text.trim()}
           onClick={save}
-          className="rounded-full bg-ink py-2.5 text-[13px] font-medium text-bg disabled:opacity-60"
+          className="rounded-full bg-ink py-2.5 text-[15px] font-medium text-bg disabled:opacity-60"
         >
           {pending ? "Saving" : "Set it"}
         </button>
@@ -621,16 +620,16 @@ function MissSheet({
   return (
     <Sheet open={open} onClose={onClose} title="Missed">
       <div className="flex flex-col gap-3 pt-1">
-        <p className="text-[11px] text-ink3">
-          Missed is a first class state. It needs a one line reason.
+        <p className="text-[13px] text-ink3">
+          It happens. A quick line on what got in the way is all we need.
         </p>
         <input
           value={reason}
           onChange={(e) => setReason(e.target.value)}
           placeholder="Why it slipped."
-          className="w-full rounded-xl border border-line bg-paper px-3 py-2.5 text-[13px] text-ink outline-none focus:border-ink"
+          className="w-full rounded-xl border border-line bg-paper px-3 py-2.5 text-[15px] text-ink outline-none focus:border-ink"
         />
-        {note && <p className="text-[12px] text-risk">{note}</p>}
+        {note && <p className="text-[14px] text-risk">{note}</p>}
         <button
           disabled={pending || !reason.trim() || !moveId}
           onClick={() =>
@@ -648,7 +647,7 @@ function MissSheet({
               }
             })
           }
-          className="rounded-full bg-ink py-2.5 text-[13px] font-medium text-bg disabled:opacity-60"
+          className="rounded-full bg-ink py-2.5 text-[15px] font-medium text-bg disabled:opacity-60"
         >
           Mark it missed
         </button>

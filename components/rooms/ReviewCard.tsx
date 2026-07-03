@@ -44,13 +44,13 @@ export function ReviewCard({ review }: { review: OperatorReview }) {
       <div className="flex items-center justify-between">
         <div>
           <div className="eyebrow">Draft brief, yours to shape</div>
-          <p className="mt-0.5 text-[12px] text-ink2">
+          <p className="mt-0.5 text-[14px] text-ink2">
             Releases at {review.releaseAt} if you do nothing.
           </p>
         </div>
         <button
           onClick={() => setOpen(true)}
-          className="rounded-full bg-ink px-3.5 py-1.5 text-[12px] font-medium text-bg"
+          className="rounded-full bg-ink px-3.5 py-1.5 text-[14px] font-medium text-bg"
         >
           Review
         </button>
@@ -62,20 +62,20 @@ export function ReviewCard({ review }: { review: OperatorReview }) {
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             rows={12}
-            className="w-full rounded-xl border border-line bg-paper px-3 py-2.5 text-[13px] leading-relaxed text-ink outline-none focus:border-ink"
+            className="w-full rounded-xl border border-line bg-paper px-3 py-2.5 text-[15px] leading-relaxed text-ink outline-none focus:border-ink"
           />
-          {note && <p className="text-[12px] text-risk">{note}</p>}
+          {note && <p className="text-[14px] text-risk">{note}</p>}
           <div className="flex gap-2">
             <button
               disabled={pending}
               onClick={release}
-              className="flex-1 rounded-full bg-ink py-2.5 text-[13px] font-medium text-bg disabled:opacity-60"
+              className="flex-1 rounded-full bg-ink py-2.5 text-[15px] font-medium text-bg disabled:opacity-60"
             >
               {pending ? "Releasing" : "Release brief"}
             </button>
             <button
               onClick={() => setOpen(false)}
-              className="rounded-full border border-line px-4 py-2.5 text-[12px] text-ink2"
+              className="rounded-full border border-line px-4 py-2.5 text-[14px] text-ink2"
             >
               Later
             </button>

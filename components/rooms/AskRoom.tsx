@@ -83,12 +83,12 @@ export function AskRoom({ operator }: { operator: boolean }) {
           return;
         }
         setVoiceSession(true);
-        setPhase({ name: "thinking", label: "Hearing it" });
+        setPhase({ name: "thinking", label: "One moment" });
         const form = new FormData();
         form.append("audio", blob, mime === "audio/webm" ? "a.webm" : "a.mp4");
         const res = await fetch("/api/voice/transcribe", { method: "POST", body: form });
         if (!res.ok) {
-          setPhase({ name: "logged", message: "The ear failed. Try again or type it.", undoId: null });
+          setPhase({ name: "logged", message: "I did not quite catch that. Give it another go, or type it.", undoId: null });
           return;
         }
         const { text } = (await res.json()) as { text: string };
@@ -105,7 +105,7 @@ export function AskRoom({ operator }: { operator: boolean }) {
     } catch {
       setPhase({
         name: "logged",
-        message: "The microphone is not available here. Type instead.",
+        message: "I cannot reach the microphone here. You can type it instead.",
         undoId: null,
       });
     }
@@ -116,7 +116,7 @@ export function AskRoom({ operator }: { operator: boolean }) {
   };
 
   const submit = async (query: string, viaVoice: boolean) => {
-    setPhase({ name: "thinking", label: "Reading the house" });
+    setPhase({ name: "thinking", label: "Having a look" });
     const res = await fetch("/api/ask", {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -124,7 +124,7 @@ export function AskRoom({ operator }: { operator: boolean }) {
     });
 
     if (!res.ok) {
-      setPhase({ name: "logged", message: "No answer came back. Try again.", undoId: null });
+      setPhase({ name: "logged", message: "Something went quiet on my end. Mind trying that again?", undoId: null });
       return;
     }
 
@@ -163,7 +163,7 @@ export function AskRoom({ operator }: { operator: boolean }) {
         const tts = await fetch("/api/voice/speak", {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ text: full.replace(/\[[A-Z]\d+\]/g, "") }),
+          body: JSON.stringify({ text: full.replace(/ ?\[[A-Z]\d+\]/g, "") }),
         });
         if (tts.ok) {
           const { url } = (await tts.json()) as { url: string };
@@ -191,7 +191,7 @@ export function AskRoom({ operator }: { operator: boolean }) {
       if (res.ok) {
         setPhase({
           name: "logged",
-          message: `Logged. ${SEATS[(intent.owner_seat ?? 4) as SeatId].shortName} owns it${intent.due_date ? `, due ${intent.due_date}` : ""}.`,
+          message: `Got it, noted for ${SEATS[(intent.owner_seat ?? 4) as SeatId].shortName}${intent.due_date ? `, by ${intent.due_date}` : ""}.`,
           undoId: res.id ?? null,
         });
         undoTimer.current = setTimeout(() => {
@@ -261,9 +261,8 @@ export function AskRoom({ operator }: { operator: boolean }) {
         {phase.name === "idle" && (
           <>
             <HoldButton onDown={startRecording} onUp={stopRecording} listening={false} />
-            <p className="text-center text-[13px] leading-snug text-ink2">
-              Hold to talk. Ask anything grounded in the house context, or
-              speak a command.
+            <p className="text-center text-[15px] leading-snug text-ink2">
+              Hold to talk. Ask anything about where things stand, or just say what you want to do.
             </p>
           </>
         )}
@@ -271,12 +270,12 @@ export function AskRoom({ operator }: { operator: boolean }) {
         {phase.name === "listening" && (
           <>
             <HoldButton onDown={() => {}} onUp={stopRecording} listening />
-            <p className="text-center text-[13px] text-ink2">Listening. Release when done.</p>
+            <p className="text-center text-[15px] text-ink2">Listening. Let go when you are done.</p>
           </>
         )}
 
         {phase.name === "thinking" && (
-          <p className="animate-pulse text-center text-[14px] text-ink2">
+          <p className="animate-pulse text-center text-[16px] text-ink2">
             {phase.label}.
           </p>
         )}
@@ -284,8 +283,8 @@ export function AskRoom({ operator }: { operator: boolean }) {
         {phase.name === "answer" && (
           <div className="flex max-h-full w-full flex-col gap-3 overflow-hidden rounded-xl border border-line bg-paper p-4">
             <div className="min-h-0 overflow-y-auto">
-              <p className="whitespace-pre-wrap text-[14px] leading-relaxed text-ink">
-                {phase.text.replace(/\[[A-Z]\d+\]/g, "")}
+              <p className="whitespace-pre-wrap text-[16px] leading-relaxed text-ink">
+                {phase.text.replace(/ ?\[[A-Z]\d+\]/g, "")}
                 {!phase.done && <span className="animate-pulse">▍</span>}
               </p>
             </div>
@@ -305,7 +304,7 @@ export function AskRoom({ operator }: { operator: boolean }) {
             {phase.done && phase.text.startsWith(FALLBACK) && operator && (
               <button
                 onClick={() => void confirmCommand("", { kind: "sweep", topic: null })}
-                className="self-start rounded-full bg-ink px-3.5 py-1.5 text-[12px] font-medium text-bg"
+                className="self-start rounded-full bg-ink px-3.5 py-1.5 text-[14px] font-medium text-bg"
               >
                 Run the sweep
               </button>
@@ -317,16 +316,16 @@ export function AskRoom({ operator }: { operator: boolean }) {
           <div className="w-full rounded-xl border border-mint-bd bg-mint-wash p-4">
             <div className="eyebrow mb-1.5">
               {phase.intent.kind === "log_decision"
-                ? "Log this decision"
+                ? "Note this down"
                 : phase.intent.kind === "set_move"
                   ? `Set the move on ${phase.intent.priority_name ?? "a priority"}`
-                  : "Run a market sweep"}
+                  : "Take a fresh look at the market"}
             </div>
-            <p className="text-[14px] leading-snug text-ink">
+            <p className="text-[16px] leading-snug text-ink">
               {phase.intent.text ?? phase.intent.topic ?? phase.utterance}
             </p>
             {phase.intent.kind === "log_decision" && (
-              <p className="mt-1 text-[11px] text-ink3">
+              <p className="mt-1 text-[13px] text-ink3">
                 {SEATS[(phase.intent.owner_seat ?? 4) as SeatId].shortName} owns it
                 {phase.intent.due_date ? ` · due ${phase.intent.due_date}` : ""}
               </p>
@@ -334,13 +333,13 @@ export function AskRoom({ operator }: { operator: boolean }) {
             <div className="mt-3 flex gap-2">
               <button
                 onClick={() => void confirmCommand(phase.utterance, phase.intent)}
-                className="rounded-full bg-ink px-4 py-2 text-[12px] font-medium text-bg"
+                className="rounded-full bg-ink px-4 py-2 text-[14px] font-medium text-bg"
               >
-                {phase.intent.kind === "log_decision" ? "Log it" : "Do it"}
+                {phase.intent.kind === "log_decision" ? "Save it" : "Do it"}
               </button>
               <button
                 onClick={() => setPhase({ name: "idle" })}
-                className="rounded-full border border-line px-4 py-2 text-[12px] text-ink2"
+                className="rounded-full border border-line px-4 py-2 text-[14px] text-ink2"
               >
                 Cancel
               </button>
@@ -350,7 +349,7 @@ export function AskRoom({ operator }: { operator: boolean }) {
 
         {phase.name === "logged" && (
           <div className="flex flex-col items-center gap-3">
-            <p className="text-center text-[14px] text-ink">{phase.message}</p>
+            <p className="text-center text-[16px] text-ink">{phase.message}</p>
             {phase.undoId && (
               <button
                 onClick={async () => {
@@ -359,7 +358,7 @@ export function AskRoom({ operator }: { operator: boolean }) {
                   setPhase({ name: "idle" });
                   router.refresh();
                 }}
-                className="rounded-full border border-line px-4 py-1.5 text-[12px] text-ink2"
+                className="rounded-full border border-line px-4 py-1.5 text-[14px] text-ink2"
               >
                 Undo
               </button>
@@ -371,12 +370,12 @@ export function AskRoom({ operator }: { operator: boolean }) {
       <div className="flex flex-col gap-3 px-6">
         {phase.name === "idle" && (
           <div>
-            <div className="eyebrow mb-1.5 text-center">The grammar</div>
+            <div className="eyebrow mb-1.5 text-center">You can also say</div>
             <div className="flex flex-wrap justify-center gap-1.5">
               {GRAMMAR.map((g) => (
                 <span
                   key={g}
-                  className="rounded-full border border-line px-2.5 py-0.5 text-[10.5px] text-ink3"
+                  className="rounded-full border border-line px-2.5 py-0.5 text-[12px] text-ink3"
                 >
                   {g}
                 </span>
@@ -399,12 +398,12 @@ export function AskRoom({ operator }: { operator: boolean }) {
             value={typed}
             onChange={(e) => setTyped(e.target.value)}
             placeholder="Or type it"
-            className="min-w-0 flex-1 rounded-full border border-line bg-paper px-4 py-2.5 text-[13px] text-ink outline-none focus:border-ink"
+            className="min-w-0 flex-1 rounded-full border border-line bg-paper px-4 py-2.5 text-[15px] text-ink outline-none focus:border-ink"
           />
           <button
             type="submit"
             aria-label="Ask"
-            className="shrink-0 rounded-full bg-ink px-4 py-2.5 text-[12px] font-medium text-bg"
+            className="shrink-0 rounded-full bg-ink px-4 py-2.5 text-[14px] font-medium text-bg"
           >
             Ask
           </button>
@@ -431,16 +430,18 @@ function HoldButton({
       onPointerUp={onUp}
       onPointerLeave={onUp}
       aria-label="Hold to talk"
-      className="flex h-28 w-28 touch-none items-center justify-center rounded-full border-2 select-none"
+      className="flex h-44 w-44 touch-none items-center justify-center rounded-full border-2 select-none"
       style={{
         borderColor: listening ? "var(--mint-deep)" : "var(--ink)",
         background: listening ? "var(--mint-wash)" : "var(--paper)",
-        boxShadow: listening ? "0 0 0 10px var(--mint-wash)" : "none",
+        boxShadow: listening
+          ? "0 0 0 14px var(--mint-wash)"
+          : "0 0 0 10px var(--mint-wash), 0 0 0 11px var(--mint-bd)",
       }}
     >
       <svg
-        width="36"
-        height="36"
+        width="52"
+        height="52"
         viewBox="0 0 24 24"
         fill="none"
         stroke={listening ? "var(--mint-deep)" : "var(--ink)"}

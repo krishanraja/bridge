@@ -14,22 +14,22 @@ export interface StyleProfile {
 export const STYLE_PROFILES: Record<SeatId, StyleProfile> = {
   1: {
     seat: 1,
-    memo: "Kabir reads narrative first, numbers second. Open with the market story and the one call that needs his judgment today. Keep it decisive; he moves on a clear verdict, not a hedge.",
+    memo: "Kabir likes the story first, then the numbers. Open with what is happening in the market and the one thing that feels like his call today. Clear and warm, not clipped.",
     laneWeighting: "the whole board, weighted to the call that needs a Co-CEO",
   },
   2: {
     seat: 2,
-    memo: "Derek reads product and platform first. Lead with the identity moat, partner platforms, and agentic shifts. He wants the mechanism, not the vibe: name the specific product move and what it changes for the roadmap.",
+    memo: "Derek cares most about product and platform. Lead with the identity moat, the partner platforms, and where agents are heading. Name the specific move and what it means for the roadmap, in plain terms.",
     laneWeighting: "identity and the moat, partner platforms, agentic AI",
   },
   3: {
     seat: 3,
-    memo: "Amy reads capital and customers first. Lead with consolidation, valuation marks, and named-account signals. She wants the number and the exposure: what it costs, what it protects, what it risks.",
+    memo: "Amy watches capital and customers. Lead with consolidation, valuations, and news from named accounts. Give her the number and what it means for us, gently: what it protects and what to keep an eye on.",
     laneWeighting: "capital and consolidation, customers and verticals, the category",
   },
   4: {
     seat: 4,
-    memo: "Krish is the operator and reads everything, ordered by what needs curation before it lands. Surface the drafts, the edits, and the approvals waiting on him.",
-    laneWeighting: "everything, ordered by what needs a hand before 07:25",
+    memo: "Krish runs the office and reads everything, ordered by what still needs a hand before it lands. Surface the drafts, the edits, and anything waiting on him.",
+    laneWeighting: "everything, ordered by what needs a hand before it lands",
   },
 };

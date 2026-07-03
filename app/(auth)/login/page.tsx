@@ -30,7 +30,7 @@ export default function LoginPage() {
             className="logo-on-dark"
           />
           <div className="text-center">
-            <h1 className="num-display text-[44px] font-medium leading-none tracking-tight">
+            <h1 className="num-display text-[50px] font-medium leading-none tracking-tight">
               BRIDGE
             </h1>
             <p className="eyebrow mt-2">The fifth seat</p>
@@ -40,7 +40,7 @@ export default function LoginPage() {
         <LoginForm />
       </div>
 
-      <p className="text-center text-[11px] leading-relaxed text-ink3">
+      <p className="text-center text-[13px] leading-relaxed text-ink3">
         Four seats. Nothing here says who holds them.
       </p>
     </div>

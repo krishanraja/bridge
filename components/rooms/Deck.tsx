@@ -72,15 +72,14 @@ export function Deck({ signals, operator }: { signals: Signal[]; operator: boole
 
       {deck.length === 0 ? (
         <div className="flex flex-col items-center justify-center gap-3 px-8 text-center">
-          <p className="text-[14px] leading-relaxed text-ink2">
-            Quiet in the market today. The pipeline found nothing more that
-            clears the bar. That is a fact, not a failure.
+          <p className="text-[16px] leading-relaxed text-ink2">
+            Nothing more from the market today. A quiet day, which happens.
           </p>
           {operator && (
             <button
               onClick={sweep}
               disabled={sweeping}
-              className="rounded-full bg-ink px-4 py-2 text-[12px] font-medium text-bg disabled:opacity-60"
+              className="rounded-full bg-ink px-4 py-2 text-[14px] font-medium text-bg disabled:opacity-60"
             >
               {sweeping ? "Sweeping. This takes a minute." : "Run a sweep now"}
             </button>
@@ -101,7 +100,7 @@ export function Deck({ signals, operator }: { signals: Signal[]; operator: boole
 
       {acted && (
         <div className="pointer-events-none fixed inset-x-0 bottom-20 z-40 flex justify-center">
-          <span className="rounded-full bg-ink px-4 py-2 text-[12px] text-bg">
+          <span className="rounded-full bg-ink px-4 py-2 text-[14px] text-bg">
             {acted}
           </span>
         </div>
@@ -117,10 +116,10 @@ export function Deck({ signals, operator }: { signals: Signal[]; operator: boole
               rel="noopener noreferrer"
               className="rounded-lg border border-line px-3 py-2.5"
             >
-              <div className="text-[12px] font-medium leading-snug text-ink">
+              <div className="text-[14px] font-medium leading-snug text-ink">
                 {c.title}
               </div>
-              <div className="mt-0.5 text-[10.5px] text-ink3">{c.source}</div>
+              <div className="mt-0.5 text-[12px] text-ink3">{c.source}</div>
             </a>
           ))}
         </div>
@@ -190,19 +189,19 @@ function SignalCard({
           {s.illustrative && <Chip>Sample</Chip>}
         </div>
 
-        <h2 className="num-display text-[20px] font-medium leading-tight text-ink">
+        <h2 className="num-display text-[23px] font-medium leading-tight text-ink">
           {s.headline}
         </h2>
 
         <div className="flex min-h-0 flex-col gap-2 overflow-hidden">
           <div>
             <div className="eyebrow mb-0.5">For Amperity</div>
-            <p className="text-[13px] leading-snug text-ink2">{s.for_amperity}</p>
+            <p className="text-[15px] leading-snug text-ink2">{s.for_amperity}</p>
           </div>
           {s.posture && (
             <div>
               <div className="eyebrow mb-0.5">The move</div>
-              <p className="text-[13px] leading-snug text-ink">{s.posture}</p>
+              <p className="text-[15px] leading-snug text-ink">{s.posture}</p>
             </div>
           )}
           {s.assumption_id && s.assumption_direction != null && s.assumption_direction !== 0 && (
@@ -221,7 +220,7 @@ function SignalCard({
 
         <button
           onClick={onSources}
-          className="flex items-center gap-1.5 text-[10.5px] text-ink3 underline underline-offset-2"
+          className="flex items-center gap-1.5 text-[12px] text-ink3 underline underline-offset-2"
         >
           {s.cluster
             .slice(0, 3)
@@ -232,19 +231,19 @@ function SignalCard({
         <div className="grid grid-cols-3 gap-2">
           <button
             onClick={() => onAction(s.id, "act")}
-            className="rounded-full bg-ink py-2 text-[12px] font-medium text-bg"
+            className="rounded-full bg-ink py-2 text-[14px] font-medium text-bg"
           >
             Act
           </button>
           <button
             onClick={() => onAction(s.id, "hold")}
-            className="rounded-full border border-line py-2 text-[12px] font-medium text-ink2"
+            className="rounded-full border border-line py-2 text-[14px] font-medium text-ink2"
           >
             Hold
           </button>
           <button
             onClick={() => onAction(s.id, "kill")}
-            className="rounded-full border border-line py-2 text-[12px] font-medium text-ink3"
+            className="rounded-full border border-line py-2 text-[14px] font-medium text-ink3"
           >
             Kill
           </button>

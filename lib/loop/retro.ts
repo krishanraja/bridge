@@ -80,7 +80,7 @@ Below are corroborated stories from a fresh sweep. Name the ONE most important s
       ? `Missed one: ${missed.headline.slice(0, 80)}.`
       : "Missed nothing material that a fresh sweep could find.",
     proposal.summary,
-    "Approve the changes in Settings, or skip and nothing moves.",
+    "Have a look in Settings when you get a moment, or leave it and nothing changes.",
   ];
 
   /* Keep the register clean even in the retro. */

@@ -10,7 +10,7 @@ export function RoomHeader({ eyebrow, title, right }: RoomHeaderProps) {
       <div>
         <div className="eyebrow">{eyebrow}</div>
         {title && (
-          <div className="num-display text-[22px] font-medium leading-tight">
+          <div className="num-display text-[27px] font-medium leading-tight">
             {title}
           </div>
         )}

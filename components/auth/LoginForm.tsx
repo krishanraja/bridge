@@ -62,7 +62,7 @@ export function LoginForm() {
           />
           <button
             type="submit"
-            className="rounded-full bg-ink py-4 text-[15px] font-medium text-bg"
+            className="rounded-full bg-ink py-4 text-[17px] font-medium text-bg"
           >
             Send the code
           </button>
@@ -77,19 +77,19 @@ export function LoginForm() {
             value={code}
             onChange={(e) => setCode(e.target.value)}
             placeholder="Six digits"
-            className="num-display w-full rounded-2xl border border-line bg-paper px-5 py-4 text-center text-[22px] tracking-[0.3em] text-ink outline-none focus:border-ink"
+            className="num-display w-full rounded-2xl border border-line bg-paper px-5 py-4 text-center text-[27px] tracking-[0.3em] text-ink outline-none focus:border-ink"
             disabled={stage === "checking"}
           />
           <button
             type="submit"
             disabled={stage === "checking"}
-            className="rounded-full bg-ink py-4 text-[15px] font-medium text-bg disabled:opacity-60"
+            className="rounded-full bg-ink py-4 text-[17px] font-medium text-bg disabled:opacity-60"
           >
             {stage === "checking" ? "Checking" : "Open"}
           </button>
           <button
             type="button"
-            className="mt-1 text-[12px] text-ink3 underline underline-offset-2"
+            className="mt-1 text-[14px] text-ink3 underline underline-offset-2"
             onClick={() => {
               setStage("email");
               setCode("");
@@ -101,7 +101,7 @@ export function LoginForm() {
         </form>
       )}
       {note && (
-        <p className="mt-3 text-center text-[13px] leading-snug text-ink2">
+        <p className="mt-3 text-center text-[15px] leading-snug text-ink2">
           {note}
         </p>
       )}

@@ -95,7 +95,7 @@ export function Dial({ value, size = "standard", label, delta, atRisk }: DialPro
           {label && <span className="eyebrow">{label}</span>}
           {delta != null && delta !== 0 && (
             <span
-              className="num-display text-[10.5px] font-medium"
+              className="num-display text-[12px] font-medium"
               style={{ color: delta > 0 ? "var(--mint-deep)" : "var(--risk)" }}
             >
               {delta > 0 ? "▲" : "▼"} {Math.abs(delta)}

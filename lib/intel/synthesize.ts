@@ -4,6 +4,7 @@
 import "server-only";
 import { claude, extractJson } from "./llm";
 import { BANNED_LIST } from "@/lib/copy/banned";
+import { VOICE } from "@/lib/copy/voice";
 import type { CardDraft, ScoredCluster } from "./types";
 
 export interface AssumptionRef {
@@ -16,20 +17,22 @@ export async function synthesizeCard(
   assumptions: AssumptionRef[],
   notes?: string[],
 ): Promise<CardDraft | null> {
-  const system = `You write signal cards for Amperity's leadership office. Amperity is the enterprise customer data platform whose moat is identity resolution; AmpAI is its AI product line.
-Rules: plain speech, no hype, no em dashes, none of these words: ${BANNED_LIST}. Use ONLY facts present in the provided items; invent nothing, not even plausible detail.
-House assumptions:
+  const system = `${VOICE}
+
+You are writing a short market card for Amperity's four leaders. Amperity is the enterprise customer data platform whose moat is identity resolution; AmpAI is its AI product line.
+Use ONLY facts present in the provided items; invent nothing, not even plausible detail. No em dashes. Do not use any of these words: ${BANNED_LIST}.
+House beliefs:
 ${assumptions.map((a) => `${a.id} :: ${a.statement}`).join("\n")}
 
 Reply with ONLY JSON:
 {
- "headline": "plain speech, 90 chars max",
- "for_amperity": "one sentence: why this matters to Amperity specifically, never generic",
- "posture": "one sentence starting with a verb: what the office would do",
+ "headline": "plain, human headline, 90 chars max",
+ "for_amperity": "one warm sentence on why this matters to Amperity specifically, never generic",
+ "posture": "one gentle sentence offering what the team might consider doing, framed as a suggestion not an order",
  "assumption": {"id": "id from the list or null", "direction": -1 | 0 | 1, "weight": 1 | 2 | 3},
  "confidence": "high" | "low"
 }
-direction 1 supports the assumption, -1 challenges it, 0 neutral. weight: 1 light, 2 material, 3 heavy. confidence low means the for_amperity read is a stretch.`;
+direction 1 supports the belief, -1 challenges it, 0 neutral. weight: 1 light, 2 material, 3 heavy. confidence low means the for_amperity read is a stretch.`;
 
   const user = c.items
     .map((i) => `- ${i.title} (${i.source})${i.snippet ? ` :: ${i.snippet}` : ""}`)

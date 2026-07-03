@@ -55,13 +55,13 @@ export function ThreadsManager({
     <section className="mx-5 flex items-center justify-between rounded-xl border border-line bg-paper px-3.5 py-2.5">
       <div>
         <div className="eyebrow">Threads</div>
-        <p className="text-[11px] text-ink3">
+        <p className="text-[13px] text-ink3">
           {threads.length} relationship{threads.length === 1 ? "" : "s"} in play
         </p>
       </div>
       <button
         onClick={() => setOpen(true)}
-        className="rounded-full border border-line px-3.5 py-1.5 text-[12px] font-medium text-ink2"
+        className="rounded-full border border-line px-3.5 py-1.5 text-[14px] font-medium text-ink2"
       >
         Open
       </button>
@@ -71,7 +71,7 @@ export function ThreadsManager({
           {isOperator && !adding && (
             <button
               onClick={() => setAdding(true)}
-              className="self-start rounded-full bg-ink px-3.5 py-1.5 text-[12px] font-medium text-bg"
+              className="self-start rounded-full bg-ink px-3.5 py-1.5 text-[14px] font-medium text-bg"
             >
               Open a thread
             </button>
@@ -83,13 +83,13 @@ export function ThreadsManager({
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Who or what"
-                className="rounded-lg border border-line bg-paper px-3 py-2 text-[13px] outline-none focus:border-ink"
+                className="rounded-lg border border-line bg-paper px-3 py-2 text-[15px] outline-none focus:border-ink"
               />
               <input
                 value={org}
                 onChange={(e) => setOrg(e.target.value)}
                 placeholder="Org"
-                className="rounded-lg border border-line bg-paper px-3 py-2 text-[13px] outline-none focus:border-ink"
+                className="rounded-lg border border-line bg-paper px-3 py-2 text-[15px] outline-none focus:border-ink"
               />
               <div className="flex gap-1.5">
                 {SEAT_IDS.map((id) => (
@@ -102,18 +102,18 @@ export function ThreadsManager({
                 type="date"
                 value={touch}
                 onChange={(e) => setTouch(e.target.value)}
-                className="rounded-lg border border-line bg-paper px-3 py-2 text-[13px] outline-none focus:border-ink"
+                className="rounded-lg border border-line bg-paper px-3 py-2 text-[15px] outline-none focus:border-ink"
               />
               <input
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
                 placeholder="Next touch, one line"
-                className="rounded-lg border border-line bg-paper px-3 py-2 text-[13px] outline-none focus:border-ink"
+                className="rounded-lg border border-line bg-paper px-3 py-2 text-[15px] outline-none focus:border-ink"
               />
               <select
                 value={linked}
                 onChange={(e) => setLinked(e.target.value)}
-                className="rounded-lg border border-line bg-paper px-3 py-2 text-[13px] outline-none focus:border-ink"
+                className="rounded-lg border border-line bg-paper px-3 py-2 text-[15px] outline-none focus:border-ink"
               >
                 <option value="">No linked priority</option>
                 {priorities.map((p) => (
@@ -122,7 +122,7 @@ export function ThreadsManager({
                   </option>
                 ))}
               </select>
-              {err && <p className="text-[12px] text-risk">{err}</p>}
+              {err && <p className="text-[14px] text-risk">{err}</p>}
               <div className="flex gap-2">
                 <button
                   disabled={pending || !name.trim() || !org.trim()}
@@ -150,13 +150,13 @@ export function ThreadsManager({
                       }
                     })
                   }
-                  className="rounded-full bg-ink px-4 py-2 text-[12px] font-medium text-bg disabled:opacity-60"
+                  className="rounded-full bg-ink px-4 py-2 text-[14px] font-medium text-bg disabled:opacity-60"
                 >
                   Open it
                 </button>
                 <button
                   onClick={() => setAdding(false)}
-                  className="rounded-full border border-line px-4 py-2 text-[12px] text-ink2"
+                  className="rounded-full border border-line px-4 py-2 text-[14px] text-ink2"
                 >
                   Cancel
                 </button>
@@ -165,21 +165,20 @@ export function ThreadsManager({
           )}
 
           {threads.length === 0 && !adding && (
-            <p className="text-[12px] text-ink3">
-              No threads yet. Relationships that need a system behind them live
-              here.
+            <p className="text-[14px] text-ink3">
+              No threads yet. The relationships worth staying close to live here.
             </p>
           )}
 
           {threads.map((t) => (
             <div key={t.id} className="rounded-lg border border-line px-3 py-2">
               <div className="flex items-center justify-between">
-                <span className="text-[13px] font-medium text-ink">{t.name}</span>
+                <span className="text-[15px] font-medium text-ink">{t.name}</span>
                 <span className="eyebrow" style={{ color: statusColor(t.status) }}>
                   {t.status}
                 </span>
               </div>
-              <p className="text-[10.5px] text-ink3">
+              <p className="text-[12px] text-ink3">
                 {t.org} · {SEATS[t.seatOwner].shortName}
                 {t.nextTouchDate ? ` · next ${t.nextTouchDate}` : ""}
                 {t.linkedPriorityName ? ` · ${t.linkedPriorityName}` : ""}

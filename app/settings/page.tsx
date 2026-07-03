@@ -130,10 +130,10 @@ export default async function SettingsPage() {
           {SEAT_IDS.map((id) => (
             <div key={id} className="flex items-center justify-between">
               <div>
-                <span className="text-[13px] font-medium text-ink">
+                <span className="text-[15px] font-medium text-ink">
                   {SEATS[id].name}
                 </span>
-                <span className="ml-2 text-[10.5px] text-ink3">
+                <span className="ml-2 text-[12px] text-ink3">
                   {SEATS[id].location}
                 </span>
               </div>
@@ -148,14 +148,14 @@ export default async function SettingsPage() {
 
       <section className="mx-5 rounded-xl border border-line bg-paper p-3.5">
         <div className="eyebrow mb-1.5">This instrument</div>
-        <p className="text-[12px] leading-relaxed text-ink2">
+        <p className="text-[14px] leading-relaxed text-ink2">
           {seedMode
             ? "Running on sample data. Every row is illustrative and marked so. Live mode starts when the database is connected and the sample comes out."
             : "Live. The pipeline, voice, the weekly loop, and the learning approvals all run against real data."}
         </p>
-        <p className="mt-1.5 text-[10.5px] text-ink3">
-          The market pipeline, voice, and the weekly loop are live. Learning
-          lands next.
+        <p className="mt-1.5 text-[12px] text-ink3">
+          Nothing it learns changes on its own. Each Sunday it proposes what to
+          tune, and you approve it or leave it.
         </p>
       </section>
 
@@ -184,7 +184,7 @@ export default async function SettingsPage() {
       <section className="mx-5 min-h-0 overflow-hidden rounded-xl border border-line bg-paper p-3.5">
         <div className="eyebrow mb-1.5">The audit trail</div>
         {audit.length === 0 ? (
-          <p className="text-[11px] leading-snug text-ink3">
+          <p className="text-[13px] leading-snug text-ink3">
             Operator edits land here: brief changes, priority curation, source
             tuning, learning approvals. All four seats can see the hand on the
             tiller.
@@ -193,11 +193,11 @@ export default async function SettingsPage() {
           <div className="flex flex-col gap-1">
             {audit.map((a) => (
               <div key={a.id} className="flex items-center justify-between">
-                <span className="text-[11px] text-ink2">
+                <span className="text-[13px] text-ink2">
                   {a.action.replace(/_/g, " ")}
                   {a.seat ? ` · ${SEATS[a.seat].shortName}` : ""}
                 </span>
-                <span className="text-[10.5px] text-ink3">
+                <span className="text-[12px] text-ink3">
                   {a.created_at.slice(0, 10)}
                 </span>
               </div>
@@ -216,7 +216,7 @@ export default async function SettingsPage() {
 function Metric({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex flex-col items-center">
-      <span className="num-display text-[20px] font-medium">{value}</span>
+      <span className="num-display text-[23px] font-medium">{value}</span>
       <span className="eyebrow">{label}</span>
     </div>
   );

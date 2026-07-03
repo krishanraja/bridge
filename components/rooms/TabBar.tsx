@@ -83,7 +83,7 @@ export function TabBar() {
           >
             <TabIcon tab={t.href} active={active} />
             <span
-              className="text-[10.5px] tracking-[0.02em]"
+              className="text-[12px] tracking-[0.02em]"
               style={{
                 color: active ? "var(--ink)" : "var(--ink-3)",
                 fontWeight: active ? 600 : 400,

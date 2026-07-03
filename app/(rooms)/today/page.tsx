@@ -25,7 +25,7 @@ export default async function TodayPage() {
       <header className="flex items-start justify-between px-5 pt-4">
         <div>
           <div className="eyebrow">Today{data.demo ? " · Sample" : ""}</div>
-          <div className="num-display text-[26px] font-medium leading-tight">
+          <div className="num-display text-[31px] font-medium leading-tight">
             {dateLabel}
           </div>
         </div>
@@ -40,10 +40,10 @@ export default async function TodayPage() {
       {data.focus && (
         <section className="mx-5 rounded-xl border border-mint-bd bg-mint-wash px-4 py-3">
           <div className="eyebrow mb-1">Today&apos;s call to make</div>
-          <p className="text-[14px] leading-snug text-ink">{data.focus.text}</p>
+          <p className="text-[16px] leading-snug text-ink">{data.focus.text}</p>
           <Link
             href={data.focus.href}
-            className="mt-2 inline-flex items-center rounded-full bg-ink px-3.5 py-1.5 text-[12px] font-medium text-bg"
+            className="mt-2 inline-flex items-center rounded-full bg-ink px-3.5 py-1.5 text-[14px] font-medium text-bg"
           >
             {data.focus.actionLabel}
           </Link>
@@ -54,8 +54,8 @@ export default async function TodayPage() {
         <div className="eyebrow mb-1.5">On the radar</div>
         <div className="flex flex-col gap-1.5">
           {data.topSignals.length === 0 && (
-            <p className="text-[12px] text-ink3">
-              Quiet in the market today. That is a fact, not a failure.
+            <p className="text-[14px] text-ink3">
+              Quiet on the market today, nothing that needed your eyes.
             </p>
           )}
           {data.topSignals.map((s) => (
@@ -68,7 +68,7 @@ export default async function TodayPage() {
                 className="h-5 w-1 shrink-0 rounded-full"
                 style={{ background: `var(${LANES[s.lane].cssVar})` }}
               />
-              <span className="truncate text-[12px] leading-tight text-ink2">
+              <span className="truncate text-[14px] leading-tight text-ink2">
                 {s.headline}
               </span>
             </Link>

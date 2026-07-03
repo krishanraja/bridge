@@ -18,7 +18,7 @@ export interface ActionResult {
 
 const DEMO_REFUSAL: ActionResult = {
   ok: false,
-  message: "Demo mode is read only. Connect the database to write.",
+  message: "This is sample data, so nothing saves here. The live version writes for real.",
 };
 
 async function seatOrNull(): Promise<SeatId | null> {
@@ -57,7 +57,7 @@ export async function createPriority(input: {
 }): Promise<ActionResult> {
   const seat = await seatOrNull();
   if (!seat) return DEMO_REFUSAL;
-  if (seat !== 4) return { ok: false, message: "Only the operator seeds priorities." };
+  if (seat !== 4) return { ok: false, message: "Krish sets up the priorities, but you can shape everything else." };
   const sb = await supabaseServer();
 
   const { count } = await sb
@@ -65,11 +65,11 @@ export async function createPriority(input: {
     .select("id", { count: "exact", head: true })
     .is("retired_at", null);
   if ((count ?? 0) >= 5) {
-    return { ok: false, message: "Five is the ceiling. Retire one first." };
+    return { ok: false, message: "Five priorities feels like plenty. Worth retiring one before adding another." };
   }
 
   const name = input.name.trim().slice(0, 60);
-  if (!name) return { ok: false, message: "A priority needs a name." };
+  if (!name) return { ok: false, message: "This one needs a name to save." };
 
   const { error } = await sb.from("priorities").insert({
     name,
@@ -77,7 +77,7 @@ export async function createPriority(input: {
     display_order: (count ?? 0) + 1,
     blocker: input.blocker?.trim() || null,
   });
-  if (error) return { ok: false, message: "That did not save. Try again." };
+  if (error) return { ok: false, message: "That did not save. Mind trying again?" };
 
   await logAudit(seat, "priority_create", { name });
   revalidatePath("/priorities");
@@ -96,7 +96,7 @@ export async function updatePriority(input: {
 }): Promise<ActionResult> {
   const seat = await seatOrNull();
   if (!seat) return DEMO_REFUSAL;
-  if (seat !== 4) return { ok: false, message: "Only the operator edits priorities." };
+  if (seat !== 4) return { ok: false, message: "Krish looks after the priorities themselves." };
   const sb = await supabaseServer();
 
   const patch: Record<string, unknown> = {};
@@ -109,7 +109,7 @@ export async function updatePriority(input: {
   if (input.state === "retired") patch.retired_at = new Date().toISOString();
 
   const { error } = await sb.from("priorities").update(patch).eq("id", input.id);
-  if (error) return { ok: false, message: "That did not save. Try again." };
+  if (error) return { ok: false, message: "That did not save. Mind trying again?" };
 
   await logAudit(seat, "priority_update", { id: input.id, ...patch });
   revalidatePath("/priorities");
@@ -127,11 +127,11 @@ export async function setMove(input: {
 }): Promise<ActionResult> {
   const seat = await seatOrNull();
   if (!seat) return DEMO_REFUSAL;
-  if (seat !== 4) return { ok: false, message: "Only the operator sets moves. Rewrite proposes instead." };
+  if (seat !== 4) return { ok: false, message: "Krish sets the moves, but you can suggest a rewrite any time." };
   const sb = await supabaseServer();
 
   const text = input.text.trim();
-  if (!text) return { ok: false, message: "A move is one sentence with a verb." };
+  if (!text) return { ok: false, message: "A move works best as one clear sentence." };
 
   const { error } = await sb.from("moves").insert({
     priority_id: input.priority_id,
@@ -144,10 +144,10 @@ export async function setMove(input: {
     if (error.code === "23505") {
       return {
         ok: false,
-        message: "One move per priority per week. Edit this week's move instead.",
+        message: "There is already a move for this priority this week. You can edit that one.",
       };
     }
-    return { ok: false, message: "That did not save. Try again." };
+    return { ok: false, message: "That did not save. Mind trying again?" };
   }
 
   await logAudit(seat, "move_set", { priority_id: input.priority_id, text });
@@ -167,13 +167,13 @@ export async function updateMove(input: {
   const sb = await supabaseServer();
 
   if (input.state === "missed" && !input.outcome_note?.trim()) {
-    return { ok: false, message: "Missed needs a one line reason." };
+    return { ok: false, message: "A quick note on what got in the way helps here." };
   }
 
   const patch: Record<string, unknown> = {};
   if (input.text !== undefined) {
     const text = input.text.trim();
-    if (!text) return { ok: false, message: "A move is one sentence with a verb." };
+    if (!text) return { ok: false, message: "A move works best as one clear sentence." };
     patch.text = text;
     if (seat !== 4) patch.state = "proposed";
   }
@@ -181,7 +181,7 @@ export async function updateMove(input: {
   if (input.outcome_note !== undefined) patch.outcome_note = input.outcome_note.trim() || null;
 
   const { error } = await sb.from("moves").update(patch).eq("id", input.id);
-  if (error) return { ok: false, message: "That did not save. Try again." };
+  if (error) return { ok: false, message: "That did not save. Mind trying again?" };
 
   const eventType =
     input.state === "agreed"
@@ -210,7 +210,7 @@ export async function logDecision(input: {
   const sb = await supabaseServer();
 
   const text = input.text.trim();
-  if (!text) return { ok: false, message: "A decision needs words." };
+  if (!text) return { ok: false, message: "Add a line or two and it will save." };
 
   const { data, error } = await sb
     .from("decisions")
@@ -224,7 +224,7 @@ export async function logDecision(input: {
     })
     .select("id")
     .single();
-  if (error) return { ok: false, message: "That did not save. Try again." };
+  if (error) return { ok: false, message: "That did not save. Mind trying again?" };
 
   await logEvent(seat, "decision_log", "decision", data.id, {
     via: input.logged_via ?? "typed",
@@ -246,7 +246,7 @@ export async function updateDecision(input: {
     .from("decisions")
     .update({ state: input.state })
     .eq("id", input.id);
-  if (error) return { ok: false, message: "That did not save. Try again." };
+  if (error) return { ok: false, message: "That did not save. Mind trying again?" };
 
   if (seat === 4) await logAudit(seat, "decision_state", { id: input.id, state: input.state });
   revalidatePath("/table");
@@ -273,7 +273,7 @@ export async function votePulse(
   const { error } = await sb
     .from("pulses")
     .upsert(rows, { onConflict: "iso_week,seat,priority_id" });
-  if (error) return { ok: false, message: "The vote did not land. Try again." };
+  if (error) return { ok: false, message: "That did not go through. Mind trying again?" };
 
   await sb.from("receipts").upsert(
     { seat, artifact_type: "pulse", artifact_id: week },
@@ -299,11 +299,11 @@ export async function createThread(input: {
 }): Promise<ActionResult> {
   const seat = await seatOrNull();
   if (!seat) return DEMO_REFUSAL;
-  if (seat !== 4) return { ok: false, message: "Only the operator opens threads." };
+  if (seat !== 4) return { ok: false, message: "Krish opens new threads, but anyone can move one along." };
   const sb = await supabaseServer();
   const name = input.name.trim();
   const org = input.org.trim();
-  if (!name || !org) return { ok: false, message: "A thread needs a name and an org." };
+  if (!name || !org) return { ok: false, message: "A name and an org will get this started." };
 
   const { error } = await sb.from("threads").insert({
     name,
@@ -313,7 +313,7 @@ export async function createThread(input: {
     next_touch_note: input.next_touch_note?.trim() || null,
     linked_priority_id: input.linked_priority_id || null,
   });
-  if (error) return { ok: false, message: "That did not save. Try again." };
+  if (error) return { ok: false, message: "That did not save. Mind trying again?" };
 
   await logAudit(seat, "thread_create", { name, org });
   revalidatePath("/priorities");
@@ -340,7 +340,7 @@ export async function updateThread(input: {
   if (input.last_touch_date !== undefined) patch.last_touch_date = input.last_touch_date || null;
 
   const { error } = await sb.from("threads").update(patch).eq("id", input.id);
-  if (error) return { ok: false, message: "That did not save. Try again." };
+  if (error) return { ok: false, message: "That did not save. Mind trying again?" };
 
   await logEvent(seat, "thread_update", "thread", input.id, patch);
   revalidatePath("/priorities");

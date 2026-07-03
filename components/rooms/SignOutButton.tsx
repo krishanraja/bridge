@@ -11,7 +11,7 @@ export function SignOutButton() {
         await supabaseBrowser().auth.signOut();
         router.replace("/login");
       }}
-      className="w-full rounded-full border border-line py-2.5 text-[12px] font-medium text-ink2"
+      className="w-full rounded-full border border-line py-2.5 text-[14px] font-medium text-ink2"
     >
       Sign out
     </button>

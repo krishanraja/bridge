@@ -6,16 +6,16 @@
 export default function Error({ reset }: { error: Error; reset: () => void }) {
   return (
     <div className="flex h-[100dvh] flex-col items-center justify-center gap-4 px-8 text-center">
-      <div className="num-display text-[22px] font-medium text-ink">
+      <div className="num-display text-[27px] font-medium text-ink">
         Something did not load.
       </div>
-      <p className="text-[13px] leading-snug text-ink2">
+      <p className="text-[15px] leading-snug text-ink2">
         The instrument hit a snag reading this room. It is not your fault and
         nothing was lost.
       </p>
       <button
         onClick={reset}
-        className="rounded-full bg-ink px-4 py-2 text-[12px] font-medium text-bg"
+        className="rounded-full bg-ink px-4 py-2 text-[14px] font-medium text-bg"
       >
         Try again
       </button>

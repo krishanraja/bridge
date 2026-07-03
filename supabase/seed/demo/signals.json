@@ -5,7 +5,7 @@
     "lane": 1,
     "headline": "Databricks enters the CDP market with CustomerLake and agentic identity resolution",
     "for_amperity": "A partner platform is now building identity resolution into the lakehouse itself, with HP, Circle K, and AB InBev already in private preview.",
-    "posture": "Put a CustomerLake teardown in front of the partner team this week and write the coexistence line before Databricks writes it for us.",
+    "posture": "Might be worth getting ahead of this with a calm coexistence line, before the story gets told for us.",
     "score": 13.8,
     "corroboration": 2,
     "cluster": [
@@ -30,7 +30,7 @@
     "lane": 1,
     "headline": "Snowflake details native identity resolution with four matching passes",
     "for_amperity": "Snowflake now resolves first party and partner identities in-platform, with LiveRamp, Experian, Acxiom, and TransUnion graphs as native apps.",
-    "posture": "Benchmark our match accuracy against the native pass publicly, because the moat only counts if buyers can see it.",
+    "posture": "A public benchmark of our match accuracy could help here, since the moat only counts if buyers can see it.",
     "score": 12.6,
     "corroboration": 1,
     "cluster": [
@@ -50,7 +50,7 @@
     "lane": 2,
     "headline": "Snowflake commits 6 billion dollars to AWS for agentic AI compute",
     "for_amperity": "Its largest infrastructure deal ever signals where the enterprise data gravity and the agent workloads will sit for the next five years.",
-    "posture": "Keep the Snowflake alignment loud in the field while the platform spends to make agents on governed data the default.",
+    "posture": "Probably worth keeping our Snowflake alignment visible in the field while they invest in this direction.",
     "score": 12.1,
     "corroboration": 2,
     "cluster": [
@@ -75,7 +75,7 @@
     "lane": 3,
     "headline": "Hightouch ships Lifecycle Studio, agentic campaigns promptable from Claude",
     "for_amperity": "The composable side now sells finished agentic marketing workflows on top of the warehouse, not just pipes.",
-    "posture": "Sharpen the line that agents are only as good as the identity under them, and prove it with a match-rate story.",
+    "posture": "A good moment to gently remind the market that agents are only as good as the identity underneath them.",
     "score": 11.4,
     "corroboration": 2,
     "cluster": [
@@ -100,7 +100,7 @@
     "lane": 3,
     "headline": "Rokt mParticle launches an audience agent claiming big ad match-rate gains",
     "for_amperity": "A direct competitor is selling autonomous audience building with match uplift numbers attached, which is our accuracy story told their way.",
-    "posture": "Publish our own match benchmark with a named methodology so the category compares on evidence, not claims.",
+    "posture": "We could share our own match numbers with a clear methodology, so the comparison rests on evidence.",
     "score": 10.8,
     "corroboration": 2,
     "cluster": [
@@ -125,7 +125,7 @@
     "lane": 3,
     "headline": "Treasure Data rebrands as Treasure AI and repositions as an agentic platform",
     "for_amperity": "A top-five CDP just abandoned the category label, confirming the budget is moving from CDP to agentic customer experience.",
-    "posture": "Hold our naming discipline: sell the identity substrate for AI rather than chase the rebrand wave.",
+    "posture": "Feels right to hold our own line here and keep selling the identity substrate, rather than chase the rebrand.",
     "score": 10.2,
     "corroboration": 1,
     "cluster": [
@@ -145,7 +145,7 @@
     "lane": 4,
     "headline": "Snowflake says Claude in Cortex is its fastest growing product ever",
     "for_amperity": "Enterprises are adopting governed AI on the data platform at record pace, which is exactly the surface AmpAI needs to meet.",
-    "posture": "Ship the Cortex integration proof point while the adoption curve is the headline.",
+    "posture": "A nice window to put the Cortex integration proof point forward while adoption is the story.",
     "score": 11.0,
     "corroboration": 2,
     "cluster": [
@@ -170,7 +170,7 @@
     "lane": 5,
     "headline": "Marriott rolls out Ask Bonvoy, an AI trip planner grounded in loyalty data",
     "for_amperity": "A flagship travel brand just made loyalty data the grounding layer for a consumer AI product, the pattern our travel accounts will copy.",
-    "posture": "Take the Ask Bonvoy pattern to the top three travel accounts as the reference architecture conversation.",
+    "posture": "Could be a good conversation to take to our top travel accounts as a reference pattern.",
     "score": 10.4,
     "corroboration": 2,
     "cluster": [
@@ -195,7 +195,7 @@
     "lane": 6,
     "headline": "Databricks agrees to buy Panther Labs, its third security acquisition",
     "for_amperity": "The lakehouse keeps buying adjacent categories, and customer data infrastructure sits inside its acquisition radius.",
-    "posture": "Refresh the acquirer map with Databricks moved up a tier and decide what we want to be true if the call ever comes.",
+    "posture": "Worth refreshing the acquirer map with Databricks a notch higher, and quietly thinking through what we would want if a call ever came.",
     "score": 10.6,
     "corroboration": 2,
     "cluster": [
@@ -220,7 +220,7 @@
     "lane": 7,
     "headline": "EU deal delays high-risk AI Act duties to late 2027; transparency still lands in August",
     "for_amperity": "Enterprise buyers get regulatory breathing room on AI deployments, but the transparency rules arriving next month still favor governed data.",
-    "posture": "Fold the August transparency date into the trust-layer pitch for EU-exposed accounts.",
+    "posture": "The August transparency date could fold naturally into the trust conversation for EU-exposed accounts.",
     "score": 9.8,
     "corroboration": 2,
     "cluster": [
@@ -245,7 +245,7 @@
     "lane": 8,
     "headline": "Airship names LiveRamp veteran Laura Zwahlen chief revenue officer",
     "for_amperity": "Identity-fluent revenue leadership is landing at mobile engagement vendors, a sign the activation layer wants our vocabulary.",
-    "posture": "Add Zwahlen to the partner conversation list for the activation alliances review.",
+    "posture": "Might be worth adding Zwahlen to the list for the activation partnerships review.",
     "score": 9.2,
     "corroboration": 2,
     "cluster": [
