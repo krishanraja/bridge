@@ -5,7 +5,7 @@
 
 export default function Error({ reset }: { error: Error; reset: () => void }) {
   return (
-    <div className="flex h-[100dvh] flex-col items-center justify-center gap-4 px-8 text-center">
+    <div className="app-frame flex flex-col items-center justify-center gap-4 px-8 text-center">
       <div className="num-display text-[27px] font-medium text-ink">
         Something did not load.
       </div>

@@ -2,7 +2,7 @@
 
 export default function Loading() {
   return (
-    <div className="flex h-[100dvh] items-center justify-center">
+    <div className="app-frame flex items-center justify-center">
       <div
         className="h-10 w-10 rounded-full"
         style={{ background: "var(--mint-wash)", border: "1px solid var(--mint-bd)" }}

@@ -27,6 +27,11 @@
 
   --tabbar-h: 72px;
   --dial-arc: var(--mint-deep);
+  /* The phone frame. The app is a phone-sized instrument; on any viewport
+     larger than this (a low-density phone reporting wide CSS px, a tablet, a
+     desktop) it renders as a centered frame rather than a stretched sheet. */
+  --frame-w: 440px;
+  --frame-h: 940px;
 }
 
 /* Night variant: auto 21:00 to 06:00 local and during audio playback. Ink scales invert, mint holds. */
@@ -74,14 +79,35 @@ body {
   font-family: var(--font-body), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  /* Center the phone frame. Gutters show the page background. */
+  display: grid;
+  place-items: center;
 }
 
-/* The one app frame. Content region is a grid that never overflows. */
+/* The one app frame. It is phone sized at every viewport: it fills a true
+   phone and centers as a frame on anything larger, so type is never tiny and
+   the layout never balloons. Content region is a grid that never overflows. */
+.app-shell,
+.app-frame {
+  width: 100%;
+  max-width: var(--frame-w);
+  height: min(100dvh, var(--frame-h));
+  margin: 0 auto;
+}
+
 .app-shell {
-  height: 100dvh;
   display: grid;
   grid-template-rows: 1fr var(--tabbar-h);
   padding-top: env(safe-area-inset-top);
+}
+
+/* Once the viewport is wider than the frame, draw its edges so it reads as a
+   deliberate frame and not a narrow accident. */
+@media (min-width: 460px) {
+  .app-shell,
+  .app-frame {
+    border-inline: 1px solid var(--line);
+  }
 }
 
 .room {
@@ -127,15 +153,6 @@ body {
   letter-spacing: -0.02em;
 }
 
-/* Desktop: one breakpoint. Center the phone column, no desktop features. */
-@media (min-width: 1280px) {
-  .app-shell {
-    max-width: 430px;
-    margin: 0 auto;
-    border-left: 1px solid var(--line);
-    border-right: 1px solid var(--line);
-  }
-}
 
 /* Motion: 150 to 220ms ease-out only. Reduced motion collapses to fades. */
 @media (prefers-reduced-motion: reduce) {

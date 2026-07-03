@@ -4,9 +4,9 @@ import { LoginForm } from "@/components/auth/LoginForm";
 export default function LoginPage() {
   return (
     <div
-      className="flex h-[100dvh] flex-col items-center overflow-hidden px-7"
+      className="app-frame flex flex-col items-center overflow-hidden px-7"
       style={{
-        paddingTop: "calc(env(safe-area-inset-top) + 14vh)",
+        paddingTop: "calc(env(safe-area-inset-top) + 64px)",
         paddingBottom: "calc(env(safe-area-inset-bottom) + 28px)",
       }}
     >
