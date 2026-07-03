@@ -76,7 +76,7 @@ async function assemble(kind: "morning" | "close") {
   });
   if (signals.length === 0) lines.push("The pipeline found nothing that clears the bar today.");
 
-  lines.push("\nHOUSE VIEW (with movement):");
+  lines.push("\nOUR THINKING (with movement):");
   const cut14 = isoWeekShift(week, -2);
   for (const a of assumptionsQ.data ?? []) {
     const ref = `A${refs.length + 1}`;
@@ -143,9 +143,9 @@ export async function compose(
     kind === "morning"
       ? `${VOICE}
 
-Write the morning brief: a spoken read of 220 to 280 words the four leaders hear over coffee. Four short sections with these exact headers: Market, The house, The week, The call.
+Write the morning brief: a spoken read of 220 to 280 words the four leaders hear over coffee. Four short sections with these exact headers: Market, Our thinking, The week, The call.
 Market: the two or three things that actually moved, in plain language, and a light word on why each matters to us.
-The house: how our thinking is holding up, one belief that shifted.
+Our thinking: how the beliefs behind the strategy are holding up, one that shifted.
 The week: where the moves stand. If something slipped, say so kindly, without blame.
 The call: the one thing worth deciding today. Offer it as a suggestion and say whose call it feels like. Never tell them what they will do.
 This reader likes it delivered like this: ${style.memo}

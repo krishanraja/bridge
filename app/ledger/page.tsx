@@ -15,7 +15,7 @@ export default async function LedgerPage() {
     <div className="grid h-full min-h-0 grid-rows-[auto_1fr]">
       <header className="flex items-center justify-between px-5 pt-4 pb-1">
         <div>
-          <div className="eyebrow">The house view</div>
+          <div className="eyebrow">Our thinking</div>
         </div>
         <Link
           href="/radar"

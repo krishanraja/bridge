@@ -211,8 +211,8 @@ function SignalCard({
                   s.assumption_direction > 0 ? "var(--mint-deep)" : "var(--risk)"
                 }
               >
-                {s.assumption_direction > 0 ? "▲ supports" : "▼ challenges"} the
-                house view
+                {s.assumption_direction > 0 ? "▲ supports" : "▼ challenges"} our
+                thinking
               </Chip>
             </Link>
           )}

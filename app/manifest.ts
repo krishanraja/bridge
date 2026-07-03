@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "BRIDGE",
     short_name: "BRIDGE",
-    description: "The fifth seat at the leadership table.",
+    description: "For Amperity's leadership table.",
     id: "/",
     start_url: "/today",
     display: "standalone",

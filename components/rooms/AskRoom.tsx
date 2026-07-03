@@ -45,7 +45,7 @@ const GRAMMAR = [
   "Brief me on a company",
 ];
 
-const FALLBACK = "Not in the house context.";
+const FALLBACK = "I do not have anything on that here.";
 
 export function AskRoom({ operator }: { operator: boolean }) {
   const router = useRouter();

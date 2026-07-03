@@ -57,7 +57,7 @@ export async function detectDrift(): Promise<Drift[]> {
     const sponsor = priorities.find((p) => p.sponsor_seat)?.sponsor_seat ?? 1;
     drifts.push({
       seat: sponsor as SeatId,
-      line: `The house view moved: "${a.statement}" is now ${a.status}.`,
+      line: `Our thinking shifted: "${a.statement}" is now ${a.status}.`,
       subjectType: "assumption",
       subjectId: a.id,
     });

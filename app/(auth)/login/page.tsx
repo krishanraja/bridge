@@ -33,7 +33,7 @@ export default function LoginPage() {
             <h1 className="num-display text-[50px] font-medium leading-none tracking-tight">
               BRIDGE
             </h1>
-            <p className="eyebrow mt-2">The fifth seat</p>
+            <p className="eyebrow mt-2">For the leadership table</p>
           </div>
         </div>
 

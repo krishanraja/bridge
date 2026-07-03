@@ -191,7 +191,7 @@ export function LedgerDeck({
               </span>
             </div>
             <p className="text-[13px] text-ink3">
-              Your vote pulls the house number and lands in the audit trail.
+              Your vote pulls the shared number and lands in the audit trail.
             </p>
             <button
               disabled={pending}

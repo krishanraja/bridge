@@ -16,7 +16,7 @@ const spaceGrotesk = Space_Grotesk({
 
 export const metadata: Metadata = {
   title: "BRIDGE",
-  description: "The fifth seat at the leadership table.",
+  description: "For Amperity's leadership table.",
   applicationName: "BRIDGE",
   manifest: "/manifest.webmanifest",
   appleWebApp: {

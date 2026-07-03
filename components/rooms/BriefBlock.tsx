@@ -18,7 +18,7 @@ function BriefText({ brief }: { brief: BriefView }) {
       .map((c) => brief.refLabels[c])
       .filter((r): r is { label: string; url: string | null } => Boolean(r));
   };
-  const HEADERS = /^(Market|The house|The week|The call)\b/i;
+  const HEADERS = /^(Market|Our thinking|The week|The call)\b/i;
 
   return (
     <div className="flex flex-col gap-3 pt-1">

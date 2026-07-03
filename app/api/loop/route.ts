@@ -80,7 +80,7 @@ async function step(name: string) {
     for (const seat of SEAT_IDS) {
       const r = await pushToSeat(seat, "morning", {
         title: "The morning read is ready",
-        body: "Ninety seconds on the market, the house, and today's call.",
+        body: "Ninety seconds on the market, our thinking, and today's call.",
         url: "/today",
       });
       results.push({ seat, ...r });

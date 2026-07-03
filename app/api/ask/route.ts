@@ -13,7 +13,7 @@ import { VOICE } from "@/lib/copy/voice";
 export const maxDuration = 60;
 export const dynamic = "force-dynamic";
 
-const FALLBACK = "Not in the house context. Want me to run a market sweep on it?";
+const FALLBACK = "I do not have anything on that here. Want me to run a market sweep on it?";
 
 export async function POST(req: NextRequest) {
   const seat = await currentSeat();
