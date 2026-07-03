@@ -1,34 +1,61 @@
 "use client";
 
 /* The compass. Lands on a compact index of every priority; a tap opens the card;
-   a card tap opens the two-page detail. Depth by tap, never by scroll. */
+   a card tap opens the two-page detail. The operator curates; principals react. */
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import type { PriorityView } from "@/lib/data/views";
-import { SEATS } from "@/lib/seats";
+import { SEATS, SEAT_IDS, type SeatId } from "@/lib/seats";
 import { PRIORITY_STATE, MOVE_STATE } from "@/lib/copy/states";
 import { Dial } from "@/components/dial/Dial";
 import { Chip } from "@/components/ui/Chip";
 import { Sheet } from "@/components/ui/Sheet";
-import { tick } from "@/lib/haptics";
+import { tick, confirm as confirmHaptic } from "@/lib/haptics";
+import { createPriority, setMove, updateMove, updatePriority } from "@/app/actions";
 
-export function PriorityBoard({ priorities }: { priorities: PriorityView[] }) {
+export function PriorityBoard({
+  priorities,
+  seat,
+}: {
+  priorities: PriorityView[];
+  seat: SeatId;
+}) {
+  const router = useRouter();
   const [openId, setOpenId] = useState<string | null>(null);
   const [detail, setDetail] = useState<PriorityView | null>(null);
   const [detailPage, setDetailPage] = useState<0 | 1>(0);
+  const [adding, setAdding] = useState(false);
+  const operator = seat === 4;
+
+  const open = priorities.find((p) => p.id === openId) ?? null;
 
   if (priorities.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center gap-2 px-8 text-center">
+      <div className="flex flex-col items-center justify-center gap-3 px-8 text-center">
         <p className="text-[14px] leading-relaxed text-ink2">
           No priorities yet. The table sets three to five, each with one
-          sponsor. The operator seeds them from Settings.
+          sponsor and one move a week.
         </p>
+        {operator && (
+          <button
+            onClick={() => setAdding(true)}
+            className="rounded-full bg-ink px-4 py-2 text-[12px] font-medium text-bg"
+          >
+            Seed the first one
+          </button>
+        )}
+        <PriorityEditor
+          open={adding}
+          onClose={() => setAdding(false)}
+          onDone={() => {
+            setAdding(false);
+            router.refresh();
+          }}
+        />
       </div>
     );
   }
-
-  const open = priorities.find((p) => p.id === openId) ?? null;
 
   return (
     <div className="min-h-0 px-5 pb-3">
@@ -73,17 +100,36 @@ export function PriorityBoard({ priorities }: { priorities: PriorityView[] }) {
               </button>
             );
           })}
+          {operator && priorities.length < 5 && (
+            <button
+              onClick={() => setAdding(true)}
+              className="rounded-xl border border-dashed border-line py-1.5 text-[11px] text-ink3"
+            >
+              Add a priority ({priorities.length} of 5)
+            </button>
+          )}
         </div>
       ) : (
         <PriorityCard
           priority={open}
+          seat={seat}
           onBack={() => setOpenId(null)}
+          onChanged={() => router.refresh()}
           onDetail={() => {
             setDetail(open);
             setDetailPage(0);
           }}
         />
       )}
+
+      <PriorityEditor
+        open={adding}
+        onClose={() => setAdding(false)}
+        onDone={() => {
+          setAdding(false);
+          router.refresh();
+        }}
+      />
 
       <Sheet
         open={detail !== null}
@@ -162,14 +208,30 @@ export function PriorityBoard({ priorities }: { priorities: PriorityView[] }) {
 
 function PriorityCard({
   priority: p,
+  seat,
   onBack,
   onDetail,
+  onChanged,
 }: {
   priority: PriorityView;
+  seat: SeatId;
   onBack: () => void;
   onDetail: () => void;
+  onChanged: () => void;
 }) {
   const st = PRIORITY_STATE[p.state];
+  const operator = seat === 4;
+  const [editing, setEditing] = useState(false);
+  const [moveOpen, setMoveOpen] = useState(false);
+  const [missOpen, setMissOpen] = useState(false);
+  const [pending, startTransition] = useTransition();
+
+  const canAgree = p.move?.state === "proposed";
+  const canShip =
+    p.move &&
+    (p.move.owner_seat === seat || operator) &&
+    (p.move.state === "agreed" || p.move.state === "proposed");
+
   return (
     <article
       className="grid h-full min-h-0 grid-rows-[auto_auto_1fr_auto] gap-3 rounded-xl border border-line bg-paper p-4"
@@ -179,7 +241,12 @@ function PriorityCard({
         <button onClick={onBack} className="eyebrow underline underline-offset-2">
           ← All priorities
         </button>
-        <Chip color={st.color}>{st.label}</Chip>
+        <div className="flex items-center gap-1.5">
+          {operator && (
+            <Chip onClick={() => setEditing(true)}>Edit</Chip>
+          )}
+          <Chip color={st.color}>{st.label}</Chip>
+        </div>
       </div>
 
       <div className="flex items-center justify-between gap-3">
@@ -211,11 +278,58 @@ function PriorityCard({
                   {MOVE_STATE[p.move.state].label}
                 </span>
               </div>
+              <div className="mt-1.5 flex flex-wrap gap-1.5">
+                {canAgree && (
+                  <Chip
+                    active
+                    onClick={() =>
+                      startTransition(async () => {
+                        confirmHaptic();
+                        await updateMove({ id: p.move!.id, state: "agreed" });
+                        onChanged();
+                      })
+                    }
+                  >
+                    Agree
+                  </Chip>
+                )}
+                {(canAgree || operator) && (
+                  <Chip onClick={() => setMoveOpen(true)}>Rewrite</Chip>
+                )}
+                {canShip && (
+                  <>
+                    <Chip
+                      color="var(--mint-deep)"
+                      onClick={() =>
+                        startTransition(async () => {
+                          confirmHaptic();
+                          await updateMove({ id: p.move!.id, state: "shipped" });
+                          onChanged();
+                        })
+                      }
+                    >
+                      Mark shipped
+                    </Chip>
+                    <Chip color="var(--risk)" onClick={() => setMissOpen(true)}>
+                      Missed
+                    </Chip>
+                  </>
+                )}
+              </div>
             </div>
           ) : (
-            <p className="text-[13px] text-ink3">
-              No move set. Monday&apos;s brief proposes one.
-            </p>
+            <div>
+              <p className="text-[13px] text-ink3">
+                No move set. Monday&apos;s brief proposes one.
+              </p>
+              {operator && (
+                <div className="mt-1.5">
+                  <Chip active onClick={() => setMoveOpen(true)}>
+                    Set this week&apos;s move
+                  </Chip>
+                </div>
+              )}
+            </div>
           )}
         </div>
 
@@ -238,10 +352,266 @@ function PriorityCard({
 
       <button
         onClick={onDetail}
+        disabled={pending}
         className="rounded-full border border-line py-2 text-[12px] font-medium text-ink2"
       >
         History and links
       </button>
+
+      <PriorityEditor
+        open={editing}
+        onClose={() => setEditing(false)}
+        priority={p}
+        onDone={() => {
+          setEditing(false);
+          onChanged();
+        }}
+      />
+      <MoveEditor
+        open={moveOpen}
+        onClose={() => setMoveOpen(false)}
+        priority={p}
+        seat={seat}
+        onDone={() => {
+          setMoveOpen(false);
+          onChanged();
+        }}
+      />
+      <MissSheet
+        open={missOpen}
+        onClose={() => setMissOpen(false)}
+        moveId={p.move?.id}
+        onDone={() => {
+          setMissOpen(false);
+          onChanged();
+        }}
+      />
     </article>
+  );
+}
+
+function PriorityEditor({
+  open,
+  onClose,
+  onDone,
+  priority,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onDone: () => void;
+  priority?: PriorityView;
+}) {
+  const [name, setName] = useState(priority?.name ?? "");
+  const [sponsor, setSponsor] = useState<SeatId>(priority?.sponsor_seat ?? 1);
+  const [state, setState] = useState(priority?.state ?? "driving");
+  const [blocker, setBlocker] = useState(priority?.blocker ?? "");
+  const [note, setNote] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+
+  const save = () =>
+    startTransition(async () => {
+      const res = priority
+        ? await updatePriority({
+            id: priority.id,
+            name,
+            state,
+            sponsor_seat: sponsor,
+            blocker: blocker || null,
+          })
+        : await createPriority({ name, sponsor_seat: sponsor });
+      if (res.ok) {
+        confirmHaptic();
+        onDone();
+      } else {
+        setNote(res.message ?? "That did not save.");
+      }
+    });
+
+  return (
+    <Sheet
+      open={open}
+      onClose={onClose}
+      title={priority ? "Edit priority" : "New priority"}
+    >
+      <div className="flex flex-col gap-3 pt-1">
+        <input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          maxLength={60}
+          placeholder="The priority, sixty characters or fewer."
+          className="w-full rounded-xl border border-line bg-paper px-3 py-2.5 text-[13px] text-ink outline-none focus:border-ink"
+        />
+        <div>
+          <div className="eyebrow mb-1">Sponsor</div>
+          <div className="flex gap-1.5">
+            {SEAT_IDS.map((id) => (
+              <Chip key={id} active={sponsor === id} onClick={() => setSponsor(id)}>
+                {SEATS[id].shortName}
+              </Chip>
+            ))}
+          </div>
+        </div>
+        {priority && (
+          <>
+            <div>
+              <div className="eyebrow mb-1">State</div>
+              <div className="flex flex-wrap gap-1.5">
+                {(["driving", "at_risk", "blocked", "won", "retired"] as const).map(
+                  (s) => (
+                    <Chip key={s} active={state === s} onClick={() => setState(s)}>
+                      {PRIORITY_STATE[s].label}
+                    </Chip>
+                  ),
+                )}
+              </div>
+            </div>
+            <div>
+              <div className="eyebrow mb-1">Blocker, if any</div>
+              <input
+                value={blocker}
+                onChange={(e) => setBlocker(e.target.value)}
+                placeholder="One sentence, or leave empty."
+                className="w-full rounded-xl border border-line bg-paper px-3 py-2.5 text-[13px] text-ink outline-none focus:border-ink"
+              />
+            </div>
+          </>
+        )}
+        {note && <p className="text-[12px] text-risk">{note}</p>}
+        <button
+          disabled={pending || !name.trim()}
+          onClick={save}
+          className="rounded-full bg-ink py-2.5 text-[13px] font-medium text-bg disabled:opacity-60"
+        >
+          {pending ? "Saving" : priority ? "Save" : "Add it"}
+        </button>
+      </div>
+    </Sheet>
+  );
+}
+
+function MoveEditor({
+  open,
+  onClose,
+  priority,
+  seat,
+  onDone,
+}: {
+  open: boolean;
+  onClose: () => void;
+  priority: PriorityView;
+  seat: SeatId;
+  onDone: () => void;
+}) {
+  const [text, setText] = useState(priority.move?.text ?? "");
+  const [owner, setOwner] = useState<SeatId>(
+    priority.move?.owner_seat ?? priority.sponsor_seat,
+  );
+  const [note, setNote] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+  const operator = seat === 4;
+
+  const save = () =>
+    startTransition(async () => {
+      const res = priority.move
+        ? await updateMove({ id: priority.move.id, text })
+        : await setMove({ priority_id: priority.id, text, owner_seat: owner });
+      if (res.ok) {
+        confirmHaptic();
+        onDone();
+      } else {
+        setNote(res.message ?? "That did not save.");
+      }
+    });
+
+  return (
+    <Sheet
+      open={open}
+      onClose={onClose}
+      title={priority.move ? "Rewrite the move" : "This week's move"}
+    >
+      <div className="flex flex-col gap-3 pt-1">
+        <textarea
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          rows={2}
+          placeholder="One sentence with a verb and an owner."
+          className="w-full rounded-xl border border-line bg-paper px-3 py-2.5 text-[13px] text-ink outline-none focus:border-ink"
+        />
+        {!priority.move && operator && (
+          <div>
+            <div className="eyebrow mb-1">Owner</div>
+            <div className="flex gap-1.5">
+              {SEAT_IDS.map((id) => (
+                <Chip key={id} active={owner === id} onClick={() => setOwner(id)}>
+                  {SEATS[id].shortName}
+                </Chip>
+              ))}
+            </div>
+          </div>
+        )}
+        {note && <p className="text-[12px] text-risk">{note}</p>}
+        <button
+          disabled={pending || !text.trim()}
+          onClick={save}
+          className="rounded-full bg-ink py-2.5 text-[13px] font-medium text-bg disabled:opacity-60"
+        >
+          {pending ? "Saving" : "Set it"}
+        </button>
+      </div>
+    </Sheet>
+  );
+}
+
+function MissSheet({
+  open,
+  onClose,
+  moveId,
+  onDone,
+}: {
+  open: boolean;
+  onClose: () => void;
+  moveId?: string;
+  onDone: () => void;
+}) {
+  const [reason, setReason] = useState("");
+  const [note, setNote] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+
+  return (
+    <Sheet open={open} onClose={onClose} title="Missed">
+      <div className="flex flex-col gap-3 pt-1">
+        <p className="text-[11px] text-ink3">
+          Missed is a first class state. It needs a one line reason.
+        </p>
+        <input
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          placeholder="Why it slipped."
+          className="w-full rounded-xl border border-line bg-paper px-3 py-2.5 text-[13px] text-ink outline-none focus:border-ink"
+        />
+        {note && <p className="text-[12px] text-risk">{note}</p>}
+        <button
+          disabled={pending || !reason.trim() || !moveId}
+          onClick={() =>
+            startTransition(async () => {
+              const res = await updateMove({
+                id: moveId!,
+                state: "missed",
+                outcome_note: reason,
+              });
+              if (res.ok) {
+                tick();
+                onDone();
+              } else {
+                setNote(res.message ?? "That did not save.");
+              }
+            })
+          }
+          className="rounded-full bg-ink py-2.5 text-[13px] font-medium text-bg disabled:opacity-60"
+        >
+          Mark it missed
+        </button>
+      </div>
+    </Sheet>
   );
 }

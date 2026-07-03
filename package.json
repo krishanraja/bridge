@@ -10,7 +10,8 @@
     "seed:demo": "tsx scripts/seed-demo.ts",
     "seed:live": "tsx scripts/seed-live.ts",
     "audit:noscroll": "tsx scripts/audit-noscroll.ts",
-    "check:copy": "bash scripts/check-copy.sh"
+    "check:copy": "bash scripts/check-copy.sh",
+    "audit:rls": "tsx scripts/audit-rls.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.7.0",

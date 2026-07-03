@@ -72,6 +72,7 @@ export interface TableData {
   decisions: Decision[];
   receipts: ReceiptRow[];
   isoWeek: string;
+  votedThisWeek: SeatId[];
 }
 
 export interface EvidenceView {

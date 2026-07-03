@@ -6,11 +6,19 @@ import { useRef, useState } from "react";
 import type { BriefView } from "@/lib/data/views";
 import { Sheet } from "@/components/ui/Sheet";
 import { tick } from "@/lib/haptics";
+import { markBriefSeen } from "@/app/actions";
 
 export function BriefBlock({ brief }: { brief: BriefView | null }) {
   const [open, setOpen] = useState(false);
   const [playing, setPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const seenRef = useRef(false);
+
+  const markSeen = () => {
+    if (seenRef.current || !brief) return;
+    seenRef.current = true;
+    void markBriefSeen(brief.day);
+  };
 
   if (!brief) {
     return (
@@ -27,6 +35,7 @@ export function BriefBlock({ brief }: { brief: BriefView | null }) {
 
   const onPress = () => {
     tick();
+    markSeen();
     if (!hasAudio) {
       setOpen(true);
       return;
@@ -68,7 +77,10 @@ export function BriefBlock({ brief }: { brief: BriefView | null }) {
       <div className="text-center">
         <div className="eyebrow">The morning read</div>
         <button
-          onClick={() => setOpen(true)}
+          onClick={() => {
+            markSeen();
+            setOpen(true);
+          }}
           className="mt-0.5 text-[12px] text-ink3 underline underline-offset-2"
         >
           Read it instead

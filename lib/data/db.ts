@@ -153,6 +153,7 @@ export async function dbTable(): Promise<TableData> {
     (decisionsQ.data ?? []) as Decision[],
     receipts,
     plotWeek,
+    week,
   );
 }
 

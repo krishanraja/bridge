@@ -269,7 +269,7 @@ export async function demoTable(): Promise<TableData> {
   /* Demo pulses vote on last week's Monday when today is early in the week; fall back so the plot always has data. */
   const hasThisWeek = pulses.some((p) => p.iso_week === week);
   const plotWeek = hasThisWeek ? week : isoWeekShift(week, -1);
-  return deriveTable(priorities, pulses, decisions, receipts, plotWeek);
+  return deriveTable(priorities, pulses, decisions, receipts, plotWeek, week);
 }
 
 export async function demoLedger(): Promise<LedgerData> {

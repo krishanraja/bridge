@@ -16,7 +16,7 @@ export default async function PrioritiesPage() {
         <div className="eyebrow">Priorities</div>
         <span className="eyebrow">{priorities.length} of 5</span>
       </header>
-      <PriorityBoard priorities={priorities} />
+      <PriorityBoard priorities={priorities} seat={seat} />
     </div>
   );
 }

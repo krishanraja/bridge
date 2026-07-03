@@ -10,5 +10,5 @@ export default async function TablePage() {
   if (!seat) redirect("/login");
   const [data, log] = await Promise.all([getTable(), getDecisionLog()]);
 
-  return <TableRoom data={data} log={log} />;
+  return <TableRoom data={data} log={log} seat={seat} />;
 }

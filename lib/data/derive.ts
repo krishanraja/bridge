@@ -159,7 +159,8 @@ export function deriveTable(
   decisions: Decision[],
   receipts: { seat: SeatId; brief: boolean; pulse: boolean }[],
   isoWeek: string,
-): Omit<TableData, "isoWeek"> & { isoWeek: string } {
+  currentWeek?: string,
+): TableData {
   const active = priorities
     .filter((p) => !p.retired_at)
     .sort((a, b) => a.display_order - b.display_order);
@@ -205,7 +206,12 @@ export function deriveTable(
     .sort((a, b) => (a.created_at < b.created_at ? 1 : -1))
     .slice(0, 3);
 
-  return { plot, widestSplit, decisions: lastDecisions, receipts, isoWeek };
+  const week = currentWeek ?? isoWeek;
+  const votedThisWeek = Array.from(
+    new Set(pulses.filter((p) => p.iso_week === week).map((p) => p.seat)),
+  ) as SeatId[];
+
+  return { plot, widestSplit, decisions: lastDecisions, receipts, isoWeek, votedThisWeek };
 }
 
 export function formatDue(iso: string): string {
