@@ -289,6 +289,55 @@ async function main() {
     console.log(`receipts: ${receiptRows.length}`);
   }
 
+  /* A week of illustrative verdicts so the learning metrics and the self retro
+     read like week six rather than day one. Act on the supporting signals,
+     kill a couple, hold the rest. */
+  const verdictRows: object[] = [];
+  signalRows.forEach((row, i) => {
+    const seed = signalsSeed[i];
+    const kind =
+      seed.assumption_direction === 1 && i % 2 === 0
+        ? "signal_act"
+        : i % 5 === 0
+          ? "signal_kill"
+          : "signal_hold";
+    verdictRows.push({
+      seat: 4,
+      type: kind,
+      subject_type: "signal",
+      subject_id: row.id,
+      created_at: ts(seed.day_offset, 9),
+    });
+  });
+  {
+    const { error } = await sb.from("events").insert(verdictRows);
+    if (error) throw new Error(`events: ${error.message}`);
+    console.log(`events: ${verdictRows.length} verdicts`);
+  }
+
+  /* One self retro so the Ledger opens on the product grading itself. */
+  const acted = verdictRows.filter((v) => (v as { type: string }).type === "signal_act").length;
+  const killed = verdictRows.filter((v) => (v as { type: string }).type === "signal_kill").length;
+  {
+    const { error } = await sb.from("learn_proposals").insert({
+      week: `${weekShift(0)}:retro`,
+      proposal: {
+        lines: [
+          `Acted on ${acted}, led by the Databricks CustomerLake read.`,
+          `Killed ${killed}, including a low-signal funding rumor.`,
+          "Missed one: a Salesforce Data Cloud identity update the deck did not carry.",
+          "This week I would trust Business Wire more and the generic aggregators less.",
+          "Approve the changes in Settings, or skip and nothing moves.",
+        ],
+        missedUrl:
+          "https://www.salesforce.com/news/stories/salesforce-databricks-shared-foundation-of-human-agent-work-announcement/",
+      },
+      status: "approved",
+    });
+    if (error) throw new Error(`retro: ${error.message}`);
+    console.log("retro: 1");
+  }
+
   console.log("Demo seed complete. Every historical row is marked illustrative.");
 }
 

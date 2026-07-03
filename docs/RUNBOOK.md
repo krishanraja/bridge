@@ -122,3 +122,12 @@ Fri 14:30 close compose, Fri 15:00 close release, Sun 21:00 learn.
   URL ("US state privacy law landscape expands to 24 states") that the week's
   deck did not carry. The Sunday learn cron runs Monday 01:00 UTC (Sunday
   21:00 ET).
+- 2026-07-03 (G6): error, loading, and not-found surfaces added, all in the
+  house voice. LCP measured on every room under 250ms (Today 244ms, the rest
+  under 100ms) with zero console errors. Reduced motion collapses every
+  transition and kills haptics. Full copy sweep clean including the model
+  prompt strings. The demo seed now carries a week of illustrative verdicts,
+  the learning metrics, and one self retro, so bridge.krishraja.com reads
+  like week six. Demo rehearsed against production with a real operator
+  session: all six rooms return 200 with real content, the Ledger opens on
+  the self retro, and Settings shows the learning metrics.
