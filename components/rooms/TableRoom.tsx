@@ -71,7 +71,7 @@ export function TableRoom({
         </p>
       </section>
 
-      <section className="mx-5 min-h-0 overflow-hidden rounded-xl border border-line bg-paper p-3.5">
+      <section className="mx-5 flex min-h-0 flex-col overflow-hidden rounded-xl border border-line bg-paper p-3.5">
         <div className="mb-1.5 flex items-center justify-between">
           <span className="eyebrow">Decisions</span>
           <div className="flex items-center gap-2.5">
@@ -89,7 +89,7 @@ export function TableRoom({
             </button>
           </div>
         </div>
-        <div className="flex flex-col gap-1.5">
+        <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
           {data.decisions.length === 0 && (
             <p className="text-[14px] text-ink3">
               Nothing logged yet. You can say one in Ask, or add it here.

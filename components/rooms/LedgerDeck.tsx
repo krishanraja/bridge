@@ -117,42 +117,52 @@ export function LedgerDeck({
                 </div>
               </div>
 
-              <div className="flex min-h-0 flex-col gap-1.5 overflow-hidden">
-                <div className="eyebrow">Evidence</div>
-                {a.evidence.length === 0 ? (
-                  <p className="text-[14px] leading-snug text-ink3">
-                    Nothing has argued with this yet. Quiet counts as weak
-                    support, so confidence drifts toward fifty until the market
-                    speaks.
-                  </p>
-                ) : (
-                  a.evidence.map((e, i) => (
-                    <a
-                      key={i}
-                      href={e.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-start gap-2"
-                    >
-                      <span
-                        className="num-display mt-0.5 text-[14px] font-semibold"
-                        style={{
-                          color: e.direction > 0 ? "var(--mint-deep)" : "var(--risk)",
-                        }}
-                      >
-                        {e.direction > 0 ? "▲" : "▼"}
-                      </span>
-                      <span className="min-w-0">
-                        <span className="block truncate text-[14px] leading-snug text-ink2">
-                          {e.headline}
-                        </span>
-                        <span className="text-[12px] text-ink3">
-                          {e.source} · {e.day}
-                        </span>
-                      </span>
-                    </a>
-                  ))
+              <div className="flex min-h-0 flex-col gap-3 overflow-y-auto">
+                {a.rationale && (
+                  <div className="flex flex-col gap-1">
+                    <div className="eyebrow">Why we hold this</div>
+                    <p className="text-[14px] leading-snug text-ink2">
+                      {a.rationale}
+                    </p>
+                  </div>
                 )}
+                <div className="flex flex-col gap-1.5">
+                  <div className="eyebrow">Evidence</div>
+                  {a.evidence.length === 0 ? (
+                    <p className="text-[14px] leading-snug text-ink3">
+                      Nothing has argued with this yet. Quiet counts as weak
+                      support, so confidence drifts toward fifty until the
+                      market speaks.
+                    </p>
+                  ) : (
+                    a.evidence.map((e, i) => (
+                      <a
+                        key={i}
+                        href={e.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-start gap-2"
+                      >
+                        <span
+                          className="num-display mt-0.5 text-[14px] font-semibold"
+                          style={{
+                            color: e.direction > 0 ? "var(--mint-deep)" : "var(--risk)",
+                          }}
+                        >
+                          {e.direction > 0 ? "▲" : "▼"}
+                        </span>
+                        <span className="min-w-0">
+                          <span className="block truncate text-[14px] leading-snug text-ink2">
+                            {e.headline}
+                          </span>
+                          <span className="text-[12px] text-ink3">
+                            {e.source} · {e.day}
+                          </span>
+                        </span>
+                      </a>
+                    ))
+                  )}
+                </div>
               </div>
             </article>
           </div>

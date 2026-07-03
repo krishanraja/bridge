@@ -217,7 +217,7 @@ export function deriveTable(
 
   const lastDecisions = [...decisions]
     .sort((a, b) => (a.created_at < b.created_at ? 1 : -1))
-    .slice(0, 3);
+    .slice(0, 8);
 
   const week = currentWeek ?? isoWeek;
   const votedThisWeek = Array.from(
