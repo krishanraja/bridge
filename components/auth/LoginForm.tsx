@@ -47,7 +47,7 @@ export function LoginForm() {
   };
 
   return (
-    <div className="w-full max-w-[320px]">
+    <div className="w-full max-w-[360px]">
       {stage === "email" ? (
         <form onSubmit={sendCode} className="flex flex-col gap-3">
           <input
@@ -58,11 +58,11 @@ export function LoginForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Email"
-            className="w-full rounded-xl border border-line bg-paper px-4 py-3 text-[14px] text-ink outline-none focus:border-ink"
+            className="w-full rounded-2xl border border-line bg-paper px-5 py-4 text-[16px] text-ink outline-none focus:border-ink"
           />
           <button
             type="submit"
-            className="rounded-full bg-ink py-3 text-[13px] font-medium text-bg"
+            className="rounded-full bg-ink py-4 text-[15px] font-medium text-bg"
           >
             Send the code
           </button>
@@ -77,19 +77,19 @@ export function LoginForm() {
             value={code}
             onChange={(e) => setCode(e.target.value)}
             placeholder="Six digits"
-            className="num-display w-full rounded-xl border border-line bg-paper px-4 py-3 text-center text-[17px] tracking-[0.3em] text-ink outline-none focus:border-ink"
+            className="num-display w-full rounded-2xl border border-line bg-paper px-5 py-4 text-center text-[22px] tracking-[0.3em] text-ink outline-none focus:border-ink"
             disabled={stage === "checking"}
           />
           <button
             type="submit"
             disabled={stage === "checking"}
-            className="rounded-full bg-ink py-3 text-[13px] font-medium text-bg disabled:opacity-60"
+            className="rounded-full bg-ink py-4 text-[15px] font-medium text-bg disabled:opacity-60"
           >
             {stage === "checking" ? "Checking" : "Open"}
           </button>
           <button
             type="button"
-            className="text-[10.5px] text-ink3 underline underline-offset-2"
+            className="mt-1 text-[12px] text-ink3 underline underline-offset-2"
             onClick={() => {
               setStage("email");
               setCode("");
@@ -101,7 +101,7 @@ export function LoginForm() {
         </form>
       )}
       {note && (
-        <p className="mt-3 text-center text-[12px] leading-snug text-ink2">
+        <p className="mt-3 text-center text-[13px] leading-snug text-ink2">
           {note}
         </p>
       )}

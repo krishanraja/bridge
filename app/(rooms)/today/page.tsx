@@ -21,11 +21,11 @@ export default async function TodayPage() {
   });
 
   return (
-    <div className="grid h-full min-h-0 grid-rows-[auto_1fr_auto_auto_auto] gap-2 pb-3">
+    <div className="flex h-full min-h-0 flex-col gap-3 pb-3">
       <header className="flex items-start justify-between px-5 pt-4">
         <div>
           <div className="eyebrow">Today{data.demo ? " · Sample" : ""}</div>
-          <div className="num-display text-[22px] font-medium leading-tight">
+          <div className="num-display text-[26px] font-medium leading-tight">
             {dateLabel}
           </div>
         </div>
@@ -34,6 +34,7 @@ export default async function TodayPage() {
         </div>
       </header>
 
+      <div className="flex min-h-0 flex-1 flex-col justify-center gap-3 overflow-hidden">
       {data.review ? <ReviewCard review={data.review} /> : <BriefBlock brief={data.brief} />}
 
       {data.focus && (
@@ -103,6 +104,7 @@ export default async function TodayPage() {
           ))}
         </Link>
       </section>
+      </div>
     </div>
   );
 }
