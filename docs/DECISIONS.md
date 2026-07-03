@@ -60,7 +60,23 @@ brief, the decision, and why it best serves a ninety second phone session.
     Supabase Pro's standard compute charge (about 10 USD per month) beyond
     the plan's credit.
 
-11. **Grid columns pinned via CSS.** Any grid that declares `grid-rows-*`
+11. **Pipeline runs on Vercel, not a Supabase edge function.** Section 11
+    sketches both `app/api/pipeline/sweep` and `supabase/functions/pipeline-run`.
+    One deploy surface, one secret store, and a 300 second budget on the
+    route beat a second runtime; the stages live in `lib/intel` and could be
+    lifted into a Deno function later without redesign.
+
+12. **Model choices updated to the current family.** The brief (written
+    earlier) names claude-sonnet-4-6; the build uses claude-haiku-4-5 for the
+    filter, claude-sonnet-5 for synthesis and ask, and claude-opus-4-8 for
+    composition when G4 lands.
+
+13. **Provider keys from the June 13 export are invalid.** Anthropic, OpenAI,
+    Brave, and ElevenLabs all reject them (rotated since export). Fresh keys
+    required from Krish before the G2 model stages, G3 voice, and G4
+    composition can run. Deterministic stages are built and tested.
+
+14. **Grid columns pinned via CSS.** Any grid that declares `grid-rows-*`
     gets `grid-template-columns: minmax(0, 1fr)` globally, because truncated
     (nowrap) lines otherwise inflate the implicit column and push the layout
     past the viewport. A future two column grid that also declares rows must
