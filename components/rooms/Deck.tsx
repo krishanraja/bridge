@@ -7,10 +7,12 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type { Signal } from "@/lib/types";
+import type { DeckView, SeatReaction } from "@/lib/data/views";
 import { LANES, LANE_IDS, type LaneId } from "@/lib/copy/lanes";
 import { Chip } from "@/components/ui/Chip";
 import { Sheet } from "@/components/ui/Sheet";
 import { Button } from "@/components/ui/Button";
+import { Reaction } from "@/components/ui/Reaction";
 import { tick, confirm as confirmHaptic } from "@/lib/haptics";
 import { signalVerdict } from "@/app/actions";
 
@@ -24,8 +26,9 @@ const SWEEP_STAGES = [
   "Writing what it means for Amperity…",
 ];
 
-export function Deck({ signals, operator }: { signals: Signal[]; operator: boolean }) {
+export function Deck({ deck: deckView, operator }: { deck: DeckView; operator: boolean }) {
   const router = useRouter();
+  const { signals, reactions, topLanes, mutedLanes } = deckView;
   const [lane, setLane] = useState<LaneId | null>(null);
   const [gone, setGone] = useState<Set<string>>(new Set());
   const [sources, setSources] = useState<Signal | null>(null);
@@ -118,12 +121,16 @@ export function Deck({ signals, operator }: { signals: Signal[]; operator: boole
                 signal={s}
                 index={i}
                 total={deck.length}
+                reaction={reactions[s.id] ?? null}
                 onSources={() => setSources(s)}
                 onAction={dismiss}
               />
             ))}
           </div>
           {deck.length > 1 && <PageRail total={deck.length} active={active} />}
+          {(topLanes.length > 0 || mutedLanes.length > 0) && (
+            <LearnedBanner topLanes={topLanes} mutedLanes={mutedLanes} />
+          )}
         </div>
       )}
 
@@ -173,6 +180,43 @@ function PageRail({ total, active }: { total: number; active: number }) {
           }}
         />
       ))}
+    </div>
+  );
+}
+
+/* Reflects the learning back: a quiet line, top of deck, naming what the radar
+   is leaning into for this leader and what it's quieting. Makes the
+   personalization legible instead of magic. */
+function LearnedBanner({
+  topLanes,
+  mutedLanes,
+}: {
+  topLanes: number[];
+  mutedLanes: number[];
+}) {
+  const [dismissed, setDismissed] = useState(false);
+  if (dismissed) return null;
+  const names = (ids: number[]) =>
+    ids.map((id) => LANES[id as LaneId].glyph).join(", ");
+  return (
+    <div className="pointer-events-auto absolute inset-x-[var(--pad-x)] top-1 z-10 flex items-center gap-2 rounded-[var(--r-pill)] border border-line bg-paper/95 px-3 py-1.5 shadow-[var(--elev-card)] backdrop-blur">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--mint-deep)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 3l1.9 5.8H20l-4.9 3.6 1.9 5.8L12 14.6 7 18.2l1.9-5.8L4 8.8h6.1z" />
+      </svg>
+      <span className="t-label min-w-0 flex-1 truncate text-ink2">
+        {topLanes.length > 0 && <>Leading with {names(topLanes)}</>}
+        {topLanes.length > 0 && mutedLanes.length > 0 && " · "}
+        {mutedLanes.length > 0 && <>quieting {names(mutedLanes)}</>}
+      </span>
+      <button
+        onClick={() => setDismissed(true)}
+        aria-label="Dismiss"
+        className="shrink-0 text-ink3"
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+          <path d="M6 6l12 12M18 6L6 18" />
+        </svg>
+      </button>
     </div>
   );
 }
@@ -275,12 +319,14 @@ function SignalCard({
   signal: s,
   index,
   total,
+  reaction,
   onSources,
   onAction,
 }: {
   signal: Signal;
   index: number;
   total: number;
+  reaction: SeatReaction | null;
   onSources: () => void;
   onAction: (id: string, kind: "act" | "hold" | "kill") => void;
 }) {
@@ -380,9 +426,20 @@ function SignalCard({
             .join(", ")}
         </button>
 
-        {/* Action bar sits in the thumb zone; the slack lands here, below the
-           content, not as a void between the body and its sources. */}
-        <div className="mt-auto grid grid-cols-3 gap-2 pt-2">
+        {/* The universal feedback primitive. Teaches the deck this leader's
+           taste; separate from the Act/Hold/Kill triage below. */}
+        <div className="mt-auto border-t border-line pt-3">
+          <Reaction
+            subjectType="signal"
+            subjectId={s.id}
+            lane={s.lane}
+            initial={reaction}
+            prompt="Matters to you?"
+          />
+        </div>
+
+        {/* Act/Hold/Kill triage in the thumb zone. */}
+        <div className="grid grid-cols-3 gap-2 pt-3">
           <button
             onClick={() => onAction(s.id, "act")}
             className="rounded-[var(--r-pill)] bg-ink py-2.5 text-[var(--t-secondary)] font-medium text-bg"

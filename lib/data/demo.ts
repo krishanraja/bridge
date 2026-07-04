@@ -50,7 +50,13 @@ import {
   topSignals,
   weekMoveDots,
 } from "./derive";
-import type { DecisionReceipt, LedgerData, TableData, TodayData } from "./views";
+import type {
+  DeckView,
+  DecisionReceipt,
+  LedgerData,
+  TableData,
+  TodayData,
+} from "./views";
 
 function dayISO(offset: number): string {
   const d = new Date();
@@ -237,12 +243,15 @@ export async function demoToday(): Promise<TodayData> {
   };
 }
 
-export async function demoDeck(): Promise<Signal[]> {
+export async function demoDeck(): Promise<DeckView> {
   const today = dayISO(0);
-  return demoSignals()
+  const signals = demoSignals()
     .filter((s) => s.day === today)
     .sort((a, b) => b.score - a.score)
     .slice(0, 12);
+  /* Demo shows the primitive live but writes nothing; no saved reactions and a
+     neutral appetite, so the deck reads in pooled order. */
+  return { signals, reactions: {}, topLanes: [], mutedLanes: [] };
 }
 
 export async function demoPriorityViews() {

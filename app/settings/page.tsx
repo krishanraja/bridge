@@ -7,6 +7,7 @@ import { ThreadsManager, type ThreadRow } from "@/components/rooms/ThreadsManage
 import { PushToggle } from "@/components/rooms/PushToggle";
 import { LearnReview, type StagedProposal } from "@/components/rooms/LearnReview";
 import { Chip } from "@/components/ui/Chip";
+import { LANES, type LaneId } from "@/lib/copy/lanes";
 
 export const dynamic = "force-dynamic";
 
@@ -108,6 +109,19 @@ async function operatorLearning(seedMode: boolean, seat: number) {
   return { proposal, metrics };
 }
 
+async function tableLearning(seedMode: boolean, seat: number) {
+  if (seedMode) return null;
+  const { supabaseServer } = await import("@/lib/supabase/server");
+  const { summarizeReactions } = await import("@/lib/learn/reflection");
+  const sb = await supabaseServer();
+  const { data } = await sb
+    .from("reactions")
+    .select("seat, sentiment, lane, reason_tags")
+    .limit(2000);
+  if (!data || data.length === 0) return null;
+  return summarizeReactions(data as never[], seat);
+}
+
 export default async function SettingsPage() {
   const seat = await currentSeat();
   if (!seat) redirect("/login");
@@ -117,6 +131,7 @@ export default async function SettingsPage() {
   const audit = await auditLog(seedMode);
   const { threads, priorities } = await threadsData(seedMode);
   const { proposal, metrics } = await operatorLearning(seedMode, seat);
+  const learning = await tableLearning(seedMode, seat);
 
   return (
     <div className="grid h-full min-h-0 auto-rows-min gap-2 overflow-hidden pb-3">
@@ -173,6 +188,44 @@ export default async function SettingsPage() {
         </section>
       )}
 
+      {learning && learning.total > 0 && (
+        <section className="mx-5 rounded-xl border border-line bg-paper p-3.5">
+          <div className="eyebrow mb-2">What Bridge is learning</div>
+          <div className="flex flex-col gap-2.5">
+            <LearnLine
+              label="You lean into"
+              lanes={learning.myTop}
+              fallback="No clear pattern yet — react to a few signals"
+            />
+            {learning.myMuted.length > 0 && (
+              <LearnLine label="You wave off" lanes={learning.myMuted} muted />
+            )}
+            <LearnLine
+              label="The table rates"
+              lanes={learning.teamLikes}
+              fallback="Gathering the table's read"
+            />
+            {learning.teamCools.length > 0 && (
+              <LearnLine label="The table cools on" lanes={learning.teamCools} muted />
+            )}
+            {learning.topReasons.length > 0 && (
+              <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                <span className="eyebrow mr-1">Common reasons</span>
+                {learning.topReasons.map((r) => (
+                  <Chip key={r.tag}>
+                    {r.label} · {r.count}
+                  </Chip>
+                ))}
+              </div>
+            )}
+          </div>
+          <p className="mt-2.5 text-[12px] text-ink3">
+            Learned from {learning.total} reaction{learning.total === 1 ? "" : "s"}.
+            Your radar re-ranks to what you lean into.
+          </p>
+        </section>
+      )}
+
       {!seedMode && <PushToggle />}
 
       <ThreadsManager
@@ -218,6 +271,42 @@ function Metric({ label, value }: { label: string; value: string }) {
     <div className="flex flex-col items-center">
       <span className="num-display text-[23px] font-medium">{value}</span>
       <span className="eyebrow">{label}</span>
+    </div>
+  );
+}
+
+function LearnLine({
+  label,
+  lanes,
+  fallback,
+  muted,
+}: {
+  label: string;
+  lanes: LaneId[];
+  fallback?: string;
+  muted?: boolean;
+}) {
+  return (
+    <div className="flex items-start gap-2">
+      <span className="eyebrow mt-1 w-[92px] shrink-0">{label}</span>
+      {lanes.length > 0 ? (
+        <div className="flex flex-wrap gap-1.5">
+          {lanes.map((id) => (
+            <span
+              key={id}
+              className="rounded-full border px-2.5 py-0.5 text-[12px] font-medium"
+              style={{
+                borderColor: muted ? "var(--line)" : `var(${LANES[id].cssVar})`,
+                color: muted ? "var(--ink-3)" : `var(${LANES[id].cssVar})`,
+              }}
+            >
+              {LANES[id].glyph}
+            </span>
+          ))}
+        </div>
+      ) : (
+        <span className="text-[13px] text-ink3">{fallback}</span>
+      )}
     </div>
   );
 }

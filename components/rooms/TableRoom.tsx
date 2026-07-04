@@ -50,6 +50,20 @@ function receiptSummary(rec: DecisionReceipt): string {
   return parts.join(" · ");
 }
 
+/* The table's read on a decision at a glance. Surfaces where consensus is thin
+   — one of the things the app is meant to learn and reflect back. */
+function consensusOf(
+  rec: DecisionReceipt,
+): { label: string; color: string } | null {
+  const c = rec.concurred.length;
+  const f = rec.feedback.length;
+  if (c === 0 && f === 0) return null;
+  if (f === 0 && c >= 2) return { label: "Aligned", color: "var(--mint-deep)" };
+  if (f > 0 && c === 0) return { label: "Pushback", color: "var(--risk)" };
+  if (f > 0) return { label: "Split", color: "var(--amber)" };
+  return { label: "Forming", color: "var(--ink-3)" };
+}
+
 export function TableRoom({
   data,
   log,
@@ -326,7 +340,18 @@ function DecisionRow({
             <Avatar key={s} seat={s} state={seatState(receipt, s)} size="sm" />
           ))}
         </div>
-        <span className="eyebrow">{receiptSummary(receipt)}</span>
+        <span className="eyebrow min-w-0 flex-1 truncate">{receiptSummary(receipt)}</span>
+        {(() => {
+          const con = consensusOf(receipt);
+          return con ? (
+            <span
+              className="shrink-0 rounded-full border px-2 py-0.5 text-[11px] font-medium"
+              style={{ borderColor: con.color, color: con.color }}
+            >
+              {con.label}
+            </span>
+          ) : null;
+        })()}
       </div>
     </button>
   );
@@ -381,6 +406,17 @@ function DecisionDetailSheet({
               <span className="eyebrow" style={{ color: st!.color }}>
                 {st!.label}
               </span>
+              {(() => {
+                const con = consensusOf(receipt);
+                return con ? (
+                  <span
+                    className="rounded-full border px-2 py-0.5 text-[11px] font-medium"
+                    style={{ borderColor: con.color, color: con.color }}
+                  >
+                    {con.label}
+                  </span>
+                ) : null;
+              })()}
             </div>
             <p className="t-lede text-ink">{d.text}</p>
             <p className="t-label text-ink3">

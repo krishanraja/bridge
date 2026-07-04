@@ -369,6 +369,50 @@ export async function openCard(signal_id: string): Promise<ActionResult> {
   return { ok: true };
 }
 
+/* The universal reaction: a leader's thumb up/down on any object, plus optional
+   reason tags. One position per seat per object; re-tapping updates it. This is
+   the signal the per-seat taste model and the team knowledge graph learn from. */
+export async function react(input: {
+  subject_type:
+    | "signal"
+    | "decision"
+    | "brief"
+    | "move"
+    | "assumption"
+    | "theme";
+  subject_id: string;
+  sentiment: 1 | -1;
+  reason_tags?: string[];
+  note?: string | null;
+  lane?: number | null;
+}): Promise<ActionResult> {
+  const seat = await seatOrNull();
+  if (!seat) return DEMO_REFUSAL;
+  const sb = await supabaseServer();
+  const { error } = await sb.from("reactions").upsert(
+    {
+      seat,
+      subject_type: input.subject_type,
+      subject_id: input.subject_id,
+      sentiment: input.sentiment,
+      reason_tags: input.reason_tags ?? [],
+      note: input.note ?? null,
+      lane: input.lane ?? null,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "seat,subject_type,subject_id" },
+  );
+  if (error) return { ok: false, message: "That didn't save. Mind trying again?" };
+  await logEvent(seat, "reaction", input.subject_type, input.subject_id, {
+    sentiment: input.sentiment,
+    tags: input.reason_tags ?? [],
+  });
+  revalidatePath("/radar");
+  revalidatePath("/table");
+  revalidatePath("/today");
+  return { ok: true };
+}
+
 /* A principal reweights a belief: their vote pulls confidence, logged in full. */
 
 export async function voteAssumption(input: {

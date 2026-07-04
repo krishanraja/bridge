@@ -13,12 +13,15 @@ import {
   weekMoveDots,
 } from "./derive";
 import type {
+  DeckView,
   DecisionReceipt,
   LedgerData,
   PriorityView,
+  SeatReaction,
   TableData,
   TodayData,
 } from "./views";
+import { computeAffinity, personalize } from "@/lib/learn/affinity";
 
 function todayISO(): string {
   return new Date().toISOString().slice(0, 10);
@@ -132,10 +135,15 @@ export async function dbToday(): Promise<TodayData> {
   };
 }
 
-export async function dbDeck(): Promise<Signal[]> {
+export async function dbDeck(): Promise<DeckView> {
   const sb = await supabaseServer();
   const day = (await latestSignalDay(sb, todayISO())) ?? todayISO();
-  const [signalsQ, verdictsQ, seatQ] = await Promise.all([
+  const seatQ = await sb.auth.getUser();
+  const email = seatQ.data.user?.email?.toLowerCase();
+  const { seatForEmail } = await import("@/lib/seats");
+  const seat = email ? seatForEmail(email) : null;
+
+  const [signalsQ, verdictsQ, reactionsQ] = await Promise.all([
     sb
       .from("signals")
       .select("*")
@@ -147,15 +155,52 @@ export async function dbDeck(): Promise<Signal[]> {
       .select("subject_id, seat, type")
       .in("type", ["signal_act", "signal_hold", "signal_kill"])
       .gte("created_at", `${day}T00:00:00Z`),
-    sb.auth.getUser(),
+    seat
+      ? sb
+          .from("reactions")
+          .select("subject_id, sentiment, reason_tags, lane")
+          .eq("seat", seat)
+          .eq("subject_type", "signal")
+          .limit(500)
+      : Promise.resolve({ data: [] as ReactionRow[] }),
   ]);
-  const email = seatQ.data.user?.email?.toLowerCase();
-  const { seatForEmail } = await import("@/lib/seats");
-  const seat = email ? seatForEmail(email) : null;
+
   const dismissed = new Set(
     (verdictsQ.data ?? []).filter((v) => v.seat === seat).map((v) => v.subject_id),
   );
-  return ((signalsQ.data ?? []) as Signal[]).filter((s) => !dismissed.has(s.id));
+  const reactionRows = (reactionsQ.data ?? []) as ReactionRow[];
+
+  /* Learn this seat's lane appetite from every signal reaction, then re-rank the
+     day's deck by it. New leaders (no reactions) see the pooled order. */
+  const affinity = computeAffinity(
+    reactionRows.map((r) => ({ lane: r.lane, sentiment: r.sentiment })),
+  );
+  const visible = ((signalsQ.data ?? []) as Signal[]).filter(
+    (s) => !dismissed.has(s.id),
+  );
+  const ranked = personalize(visible, affinity);
+
+  const reactions: Record<string, SeatReaction> = {};
+  for (const r of reactionRows) {
+    reactions[r.subject_id] = {
+      sentiment: r.sentiment,
+      tags: r.reason_tags ?? [],
+    };
+  }
+
+  return {
+    signals: ranked,
+    reactions,
+    topLanes: affinity.topLanes,
+    mutedLanes: affinity.mutedLanes,
+  };
+}
+
+interface ReactionRow {
+  subject_id: string;
+  sentiment: 1 | -1;
+  reason_tags: string[] | null;
+  lane: number | null;
 }
 
 export async function dbPriorityViews(): Promise<PriorityView[]> {

@@ -27,7 +27,7 @@ export default async function RadarPage() {
           </svg>
         </Link>
       </header>
-      <Deck signals={deck} operator={operator} />
+      <Deck deck={deck} operator={operator} />
     </div>
   );
 }

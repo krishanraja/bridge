@@ -111,6 +111,20 @@ export interface TableData {
   votedThisWeek: SeatId[];
 }
 
+export interface SeatReaction {
+  sentiment: 1 | -1;
+  tags: string[];
+}
+
+export interface DeckView {
+  signals: Signal[];
+  /* This seat's saved reaction per signal id, to hydrate the cards. */
+  reactions: Record<string, SeatReaction>;
+  /* What the app has learned this seat leans into and waves off. */
+  topLanes: number[];
+  mutedLanes: number[];
+}
+
 export interface EvidenceView {
   direction: -1 | 1;
   weight: 1 | 2 | 3;

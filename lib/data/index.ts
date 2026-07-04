@@ -2,8 +2,14 @@
    then the database source. Same view models either way. */
 
 import { useSeedData } from "@/lib/mode";
-import type { Decision, Signal } from "@/lib/types";
-import type { LedgerData, PriorityView, TableData, TodayData } from "./views";
+import type { Decision } from "@/lib/types";
+import type {
+  DeckView,
+  LedgerData,
+  PriorityView,
+  TableData,
+  TodayData,
+} from "./views";
 import {
   demoDeck,
   demoDecisionLog,
@@ -19,7 +25,7 @@ export async function getToday(): Promise<TodayData> {
   return db.dbToday();
 }
 
-export async function getDeck(): Promise<Signal[]> {
+export async function getDeck(): Promise<DeckView> {
   if (useSeedData()) return demoDeck();
   const db = await import("./db");
   return db.dbDeck();
