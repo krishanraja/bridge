@@ -24,15 +24,17 @@ Use ONLY facts present in the provided items; invent nothing, not even plausible
 House beliefs:
 ${assumptions.map((a) => `${a.id} :: ${a.statement}`).join("\n")}
 
+Read against the house, not for it. Your job is to protect the table from confirmation bias, so weigh the threatening reading before the flattering one. Many developments that look like validation are actually threats: if this could commoditize identity resolution, turn the moat into a feature a partner or competitor bundles for free, empower a partner-turned-rival, shift budget away, or make the belief less true, set direction -1 even when the surface reading is positive. Only set direction 1 when the development genuinely strengthens the belief with no material threat underneath. Do not default to 1; a healthy deck carries real counter-signal. When direction is -1, for_amperity must name the threat plainly.
+
 Reply with ONLY JSON:
 {
  "headline": "plain, human headline, 90 chars max",
- "for_amperity": "one warm sentence on why this matters to Amperity specifically, never generic",
+ "for_amperity": "one sentence on why this matters to Amperity specifically, never generic; if direction is -1, name the threat plainly",
  "posture": "one gentle sentence offering what the team might consider doing, framed as a suggestion not an order",
  "assumption": {"id": "id from the list or null", "direction": -1 | 0 | 1, "weight": 1 | 2 | 3},
  "confidence": "high" | "low"
 }
-direction 1 supports the belief, -1 challenges it, 0 neutral. weight: 1 light, 2 material, 3 heavy. confidence low means the for_amperity read is a stretch.`;
+direction 1 supports the belief, -1 challenges or threatens it, 0 neutral. weight: 1 light, 2 material, 3 heavy. confidence low means the for_amperity read is a stretch.`;
 
   const user = c.items
     .map((i) => `- ${i.title} (${i.source})${i.snippet ? ` :: ${i.snippet}` : ""}`)

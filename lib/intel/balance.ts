@@ -48,6 +48,38 @@ export function balance(
     }
   }
 
+  /* Counter-signal guarantee: a deck that only flatters the house has failed at
+     the radar's core job. If nothing challenging made the cut but a challenge
+     cleared the filter, swap the strongest one in for the weakest
+     overrepresented pick. */
+  const hasChallenge = picked.some((c) => c.draft.assumption_direction === -1);
+  if (!hasChallenge) {
+    const challenger = sorted.find(
+      (c) => c.draft.assumption_direction === -1 && !picked.includes(c),
+    );
+    if (challenger) {
+      if (picked.length < cap) {
+        picked.push(challenger);
+      } else {
+        const evictable = [...picked]
+          .reverse()
+          .find((c) => (laneCount.get(c.cluster.lane) ?? 0) > 1);
+        if (evictable) {
+          picked.splice(picked.indexOf(evictable), 1);
+          laneCount.set(
+            evictable.cluster.lane,
+            (laneCount.get(evictable.cluster.lane) ?? 0) - 1,
+          );
+          picked.push(challenger);
+          laneCount.set(
+            challenger.cluster.lane,
+            (laneCount.get(challenger.cluster.lane) ?? 0) + 1,
+          );
+        }
+      }
+    }
+  }
+
   return picked;
 }
 

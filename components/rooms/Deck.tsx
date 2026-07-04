@@ -331,6 +331,8 @@ function SignalCard({
   onAction: (id: string, kind: "act" | "hold" | "kill") => void;
 }) {
   const lane = LANES[s.lane];
+  const challenges = s.assumption_id != null && s.assumption_direction === -1;
+  const edgeColor = challenges ? "var(--risk)" : `var(${lane.cssVar})`;
   const holdTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [speaking, setSpeaking] = useState(false);
@@ -371,7 +373,7 @@ function SignalCard({
         onPointerUp={pressEnd}
         onPointerLeave={pressEnd}
         className="flex h-full min-h-0 flex-col gap-3 rounded-[var(--r-lg)] border border-line bg-paper p-[var(--space-5)] shadow-[var(--elev-card)]"
-        style={{ borderLeft: `3px solid var(${lane.cssVar})` }}
+        style={{ borderLeft: `3px solid ${edgeColor}` }}
       >
         <audio ref={audioRef} className="hidden" />
         <div className="flex items-center justify-between gap-2">
@@ -405,12 +407,12 @@ function SignalCard({
           {s.assumption_id && s.assumption_direction != null && s.assumption_direction !== 0 && (
             <Link href="/ledger" className="inline-flex">
               <Chip
-                color={
-                  s.assumption_direction > 0 ? "var(--mint-deep)" : "var(--risk)"
-                }
+                color={s.assumption_direction > 0 ? "var(--mint-deep)" : "var(--risk)"}
+                filled={s.assumption_direction < 0}
               >
-                {s.assumption_direction > 0 ? "▲ supports" : "▼ challenges"} our
-                thinking
+                {s.assumption_direction > 0
+                  ? "▲ supports our thinking"
+                  : "▼ counter-signal · threatens the moat"}
               </Chip>
             </Link>
           )}

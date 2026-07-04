@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useLinkStatus } from "next/link";
 import { usePathname } from "next/navigation";
 
 const TABS = [
@@ -72,32 +73,50 @@ export function TabBar() {
   const pathname = usePathname();
   return (
     <nav className="tabbar grid grid-cols-5">
-      {TABS.map((t) => {
-        const active = pathname.startsWith(t.href);
-        return (
-          <Link
-            key={t.href}
-            href={t.href}
-            className="flex flex-col items-center justify-center gap-0.5"
-            aria-current={active ? "page" : undefined}
-          >
-            <TabIcon tab={t.href} active={active} />
-            <span
-              className="text-[12px] tracking-[0.02em]"
-              style={{
-                color: active ? "var(--ink)" : "var(--ink-3)",
-                fontWeight: active ? 600 : 400,
-              }}
-            >
-              {t.label}
-            </span>
-            <span
-              className="h-[3px] w-8 rounded-full"
-              style={{ background: active ? "var(--mint)" : "transparent" }}
-            />
-          </Link>
-        );
-      })}
+      {TABS.map((t) => (
+        <Link
+          key={t.href}
+          href={t.href}
+          className="flex flex-col items-center justify-center gap-0.5 transition-opacity active:opacity-60"
+          aria-current={pathname.startsWith(t.href) ? "page" : undefined}
+        >
+          <TabInner tab={t.href} label={t.label} routeActive={pathname.startsWith(t.href)} />
+        </Link>
+      ))}
     </nav>
+  );
+}
+
+/* Rendered inside <Link>, so it can read the navigation's pending state and
+   light the tapped tab the instant it is pressed — before the new room's
+   server round-trip finishes — instead of only once the page commits. */
+function TabInner({
+  tab,
+  label,
+  routeActive,
+}: {
+  tab: string;
+  label: string;
+  routeActive: boolean;
+}) {
+  const { pending } = useLinkStatus();
+  const active = routeActive || pending;
+  return (
+    <>
+      <TabIcon tab={tab} active={active} />
+      <span
+        className="text-[12px] tracking-[0.02em]"
+        style={{
+          color: active ? "var(--ink)" : "var(--ink-3)",
+          fontWeight: active ? 600 : 400,
+        }}
+      >
+        {label}
+      </span>
+      <span
+        className="h-[3px] w-8 rounded-full transition-colors"
+        style={{ background: active ? "var(--mint)" : "transparent" }}
+      />
+    </>
   );
 }
