@@ -137,6 +137,7 @@ export interface EvidenceView {
 export interface AssumptionView extends Assumption {
   evidence: EvidenceView[];
   delta30: number;
+  myReaction?: SeatReaction | null;
 }
 
 export interface RetroView {

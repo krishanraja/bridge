@@ -122,6 +122,33 @@ async function tableLearning(seedMode: boolean, seat: number) {
   return summarizeReactions(data as never[], seat);
 }
 
+interface ThemeRow {
+  label: string;
+  lane: number | null;
+  importance: number;
+  consensus: number | null;
+  member_count: number;
+}
+
+async function topThemes(seedMode: boolean): Promise<ThemeRow[]> {
+  if (seedMode) return [];
+  const { supabaseServer } = await import("@/lib/supabase/server");
+  const sb = await supabaseServer();
+  const { data } = await sb
+    .from("themes")
+    .select("label, lane, importance, consensus, member_count")
+    .order("importance", { ascending: false })
+    .limit(6);
+  return (data ?? []) as ThemeRow[];
+}
+
+function consensusRead(c: number | null): { label: string; color: string } {
+  if (c == null) return { label: "forming", color: "var(--ink-3)" };
+  if (c >= 0.66) return { label: "aligned", color: "var(--mint-deep)" };
+  if (c >= 0.34) return { label: "split", color: "var(--amber)" };
+  return { label: "divided", color: "var(--risk)" };
+}
+
 export default async function SettingsPage() {
   const seat = await currentSeat();
   if (!seat) redirect("/login");
@@ -132,6 +159,7 @@ export default async function SettingsPage() {
   const { threads, priorities } = await threadsData(seedMode);
   const { proposal, metrics } = await operatorLearning(seedMode, seat);
   const learning = await tableLearning(seedMode, seat);
+  const themes = await topThemes(seedMode);
 
   return (
     <div className="grid h-full min-h-0 auto-rows-min gap-2 overflow-hidden pb-3">
@@ -222,6 +250,44 @@ export default async function SettingsPage() {
           <p className="mt-2.5 text-[12px] text-ink3">
             Learned from {learning.total} reaction{learning.total === 1 ? "" : "s"}.
             Your radar re-ranks to what you lean into.
+          </p>
+        </section>
+      )}
+
+      {themes.length > 0 && (
+        <section className="mx-5 rounded-xl border border-line bg-paper p-3.5">
+          <div className="eyebrow mb-2">What the market&apos;s doing</div>
+          <div className="flex flex-col gap-2">
+            {themes.map((t, i) => {
+              const con = consensusRead(t.consensus);
+              return (
+                <div key={i} className="flex items-start gap-2.5">
+                  {t.lane != null && (
+                    <span
+                      className="mt-1.5 h-2 w-2 shrink-0 rounded-full"
+                      style={{ background: `var(${LANES[t.lane as LaneId].cssVar})` }}
+                    />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[14px] leading-snug text-ink">{t.label}</p>
+                    <p className="text-[12px] text-ink3">
+                      {t.member_count} signal{t.member_count === 1 ? "" : "s"}
+                      {t.lane != null ? ` · ${LANES[t.lane as LaneId].glyph}` : ""}
+                    </p>
+                  </div>
+                  <span
+                    className="mt-0.5 shrink-0 rounded-full border px-2 py-0.5 text-[11px] font-medium"
+                    style={{ borderColor: con.color, color: con.color }}
+                  >
+                    {con.label}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+          <p className="mt-2.5 text-[12px] text-ink3">
+            Signals clustered by meaning, ranked by importance and how much the
+            table agrees. Refreshes with the weekly loop.
           </p>
         </section>
       )}

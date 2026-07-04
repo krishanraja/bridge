@@ -72,7 +72,30 @@ async function step(name: string) {
     const proposal = await computeLearning();
     const id = await stageProposal(proposal);
     const retro = await writeRetro(proposal);
-    return NextResponse.json({ step: "learn", proposalId: id, summary: proposal.summary, retro });
+    /* Unwatched beliefs drift toward fifty as part of the weekly beat. */
+    const { decayBeliefs } = await import("@/lib/loop/decay");
+    const decay = await decayBeliefs();
+    /* Recompute the theme map from the latest signals and reactions. */
+    const { computeThemes } = await import("@/lib/learn/themes");
+    const themes = await computeThemes();
+    return NextResponse.json({
+      step: "learn",
+      proposalId: id,
+      summary: proposal.summary,
+      retro,
+      decayed: decay.decayed,
+      themes: themes.count,
+    });
+  }
+
+  if (name === "decay") {
+    const { decayBeliefs } = await import("@/lib/loop/decay");
+    return NextResponse.json({ step: "decay", ...(await decayBeliefs()) });
+  }
+
+  if (name === "themes") {
+    const { computeThemes } = await import("@/lib/learn/themes");
+    return NextResponse.json({ step: "themes", ...(await computeThemes()) });
   }
 
   if (name === "morning_notify") {

@@ -335,7 +335,12 @@ async function loadDecisionReceipts(
 
 export async function dbLedger(): Promise<LedgerData> {
   const sb = await supabaseServer();
-  const [assumptionsQ, evidenceQ, retroQ] = await Promise.all([
+  const seatQ = await sb.auth.getUser();
+  const email = seatQ.data.user?.email?.toLowerCase();
+  const { seatForEmail } = await import("@/lib/seats");
+  const seat = email ? seatForEmail(email) : null;
+
+  const [assumptionsQ, evidenceQ, retroQ, myReactionsQ] = await Promise.all([
     sb.from("assumptions").select("*").is("retired_at", null),
     sb
       .from("assumption_evidence")
@@ -348,7 +353,22 @@ export async function dbLedger(): Promise<LedgerData> {
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle(),
+    seat
+      ? sb
+          .from("reactions")
+          .select("subject_id, sentiment, reason_tags")
+          .eq("seat", seat)
+          .eq("subject_type", "assumption")
+      : Promise.resolve({ data: [] as ReactionRow[] }),
   ]);
+
+  const myReactions: Record<string, SeatReaction> = {};
+  for (const r of (myReactionsQ.data ?? []) as ReactionRow[]) {
+    myReactions[r.subject_id] = {
+      sentiment: r.sentiment,
+      tags: r.reason_tags ?? [],
+    };
+  }
 
   const evidence = evidenceQ.data ?? [];
   const retroData = retroQ.data?.proposal as { lines?: string[]; missedUrl?: string | null } | undefined;
@@ -367,6 +387,7 @@ export async function dbLedger(): Promise<LedgerData> {
       created_at: a.created_at,
       history: a.history ?? [],
       delta30: 0,
+      myReaction: myReactions[a.id] ?? null,
       evidence: evidence
         .filter((e) => e.assumption_id === a.id)
         .slice(0, 5)

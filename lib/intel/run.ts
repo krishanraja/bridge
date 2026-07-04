@@ -88,7 +88,23 @@ export async function runPipeline(): Promise<RunSummary> {
     await fetchEmbeddings(killedIds),
   );
 
-  const scored = await scoreClusters(kept, centroids);
+  /* The table's collective lane appetite, learned from every seat's reactions.
+     Feeds the score so the pipeline surfaces more of what the table values —
+     self-healing at the source, not just at read time. */
+  const { computeAffinity } = await import("@/lib/learn/affinity");
+  const { data: reactionRows } = await sb
+    .from("reactions")
+    .select("lane, sentiment")
+    .eq("subject_type", "signal")
+    .not("lane", "is", null);
+  const appetite = computeAffinity(
+    (reactionRows ?? []).map((r) => ({ lane: r.lane, sentiment: r.sentiment })),
+  ).perLane;
+  if ((reactionRows ?? []).length > 0) {
+    notes.push(`team appetite from ${reactionRows!.length} reactions`);
+  }
+
+  const scored = await scoreClusters(kept, centroids, appetite);
 
   /* Synthesize the top survivors, gently: bounded concurrency, retries inside. */
   const { pool } = await import("./llm");

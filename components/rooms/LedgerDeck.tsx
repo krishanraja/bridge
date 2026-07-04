@@ -9,6 +9,7 @@ import type { AssumptionView, RetroView } from "@/lib/data/views";
 import { Dial } from "@/components/dial/Dial";
 import { Chip } from "@/components/ui/Chip";
 import { Sheet } from "@/components/ui/Sheet";
+import { Reaction } from "@/components/ui/Reaction";
 import { confirm as confirmHaptic } from "@/lib/haptics";
 import { voteAssumption } from "@/app/actions";
 
@@ -162,6 +163,15 @@ export function LedgerDeck({
                       </a>
                     ))
                   )}
+                </div>
+
+                <div className="border-t border-line pt-3">
+                  <Reaction
+                    subjectType="assumption"
+                    subjectId={a.id}
+                    initial={a.myReaction ?? null}
+                    prompt="Your read on this belief?"
+                  />
                 </div>
               </div>
             </article>
