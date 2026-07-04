@@ -12,7 +12,13 @@ import {
   topSignals,
   weekMoveDots,
 } from "./derive";
-import type { LedgerData, PriorityView, TableData, TodayData } from "./views";
+import type {
+  DecisionReceipt,
+  LedgerData,
+  PriorityView,
+  TableData,
+  TodayData,
+} from "./views";
 
 function todayISO(): string {
   return new Date().toISOString().slice(0, 10);
@@ -199,7 +205,7 @@ export async function dbTable(): Promise<TableData> {
       .from("decisions")
       .select("*")
       .order("created_at", { ascending: false })
-      .limit(3),
+      .limit(6),
     sb
       .from("receipts")
       .select("*")
@@ -221,14 +227,65 @@ export async function dbTable(): Promise<TableData> {
     ),
   }));
 
+  const decisions = (decisionsQ.data ?? []) as Decision[];
+  const decisionIds = decisions.map((d) => d.id);
+  const decisionReceipts = await loadDecisionReceipts(sb, decisionIds);
+
   return deriveTable(
     (prioritiesQ.data ?? []) as Priority[],
     pulses,
-    (decisionsQ.data ?? []) as Decision[],
+    decisions,
     receipts,
+    decisionReceipts,
     plotWeek,
     week,
   );
+}
+
+/* Who has viewed, concurred on, or fed back on each decision. Read receipts
+   live in the receipts table (artifact_type 'decision'); positions live in
+   decision_signoffs. Signing off implies having seen it. */
+async function loadDecisionReceipts(
+  sb: Awaited<ReturnType<typeof supabaseServer>>,
+  decisionIds: string[],
+): Promise<Record<string, DecisionReceipt>> {
+  const map: Record<string, DecisionReceipt> = {};
+  for (const id of decisionIds) map[id] = { seen: [], concurred: [], feedback: [] };
+  if (decisionIds.length === 0) return map;
+
+  const [seenQ, signoffQ] = await Promise.all([
+    sb
+      .from("receipts")
+      .select("seat, artifact_id")
+      .eq("artifact_type", "decision")
+      .in("artifact_id", decisionIds),
+    sb
+      .from("decision_signoffs")
+      .select("seat, decision_id, stance, note")
+      .in("decision_id", decisionIds),
+  ]);
+
+  const markSeen = (id: string, seat: SeatId) => {
+    const rec = map[id];
+    if (rec && !rec.seen.includes(seat)) rec.seen.push(seat);
+  };
+
+  for (const r of (seenQ.data ?? []) as { seat: SeatId; artifact_id: string }[]) {
+    markSeen(r.artifact_id, r.seat);
+  }
+  for (const s of (signoffQ.data ?? []) as {
+    seat: SeatId;
+    decision_id: string;
+    stance: "concur" | "feedback";
+    note: string | null;
+  }[]) {
+    const rec = map[s.decision_id];
+    if (!rec) continue;
+    if (s.stance === "concur") rec.concurred.push(s.seat);
+    else rec.feedback.push({ seat: s.seat, note: s.note });
+    markSeen(s.decision_id, s.seat);
+  }
+  return map;
 }
 
 export async function dbLedger(): Promise<LedgerData> {

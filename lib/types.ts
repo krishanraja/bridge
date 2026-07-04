@@ -102,6 +102,15 @@ export interface Pulse {
   created_at: string;
 }
 
+export interface DecisionSignoff {
+  id: number;
+  seat: SeatId;
+  decision_id: string;
+  stance: "concur" | "feedback";
+  note: string | null;
+  created_at: string;
+}
+
 export interface Brief {
   id: string;
   day: string;

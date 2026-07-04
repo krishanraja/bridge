@@ -440,3 +440,51 @@ export async function markBriefSeen(day: string): Promise<ActionResult> {
   revalidatePath("/table");
   return { ok: true };
 }
+
+/* Per-decision receipts: seen on open, then concur or feedback. The table sees
+   who has viewed each decision and who has taken a position on it. */
+
+export async function markDecisionSeen(decisionId: string): Promise<ActionResult> {
+  const seat = await seatOrNull();
+  if (!seat) return { ok: true };
+  const sb = await supabaseServer();
+  await sb.from("receipts").upsert(
+    { seat, artifact_type: "decision", artifact_id: decisionId },
+    { onConflict: "seat,artifact_type,artifact_id", ignoreDuplicates: true },
+  );
+  revalidatePath("/table");
+  return { ok: true };
+}
+
+export async function concurDecision(decisionId: string): Promise<ActionResult> {
+  const seat = await seatOrNull();
+  if (!seat) return DEMO_REFUSAL;
+  const sb = await supabaseServer();
+  const { error } = await sb.from("decision_signoffs").upsert(
+    { seat, decision_id: decisionId, stance: "concur", note: null, updated_at: new Date().toISOString() },
+    { onConflict: "seat,decision_id" },
+  );
+  if (error) return { ok: false, message: "That did not go through. Mind trying again?" };
+  await logEvent(seat, "decision_concur", "decision", decisionId);
+  revalidatePath("/table");
+  return { ok: true };
+}
+
+export async function leaveDecisionFeedback(
+  decisionId: string,
+  note: string,
+): Promise<ActionResult> {
+  const seat = await seatOrNull();
+  if (!seat) return DEMO_REFUSAL;
+  const text = note.trim();
+  if (!text) return { ok: false, message: "A line of feedback is all we need." };
+  const sb = await supabaseServer();
+  const { error } = await sb.from("decision_signoffs").upsert(
+    { seat, decision_id: decisionId, stance: "feedback", note: text, updated_at: new Date().toISOString() },
+    { onConflict: "seat,decision_id" },
+  );
+  if (error) return { ok: false, message: "That did not save. Mind trying again?" };
+  await logEvent(seat, "decision_feedback", "decision", decisionId, { note: text });
+  revalidatePath("/table");
+  return { ok: true };
+}

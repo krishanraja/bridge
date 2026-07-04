@@ -1,23 +1,54 @@
 "use client";
 
-/* The multiplayer room: alignment, decisions, receipts. Three zones, one screen.
-   Monday's pulse and typed decision logging live here. */
+/* The multiplayer room: alignment, decisions, receipts. One scroll-safe canvas.
+   Monday's pulse and typed decision logging live here, and every decision now
+   carries its own read receipts and sign-off. */
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import type { TableData } from "@/lib/data/views";
+import type { TableData, DecisionReceipt } from "@/lib/data/views";
 import type { Decision } from "@/lib/types";
 import { SEATS, SEAT_IDS, type SeatId } from "@/lib/seats";
 import { Sheet } from "@/components/ui/Sheet";
 import { Chip } from "@/components/ui/Chip";
+import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { SectionLabel } from "@/components/ui/SectionLabel";
+import { Avatar, type AvatarState } from "@/components/ui/Avatar";
 import { tick, confirm as confirmHaptic } from "@/lib/haptics";
-import { votePulse, logDecision, updateDecision } from "@/app/actions";
+import {
+  votePulse,
+  logDecision,
+  updateDecision,
+  markDecisionSeen,
+  concurDecision,
+  leaveDecisionFeedback,
+} from "@/app/actions";
 
 const DECISION_STATE: Record<Decision["state"], { label: string; color: string }> = {
   open: { label: "Open", color: "var(--ink-3)" },
   done: { label: "Done", color: "var(--mint-deep)" },
   dropped: { label: "Dropped", color: "var(--risk)" },
 };
+
+const EMPTY_RECEIPT: DecisionReceipt = { seen: [], concurred: [], feedback: [] };
+
+function seatState(rec: DecisionReceipt, seat: SeatId): AvatarState {
+  if (rec.concurred.includes(seat)) return "concurred";
+  if (rec.feedback.some((f) => f.seat === seat)) return "feedback";
+  if (rec.seen.includes(seat)) return "seen";
+  return "unseen";
+}
+
+function receiptSummary(rec: DecisionReceipt): string {
+  const parts: string[] = [];
+  if (rec.concurred.length) parts.push(`${rec.concurred.length} concurred`);
+  if (rec.feedback.length) parts.push(`${rec.feedback.length} with feedback`);
+  if (!parts.length) {
+    parts.push(rec.seen.length ? `seen by ${rec.seen.length}` : "not seen yet");
+  }
+  return parts.join(" · ");
+}
 
 export function TableRoom({
   data,
@@ -34,6 +65,7 @@ export function TableRoom({
   const [votesFor, setVotesFor] = useState<string | null>(null);
   const [pulseOpen, setPulseOpen] = useState(false);
   const [decisionOpen, setDecisionOpen] = useState(false);
+  const [openDecision, setOpenDecision] = useState<Decision | null>(null);
 
   const pageSize = 5;
   const pages = Math.max(1, Math.ceil(log.length / pageSize));
@@ -41,110 +73,133 @@ export function TableRoom({
   const hasVoted = data.votedThisWeek.includes(seat);
 
   return (
-    <div className="grid h-full min-h-0 grid-rows-[auto_auto_1fr_auto] gap-2 pb-3">
-      <header className="flex items-center justify-between px-5 pt-4">
+    <div className="grid h-full min-h-0 grid-rows-[auto_1fr]">
+      <header className="flex items-center justify-between px-[var(--pad-x)] pt-4 pb-1">
         <div className="eyebrow">The table</div>
         <span className="eyebrow">{data.isoWeek}</span>
       </header>
 
-      <section className="mx-5 flex flex-col gap-1.5 rounded-xl border border-line bg-paper p-3.5">
-        <div className="flex items-center justify-between">
-          <div className="eyebrow">Alignment</div>
-          {!hasVoted && data.plot.length > 0 && (
-            <Chip active onClick={() => { tick(); setPulseOpen(true); }}>
-              Cast this week&apos;s pulse
-            </Chip>
-          )}
-        </div>
-        <AlignmentPlot data={data} onDot={(id) => { tick(); setVotesFor(id); }} />
-        <p className="text-[13px] leading-snug text-ink2">
-          {data.widestSplit ? (
-            <>
-              Widest split this week: {data.widestSplit.priorityName},{" "}
-              {SEATS[data.widestSplit.lowSeat].shortName} at{" "}
-              {data.widestSplit.lowVal}, {SEATS[data.widestSplit.highSeat].shortName}{" "}
-              at {data.widestSplit.highVal}. Worth ten minutes on Monday.
-            </>
-          ) : (
-            "No reads in yet this week. Adding yours takes about a minute."
-          )}
-        </p>
-      </section>
+      <div className="room-canvas">
+        <Card className="flex flex-col gap-3">
+          <SectionLabel
+            right={
+              !hasVoted && data.plot.length > 0 ? (
+                <Chip active onClick={() => { tick(); setPulseOpen(true); }}>
+                  Cast this week&apos;s pulse
+                </Chip>
+              ) : undefined
+            }
+          >
+            Alignment
+          </SectionLabel>
+          <AlignmentPlot data={data} onDot={(id) => { tick(); setVotesFor(id); }} />
+          <p className="t-secondary text-ink2">
+            {data.widestSplit ? (
+              <>
+                Widest split this week: {data.widestSplit.priorityName},{" "}
+                {SEATS[data.widestSplit.lowSeat].shortName} at{" "}
+                {data.widestSplit.lowVal}, {SEATS[data.widestSplit.highSeat].shortName}{" "}
+                at {data.widestSplit.highVal}. Worth ten minutes on Monday.
+              </>
+            ) : (
+              "No reads in yet this week. Adding yours takes about a minute."
+            )}
+          </p>
+        </Card>
 
-      <section className="mx-5 flex min-h-0 flex-col overflow-hidden rounded-xl border border-line bg-paper p-3.5">
-        <div className="mb-1.5 flex items-center justify-between">
-          <span className="eyebrow">Decisions</span>
-          <div className="flex items-center gap-2.5">
-            <button
-              onClick={() => setDecisionOpen(true)}
-              className="eyebrow underline underline-offset-2"
-            >
-              Add one
-            </button>
-            <button
-              onClick={() => setLogOpen(true)}
-              className="eyebrow underline underline-offset-2"
-            >
-              The log
-            </button>
-          </div>
-        </div>
-        <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
-          {data.decisions.length === 0 && (
-            <p className="text-[14px] text-ink3">
+        <Card className="flex flex-col gap-1">
+          <SectionLabel
+            right={
+              <>
+                <button
+                  onClick={() => setDecisionOpen(true)}
+                  className="eyebrow underline underline-offset-2"
+                >
+                  Add one
+                </button>
+                <button
+                  onClick={() => setLogOpen(true)}
+                  className="eyebrow underline underline-offset-2"
+                >
+                  The log
+                </button>
+              </>
+            }
+          >
+            Decisions
+          </SectionLabel>
+          {data.decisions.length === 0 ? (
+            <p className="t-secondary py-2 text-ink3">
               Nothing logged yet. You can say one in Ask, or add it here.
             </p>
-          )}
-          {data.decisions.map((d) => (
-            <DecisionRow key={d.id} d={d} />
-          ))}
-        </div>
-      </section>
-
-      <section className="mx-5 flex items-center justify-between rounded-xl border border-line bg-paper px-3.5 py-2">
-        <span className="eyebrow">Who&apos;s caught up</span>
-        <div className="flex items-center gap-3">
-          {data.receipts.map((r) => (
-            <div key={r.seat} className="flex flex-col items-center gap-0.5">
-              <span className="text-[12px] font-medium text-ink2">
-                {SEATS[r.seat].initials}
-              </span>
-              <div className="flex gap-1">
-                <span
-                  title="brief"
-                  className="h-1.5 w-1.5 rounded-full"
-                  style={{
-                    background: r.brief ? "var(--mint)" : "transparent",
-                    border: r.brief
-                      ? "1px solid var(--mint-deep)"
-                      : "1px solid var(--ink-3)",
-                  }}
+          ) : (
+            <div className="mt-1 flex flex-col divide-y divide-line">
+              {data.decisions.map((d) => (
+                <DecisionRow
+                  key={d.id}
+                  d={d}
+                  receipt={data.decisionReceipts[d.id] ?? EMPTY_RECEIPT}
+                  onOpen={() => { tick(); setOpenDecision(d); }}
                 />
-                <span
-                  title="pulse"
-                  className="h-1.5 w-1.5 rounded-full"
-                  style={{
-                    background: r.pulse ? "var(--mint)" : "transparent",
-                    border: r.pulse
-                      ? "1px solid var(--mint-deep)"
-                      : "1px solid var(--ink-3)",
-                  }}
-                />
-              </div>
+              ))}
             </div>
-          ))}
+          )}
+        </Card>
+
+        {/* Weekly cadence, demoted: who has read this week's brief and cast the
+           pulse. The substantive receipts now live on each decision above. */}
+        <div className="flex items-center justify-between px-1 pb-1">
+          <span className="eyebrow">Caught up this week</span>
+          <div className="flex items-center gap-3">
+            {data.receipts.map((r) => (
+              <div key={r.seat} className="flex items-center gap-1.5">
+                <span className="t-label font-medium text-ink3">
+                  {SEATS[r.seat].initials}
+                </span>
+                <div className="flex gap-1">
+                  <span
+                    title="brief"
+                    className="h-1.5 w-1.5 rounded-full"
+                    style={{
+                      background: r.brief ? "var(--mint)" : "transparent",
+                      border: r.brief
+                        ? "1px solid var(--mint-deep)"
+                        : "1px solid var(--ink-3)",
+                    }}
+                  />
+                  <span
+                    title="pulse"
+                    className="h-1.5 w-1.5 rounded-full"
+                    style={{
+                      background: r.pulse ? "var(--mint)" : "transparent",
+                      border: r.pulse
+                        ? "1px solid var(--mint-deep)"
+                        : "1px solid var(--ink-3)",
+                    }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
-      </section>
+      </div>
+
+      <DecisionDetailSheet
+        decision={openDecision}
+        receipt={openDecision ? data.decisionReceipts[openDecision.id] ?? EMPTY_RECEIPT : EMPTY_RECEIPT}
+        seat={seat}
+        onClose={() => setOpenDecision(null)}
+        onChanged={() => router.refresh()}
+      />
 
       <Sheet open={logOpen} onClose={() => setLogOpen(false)} title="Decision log">
         <div className="flex flex-col gap-2.5 pt-1">
           {log
             .slice(logPage * pageSize, (logPage + 1) * pageSize)
             .map((d) => (
-              <DecisionRow
+              <LogRow
                 key={d.id}
                 d={d}
-                full
                 canClose={d.state === "open" && (seat === d.owner_seat || seat === 4)}
                 onClosed={() => router.refresh()}
               />
@@ -182,9 +237,9 @@ export function TableRoom({
           {votes?.votes.map((v) => (
             <div
               key={v.seat}
-              className="flex items-center justify-between rounded-lg border border-line px-3 py-2"
+              className="flex items-center justify-between rounded-[var(--r-md)] border border-line px-3 py-2"
             >
-              <span className="text-[14px] font-medium text-ink">
+              <span className="t-secondary font-medium text-ink">
                 {SEATS[v.seat].name}
               </span>
               <span className="num-display text-[20px] font-medium">
@@ -193,7 +248,7 @@ export function TableRoom({
             </div>
           ))}
           {votes && votes.votes.length === 0 && (
-            <p className="text-[14px] text-ink3">No votes this week yet.</p>
+            <p className="t-secondary text-ink3">No votes this week yet.</p>
           )}
         </div>
       </Sheet>
@@ -221,14 +276,264 @@ export function TableRoom({
   );
 }
 
+/* A decision as it sits in the list: state dot, one line, meta, and the seat
+   cluster showing who has seen it and who has taken a position. Tap to open. */
 function DecisionRow({
   d,
-  full,
+  receipt,
+  onOpen,
+}: {
+  d: Decision;
+  receipt: DecisionReceipt;
+  onOpen: () => void;
+}) {
+  const st = DECISION_STATE[d.state];
+  return (
+    <button
+      onClick={onOpen}
+      className="flex flex-col gap-2 py-3 text-left first:pt-1 last:pb-1"
+    >
+      <div className="flex items-start gap-2.5">
+        <span
+          className="mt-1.5 h-2 w-2 shrink-0 rounded-full"
+          style={{ background: st.color }}
+        />
+        <div className="min-w-0 flex-1">
+          <p className="t-secondary truncate text-ink">{d.text}</p>
+          <p className="t-label mt-0.5 text-ink3">
+            {SEATS[d.owner_seat].shortName} owns it
+            {d.due_date ? ` · due ${d.due_date}` : ""} · logged by{" "}
+            {SEATS[d.logged_by].shortName}
+          </p>
+        </div>
+        <svg
+          className="mt-1 shrink-0 text-ink3"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M9 6l6 6-6 6" />
+        </svg>
+      </div>
+      <div className="flex items-center gap-2 pl-[18px]">
+        <div className="flex items-center gap-1">
+          {SEAT_IDS.map((s) => (
+            <Avatar key={s} seat={s} state={seatState(receipt, s)} size="sm" />
+          ))}
+        </div>
+        <span className="eyebrow">{receiptSummary(receipt)}</span>
+      </div>
+    </button>
+  );
+}
+
+/* The full decision, opened from the list. Records a read receipt on open,
+   shows who is where, and lets this seat concur or leave feedback. */
+function DecisionDetailSheet({
+  decision: d,
+  receipt,
+  seat,
+  onClose,
+  onChanged,
+}: {
+  decision: Decision | null;
+  receipt: DecisionReceipt;
+  seat: SeatId;
+  onClose: () => void;
+  onChanged: () => void;
+}) {
+  const [pending, startTransition] = useTransition();
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [note, setNote] = useState("");
+  const [warn, setWarn] = useState<string | null>(null);
+
+  /* Opening a decision marks it seen for this seat. */
+  useEffect(() => {
+    if (d) void markDecisionSeen(d.id);
+  }, [d]);
+
+  useEffect(() => {
+    if (!d) {
+      setFeedbackOpen(false);
+      setNote("");
+      setWarn(null);
+    }
+  }, [d]);
+
+  const myState = d ? seatState(receipt, seat) : "unseen";
+  const st = d ? DECISION_STATE[d.state] : null;
+
+  return (
+    <Sheet open={d !== null} onClose={onClose} title="Decision">
+      {d && (
+        <div className="flex flex-col gap-4 pt-1">
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <span
+                className="h-2 w-2 rounded-full"
+                style={{ background: st!.color }}
+              />
+              <span className="eyebrow" style={{ color: st!.color }}>
+                {st!.label}
+              </span>
+            </div>
+            <p className="t-lede text-ink">{d.text}</p>
+            <p className="t-label text-ink3">
+              {SEATS[d.owner_seat].shortName} owns it
+              {d.due_date ? ` · due ${d.due_date}` : ""} · logged by{" "}
+              {SEATS[d.logged_by].shortName} ({d.logged_via})
+            </p>
+          </div>
+
+          <ReceiptGroup label="Seen it" seats={receipt.seen} state="seen" empty="No one yet" />
+          <ReceiptGroup
+            label="Concurred"
+            seats={receipt.concurred}
+            state="concurred"
+            empty="No sign-off yet"
+          />
+          {receipt.feedback.length > 0 && (
+            <div className="flex flex-col gap-2">
+              <span className="eyebrow" style={{ color: "var(--amber)" }}>
+                Feedback
+              </span>
+              {receipt.feedback.map((f) => (
+                <div
+                  key={f.seat}
+                  className="rounded-[var(--r-md)] border border-amber-bd bg-amber-wash px-3 py-2"
+                >
+                  <div className="flex items-center gap-2">
+                    <Avatar seat={f.seat} state="feedback" size="sm" />
+                    <span className="t-label font-medium text-ink2">
+                      {SEATS[f.seat].shortName}
+                    </span>
+                  </div>
+                  {f.note && (
+                    <p className="t-secondary mt-1 text-ink">{f.note}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {feedbackOpen ? (
+            <div className="flex flex-col gap-2">
+              <textarea
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                rows={3}
+                placeholder="What would you change, in a line or two."
+                className="w-full rounded-[var(--r-md)] border border-line bg-paper px-3 py-2.5 text-[var(--t-body)] text-ink outline-none focus:border-ink"
+              />
+              {warn && <p className="t-secondary text-risk">{warn}</p>}
+              <div className="flex gap-2">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setFeedbackOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  size="sm"
+                  full
+                  disabled={pending || !note.trim()}
+                  onClick={() =>
+                    startTransition(async () => {
+                      const res = await leaveDecisionFeedback(d.id, note);
+                      if (res.ok) {
+                        confirmHaptic();
+                        setFeedbackOpen(false);
+                        setNote("");
+                        onChanged();
+                      } else {
+                        setWarn(res.message ?? "That did not save.");
+                      }
+                    })
+                  }
+                >
+                  Send feedback
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                full
+                disabled={pending || myState === "concurred"}
+                onClick={() =>
+                  startTransition(async () => {
+                    const res = await concurDecision(d.id);
+                    if (res.ok) {
+                      confirmHaptic();
+                      onChanged();
+                    } else {
+                      setWarn(res.message ?? "That did not go through.");
+                    }
+                  })
+                }
+              >
+                {myState === "concurred" ? "You concurred" : "Concur"}
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                full
+                onClick={() => { tick(); setFeedbackOpen(true); }}
+              >
+                Leave feedback
+              </Button>
+            </div>
+          )}
+          {warn && !feedbackOpen && (
+            <p className="t-secondary text-risk">{warn}</p>
+          )}
+        </div>
+      )}
+    </Sheet>
+  );
+}
+
+function ReceiptGroup({
+  label,
+  seats,
+  state,
+  empty,
+}: {
+  label: string;
+  seats: SeatId[];
+  state: AvatarState;
+  empty: string;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <span className="eyebrow">{label}</span>
+      {seats.length ? (
+        <div className="flex items-center gap-1">
+          {seats.map((s) => (
+            <Avatar key={s} seat={s} state={state} size="sm" />
+          ))}
+        </div>
+      ) : (
+        <span className="t-label text-ink3">{empty}</span>
+      )}
+    </div>
+  );
+}
+
+/* The log's rows keep the old full-text shape plus the operator's close/drop. */
+function LogRow({
+  d,
   canClose,
   onClosed,
 }: {
   d: Decision;
-  full?: boolean;
   canClose?: boolean;
   onClosed?: () => void;
 }) {
@@ -241,12 +546,8 @@ function DecisionRow({
         style={{ background: st.color }}
       />
       <div className="min-w-0 flex-1">
-        <p
-          className={`text-[14px] leading-snug text-ink ${full ? "" : "truncate"}`}
-        >
-          {d.text}
-        </p>
-        <p className="text-[12px] text-ink3">
+        <p className="t-secondary leading-snug text-ink">{d.text}</p>
+        <p className="t-label text-ink3">
           {SEATS[d.owner_seat].shortName} owns it
           {d.due_date ? ` · due ${d.due_date}` : ""} · logged by{" "}
           {SEATS[d.logged_by].shortName} ({d.logged_via})
@@ -312,13 +613,13 @@ function PulseSheet({
   return (
     <Sheet open={open} onClose={onClose} title="This week's pulse">
       <div className="flex flex-col gap-3 pt-1">
-        <p className="text-[13px] leading-snug text-ink3">
+        <p className="t-secondary text-ink3">
           How confident you feel about each priority, zero to a hundred. A minute a week, and the table can see where it lines up and where it does not.
         </p>
         {data.plot.map((p) => (
           <div key={p.priorityId} className="flex flex-col gap-1">
             <div className="flex items-center justify-between">
-              <span className="min-w-0 truncate pr-3 text-[14px] font-medium text-ink">
+              <span className="min-w-0 truncate pr-3 text-[var(--t-secondary)] font-medium text-ink">
                 {p.name}
               </span>
               <span className="num-display text-[20px] font-medium">
@@ -338,8 +639,9 @@ function PulseSheet({
             />
           </div>
         ))}
-        {note && <p className="text-[14px] text-risk">{note}</p>}
-        <button
+        {note && <p className="t-secondary text-risk">{note}</p>}
+        <Button
+          full
           disabled={pending}
           onClick={() =>
             startTransition(async () => {
@@ -357,10 +659,9 @@ function PulseSheet({
               }
             })
           }
-          className="rounded-full bg-ink py-2.5 text-[15px] font-medium text-bg disabled:opacity-60"
         >
           {pending ? "Saving" : "Save my read"}
-        </button>
+        </Button>
       </div>
     </Sheet>
   );
@@ -389,7 +690,7 @@ function DecisionSheet({
           onChange={(e) => setText(e.target.value)}
           placeholder="What was decided, in one sentence."
           rows={3}
-          className="w-full rounded-xl border border-line bg-paper px-3 py-2.5 text-[15px] text-ink outline-none focus:border-ink"
+          className="w-full rounded-[var(--r-md)] border border-line bg-paper px-3 py-2.5 text-[var(--t-body)] text-ink outline-none focus:border-ink"
         />
         <div>
           <div className="eyebrow mb-1">Owner</div>
@@ -407,11 +708,12 @@ function DecisionSheet({
             type="date"
             value={due}
             onChange={(e) => setDue(e.target.value)}
-            className="rounded-xl border border-line bg-paper px-3 py-2 text-[15px] text-ink outline-none focus:border-ink"
+            className="rounded-[var(--r-md)] border border-line bg-paper px-3 py-2 text-[var(--t-body)] text-ink outline-none focus:border-ink"
           />
         </div>
-        {note && <p className="text-[14px] text-risk">{note}</p>}
-        <button
+        {note && <p className="t-secondary text-risk">{note}</p>}
+        <Button
+          full
           disabled={pending || !text.trim()}
           onClick={() =>
             startTransition(async () => {
@@ -431,15 +733,16 @@ function DecisionSheet({
               }
             })
           }
-          className="rounded-full bg-ink py-2.5 text-[15px] font-medium text-bg disabled:opacity-60"
         >
           {pending ? "Logging" : "Save it"}
-        </button>
+        </Button>
       </div>
     </Sheet>
   );
 }
 
+/* Alignment: confidence across, spread up. A roomy plot with de-overlapped
+   markers, so a tight cluster stays legible. Names live one tap away. */
 function AlignmentPlot({
   data,
   onDot,
@@ -447,67 +750,113 @@ function AlignmentPlot({
   data: TableData;
   onDot: (id: string) => void;
 }) {
-  const W = 320;
-  const H = 132;
-  const pad = 24;
+  const W = 340;
+  const H = 208;
+  const padL = 30;
+  const padR = 10;
+  const padT = 12;
+  const padB = 30;
   const maxSpread = 60;
+  const R = 12;
 
-  /* Dots carry the priority's index; names live one tap away in the votes sheet. */
+  const plotW = W - padL - padR;
+  const plotH = H - padT - padB;
+
+  /* Place, then relax overlaps deterministically so equal reads don't collide. */
+  const pts = data.plot.map((p, i) => ({
+    i,
+    id: p.priorityId,
+    x: padL + (p.mean / 100) * plotW,
+    y: padT + plotH - (Math.min(p.spread, maxSpread) / maxSpread) * (plotH - R),
+    tight: p.spread <= 15 && p.mean >= 60,
+  }));
+  const minGap = 2 * R + 2;
+  for (let iter = 0; iter < 4; iter++) {
+    for (let a = 0; a < pts.length; a++) {
+      for (let b = a + 1; b < pts.length; b++) {
+        let dx = pts[b].x - pts[a].x;
+        let dy = pts[b].y - pts[a].y;
+        let dist = Math.hypot(dx, dy);
+        if (dist === 0) {
+          dx = 1;
+          dy = 0;
+          dist = 1;
+        }
+        if (dist < minGap) {
+          const push = (minGap - dist) / 2;
+          const ux = dx / dist;
+          const uy = dy / dist;
+          pts[a].x -= ux * push;
+          pts[a].y -= uy * push;
+          pts[b].x += ux * push;
+          pts[b].y += uy * push;
+        }
+      }
+    }
+  }
+  /* Keep dots inside the plot after nudging. */
+  for (const pt of pts) {
+    pt.x = Math.max(padL + R, Math.min(W - padR - R, pt.x));
+    pt.y = Math.max(padT + R, Math.min(padT + plotH - R, pt.y));
+  }
+
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
+      {/* The good zone: high confidence, low spread. */}
       <rect
-        x={pad + (W - pad - 6) * 0.6}
-        y={8}
-        width={(W - pad - 6) * 0.4}
-        height={(H - pad - 8) * 0.5}
+        x={padL + plotW * 0.6}
+        y={padT}
+        width={plotW * 0.4}
+        height={plotH * 0.42}
+        rx={6}
         fill="var(--mint-wash)"
       />
-      <line x1={pad} y1={H - pad} x2={W - 6} y2={H - pad} stroke="var(--line)" />
-      <line x1={pad} y1={8} x2={pad} y2={H - pad} stroke="var(--line)" />
-      <text x={W - 6} y={H - 12} textAnchor="end" fill="var(--ink-3)" fontSize="8.5">
+      <line x1={padL} y1={padT + plotH} x2={W - padR} y2={padT + plotH} stroke="var(--line)" />
+      <line x1={padL} y1={padT} x2={padL} y2={padT + plotH} stroke="var(--line)" />
+      <text
+        x={W - padR}
+        y={H - 10}
+        textAnchor="end"
+        fill="var(--ink-3)"
+        fontSize="11"
+      >
         confidence →
       </text>
       <text
-        x={16}
-        y={H - pad - 4}
+        x={12}
+        y={padT + plotH}
         fill="var(--ink-3)"
-        fontSize="8.5"
-        transform={`rotate(-90 16 ${H - pad - 4})`}
+        fontSize="11"
+        transform={`rotate(-90 12 ${padT + plotH})`}
       >
-        spread →
+        spread ↑
       </text>
-      {data.plot.map((p, i) => {
-        const x = pad + (p.mean / 100) * (W - pad - 6);
-        const y =
-          H - pad - (Math.min(p.spread, maxSpread) / maxSpread) * (H - pad - 14);
-        const tight = p.spread <= 15 && p.mean >= 60;
-        return (
-          <g
-            key={p.priorityId}
-            onClick={() => onDot(p.priorityId)}
-            style={{ cursor: "pointer" }}
+      {pts.map((pt) => (
+        <g
+          key={pt.id}
+          onClick={() => onDot(pt.id)}
+          style={{ cursor: "pointer" }}
+        >
+          <circle
+            cx={pt.x}
+            cy={pt.y}
+            r={R}
+            fill={pt.tight ? "var(--mint)" : "var(--paper)"}
+            stroke={pt.tight ? "var(--mint-deep)" : "var(--ink-2)"}
+            strokeWidth={1.6}
+          />
+          <text
+            x={pt.x}
+            y={pt.y + 4}
+            textAnchor="middle"
+            fontSize="12"
+            fontWeight={600}
+            fill="var(--ink)"
           >
-            <circle
-              cx={x}
-              cy={y}
-              r={8.5}
-              fill={tight ? "var(--mint)" : "var(--paper)"}
-              stroke={tight ? "var(--mint-deep)" : "var(--ink-2)"}
-              strokeWidth={1.4}
-            />
-            <text
-              x={x}
-              y={y + 3}
-              textAnchor="middle"
-              fontSize="9"
-              fontWeight={600}
-              fill="var(--ink)"
-            >
-              {i + 1}
-            </text>
-          </g>
-        );
-      })}
+            {pt.i + 1}
+          </text>
+        </g>
+      ))}
     </svg>
   );
 }

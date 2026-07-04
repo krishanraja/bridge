@@ -43,59 +43,67 @@ export function Dial({ value, size = "standard", label, delta, atRisk }: DialPro
 
   return (
     <div
-      className="relative inline-flex flex-col items-center"
+      className="inline-flex flex-col items-center"
       role="meter"
       aria-valuemin={0}
       aria-valuemax={100}
       aria-valuenow={v}
       aria-label={label ?? "confidence"}
     >
-      <svg width={cfg.px} height={cfg.px} viewBox={`0 0 ${cfg.px} ${cfg.px}`}>
-        <circle
-          cx={cx}
-          cy={cx}
-          r={r}
-          fill="none"
-          stroke="var(--line)"
-          strokeWidth={cfg.stroke}
-          strokeLinecap="round"
-          strokeDasharray={`${arc} ${c}`}
-          transform={`rotate(135 ${cx} ${cx})`}
-        />
-        <circle
-          cx={cx}
-          cy={cx}
-          r={r}
-          fill="none"
-          stroke={risky ? "var(--risk)" : "var(--dial-arc, var(--mint-deep))"}
-          strokeWidth={cfg.stroke}
-          strokeLinecap="round"
-          strokeDasharray={`${filled} ${c}`}
-          transform={`rotate(135 ${cx} ${cx})`}
-          style={{ transition: "stroke-dasharray 200ms ease-out" }}
-        />
-        {ticks.map((t, i) => (
-          <line
-            key={i}
-            {...t}
-            stroke="var(--ink-3)"
-            strokeWidth={1}
-            opacity={0.55}
+      {/* The numeral is centred on the SVG box only — never over the label
+         beneath it — so it sits at the true centre of the arc. */}
+      <div className="relative" style={{ width: cfg.px, height: cfg.px }}>
+        <svg width={cfg.px} height={cfg.px} viewBox={`0 0 ${cfg.px} ${cfg.px}`}>
+          <circle
+            cx={cx}
+            cy={cx}
+            r={r}
+            fill="none"
+            stroke="var(--line)"
+            strokeWidth={cfg.stroke}
+            strokeLinecap="round"
+            strokeDasharray={`${arc} ${c}`}
+            transform={`rotate(135 ${cx} ${cx})`}
           />
-        ))}
-      </svg>
-      <div
-        className="num-display absolute inset-0 flex items-center justify-center"
-        style={{ fontSize: cfg.numeral, fontWeight: 500 }}
-      >
-        {v}
+          <circle
+            cx={cx}
+            cy={cx}
+            r={r}
+            fill="none"
+            stroke={risky ? "var(--risk)" : "var(--dial-arc, var(--mint-deep))"}
+            strokeWidth={cfg.stroke}
+            strokeLinecap="round"
+            strokeDasharray={`${filled} ${c}`}
+            transform={`rotate(135 ${cx} ${cx})`}
+            style={{ transition: "stroke-dasharray 200ms ease-out" }}
+          />
+          {ticks.map((t, i) => (
+            <line
+              key={i}
+              {...t}
+              stroke="var(--ink-3)"
+              strokeWidth={1}
+              opacity={0.55}
+            />
+          ))}
+        </svg>
+        <div
+          className="num-display absolute inset-0 flex items-center justify-center"
+          style={{ fontSize: cfg.numeral, fontWeight: 500 }}
+        >
+          {v}
+        </div>
       </div>
       {cfg.showLabel && (label || delta != null) && (
-        <div className="mt-1 flex items-baseline gap-1.5">
-          {label && <span className="eyebrow">{label}</span>}
+        // Stack label over delta, both centred and never wrapping, so the
+        // metric can't be clipped by the arc's width.
+        <div className="mt-1 flex flex-col items-center gap-0.5 leading-none">
+          {label && (
+            <span className="eyebrow whitespace-nowrap">{label}</span>
+          )}
           {delta != null && delta !== 0 && (
             <span
-              className="num-display text-[12px] font-medium"
+              className="num-display whitespace-nowrap text-[12px] font-medium"
               style={{ color: delta > 0 ? "var(--mint-deep)" : "var(--risk)" }}
             >
               {delta > 0 ? "▲" : "▼"} {Math.abs(delta)}

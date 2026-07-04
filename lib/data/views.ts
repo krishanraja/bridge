@@ -93,11 +93,20 @@ export interface ReceiptRow {
   pulse: boolean;
 }
 
+/* Per-decision receipts: who has viewed it, who concurred, who left feedback.
+   Keyed by decision id. Signing off implies having seen it. */
+export interface DecisionReceipt {
+  seen: SeatId[];
+  concurred: SeatId[];
+  feedback: { seat: SeatId; note: string | null }[];
+}
+
 export interface TableData {
   plot: PlotPoint[];
   widestSplit: WidestSplit | null;
   decisions: Decision[];
   receipts: ReceiptRow[];
+  decisionReceipts: Record<string, DecisionReceipt>;
   isoWeek: string;
   votedThisWeek: SeatId[];
 }

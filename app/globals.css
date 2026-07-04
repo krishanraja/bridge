@@ -27,6 +27,41 @@
 
   --tabbar-h: 72px;
   --dial-arc: var(--mint-deep);
+
+  /* Amber: the third meaning, used only for "feedback left" on a decision.
+     Between mint (concur) and risk (kill), so the three read apart at a glance. */
+  --amber: #b6802a;
+  --amber-wash: #f7f0e2;
+  --amber-bd: #ecdcb9;
+
+  /* Type scale. One ramp, in pixels (the app scales as a whole via the root
+     zoom). Display sizes ride Space Grotesk; the rest ride Inter. Paired
+     line-heights keep vertical rhythm predictable. */
+  --t-display: 30px;   --lh-display: 1.05;
+  --t-title: 24px;     --lh-title: 1.12;
+  --t-headline: 21px;  --lh-headline: 1.2;
+  --t-lede: 17px;      --lh-lede: 1.35;
+  --t-body: 15px;      --lh-body: 1.45;
+  --t-secondary: 14px; --lh-secondary: 1.45;
+  --t-label: 13px;     --lh-label: 1.3;
+
+  /* Spacing scale. 4px base. --pad-x is the one canonical room inset. */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 40px;
+  --space-8: 56px;
+  --pad-x: 20px;
+
+  /* Radii and the one card elevation. Cards read as soft objects, not boxes. */
+  --r-sm: 10px;
+  --r-md: 14px;
+  --r-lg: 18px;
+  --r-pill: 999px;
+  --elev-card: 0 1px 2px rgba(12, 28, 44, 0.04), 0 6px 18px rgba(12, 28, 44, 0.05);
   /* Canonical phone design width. A head script zooms the document root so
      this width maps onto the real viewport, whatever CSS width the device
      reports. Fixed-pixel type and spacing then scale as one, so the app fills
@@ -45,7 +80,12 @@
   --mint-wash: rgba(126, 244, 194, 0.09);
   --mint-bd: rgba(126, 244, 194, 0.28);
   --risk-wash: rgba(194, 69, 45, 0.14);
+  --amber: #d6a145;
+  --amber-wash: rgba(214, 161, 69, 0.12);
+  --amber-bd: rgba(214, 161, 69, 0.32);
   --dial-arc: var(--mint);
+  /* Elevation reads as a lifted surface on dark too, but softer. */
+  --elev-card: 0 1px 2px rgba(0, 0, 0, 0.24), 0 6px 18px rgba(0, 0, 0, 0.28);
 }
 
 @theme inline {
@@ -61,6 +101,9 @@
   --color-mint-bd: var(--mint-bd);
   --color-risk: var(--risk);
   --color-risk-wash: var(--risk-wash);
+  --color-amber: var(--amber);
+  --color-amber-wash: var(--amber-wash);
+  --color-amber-bd: var(--amber-bd);
   --font-display: var(--font-space-grotesk);
   --font-body: var(--font-inter);
 }
@@ -106,6 +149,32 @@ body {
   min-height: 0;
 }
 
+/* The room canvas. Content flows at its natural height on a single column with
+   a consistent vertical rhythm, filling the room from the top. On a normal
+   phone the content is shorter than the room, so nothing scrolls and the
+   one-screen law holds. On a short device or with large type it scrolls inside
+   the canvas rather than clipping — a safety valve, not a page scroll (the
+   document itself still never scrolls; the no-scroll audit measures that). */
+.room-canvas {
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--space-4) var(--pad-x) var(--space-4);
+}
+.room-canvas::-webkit-scrollbar {
+  display: none;
+}
+/* A canvas that should hold one composition to the viewport (no inner scroll
+   expected) but still never clip: same rhythm, content-driven height. */
+.room-canvas--fit {
+  gap: var(--space-4);
+}
+
 /* Single-column room grids declare rows only. Pin their implicit column to the
    viewport so nowrap content (truncated lines) cannot inflate the layout. */
 [class*="grid-rows-"] {
@@ -141,6 +210,47 @@ body {
   letter-spacing: -0.02em;
 }
 
+/* Type ramp utilities. One place; every screen rides the same scale. Display
+   and title lean on Space Grotesk; body sizes stay in Inter for readability. */
+.t-display {
+  font-family: var(--font-display), sans-serif;
+  font-size: var(--t-display);
+  line-height: var(--lh-display);
+  letter-spacing: -0.02em;
+  font-weight: 500;
+}
+.t-title {
+  font-family: var(--font-display), sans-serif;
+  font-size: var(--t-title);
+  line-height: var(--lh-title);
+  letter-spacing: -0.015em;
+  font-weight: 500;
+}
+.t-headline {
+  font-family: var(--font-display), sans-serif;
+  font-size: var(--t-headline);
+  line-height: var(--lh-headline);
+  letter-spacing: -0.01em;
+  font-weight: 500;
+}
+.t-lede {
+  font-size: var(--t-lede);
+  line-height: var(--lh-lede);
+  font-weight: 500;
+}
+.t-body {
+  font-size: var(--t-body);
+  line-height: var(--lh-body);
+}
+.t-secondary {
+  font-size: var(--t-secondary);
+  line-height: var(--lh-secondary);
+}
+.t-label {
+  font-size: var(--t-label);
+  line-height: var(--lh-label);
+}
+
 
 /* Motion: 150 to 220ms ease-out only. Reduced motion collapses to fades. */
 @media (prefers-reduced-motion: reduce) {
@@ -172,6 +282,16 @@ body {
   to {
     transform: translateY(0);
     opacity: 1;
+  }
+}
+
+/* Skeleton shimmer for the radar sweep. */
+@keyframes shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
   }
 }
 

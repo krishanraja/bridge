@@ -48,7 +48,14 @@
         "identity graph",
         "customer identity matching",
         "entity resolution accuracy",
-        "identity resolution patent"
+        "identity resolution patent",
+        "deterministic identity matching",
+        "probabilistic identity matching",
+        "first-party identity",
+        "cookieless identity",
+        "identity spine customer data",
+        "data clean room identity",
+        "customer 360 identity resolution"
       ]
     },
     "2": {
@@ -159,6 +166,9 @@
     { "name": "IAPP News", "kind": "rss", "url": "https://iapp.org/news/rss", "lane": 7, "tier": 3 },
     { "name": "IAB Tech Lab", "kind": "rss", "url": "https://iabtechlab.com/feed/", "lane": 7, "tier": 2 },
     { "name": "GeekWire", "kind": "rss", "url": "https://www.geekwire.com/feed/", "lane": 8, "tier": 2 },
-    { "name": "Business Wire Tech", "kind": "rss", "url": "https://feed.businesswire.com/rss/home/?rss=G1QFDERJXkJeEFpRWQ==", "lane": 8, "tier": 1 }
+    { "name": "Business Wire Tech", "kind": "rss", "url": "https://feed.businesswire.com/rss/home/?rss=G1QFDERJXkJeEFpRWQ==", "lane": 8, "tier": 1 },
+    { "name": "LiveRamp Blog", "kind": "rss", "url": "https://liveramp.com/blog/feed/", "lane": 1, "tier": 3 },
+    { "name": "AdMonsters", "kind": "rss", "url": "https://www.admonsters.com/feed/", "lane": 1, "tier": 2 },
+    { "name": "Digiday", "kind": "rss", "url": "https://digiday.com/feed/", "lane": 1, "tier": 2 }
   ]
 }
