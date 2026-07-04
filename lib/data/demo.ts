@@ -50,7 +50,7 @@ import {
   topSignals,
   weekMoveDots,
 } from "./derive";
-import type { LedgerData, TableData, TodayData } from "./views";
+import type { DecisionReceipt, LedgerData, TableData, TodayData } from "./views";
 
 function dayISO(offset: number): string {
   const d = new Date();
@@ -271,10 +271,35 @@ export async function demoTable(): Promise<TableData> {
     brief: r.brief,
     pulse: r.pulse,
   }));
+  /* Deterministic demo receipts so the per-decision "seen / concurred /
+     feedback" clusters read as a live table without any writes. Varies by the
+     decision's position so the three states all appear. */
+  const decisionReceipts: Record<string, DecisionReceipt> = {};
+  decisions.forEach((d, i) => {
+    if (i === 0) {
+      decisionReceipts[d.id] = {
+        seen: [1, 2, 3, 4],
+        concurred: [1, 3],
+        feedback: [{ seat: 2, note: "Tighten the public line before we ship." }],
+      };
+    } else if (i === 1) {
+      decisionReceipts[d.id] = { seen: [1, 2, 4], concurred: [2], feedback: [] };
+    } else {
+      decisionReceipts[d.id] = { seen: [4], concurred: [], feedback: [] };
+    }
+  });
   /* Demo pulses vote on last week's Monday when today is early in the week; fall back so the plot always has data. */
   const hasThisWeek = pulses.some((p) => p.iso_week === week);
   const plotWeek = hasThisWeek ? week : isoWeekShift(week, -1);
-  return deriveTable(priorities, pulses, decisions, receipts, plotWeek, week);
+  return deriveTable(
+    priorities,
+    pulses,
+    decisions,
+    receipts,
+    decisionReceipts,
+    plotWeek,
+    week,
+  );
 }
 
 export async function demoLedger(): Promise<LedgerData> {

@@ -10,6 +10,8 @@ import { SEATS, SEAT_IDS, type SeatId } from "@/lib/seats";
 import { PRIORITY_STATE, MOVE_STATE } from "@/lib/copy/states";
 import { Dial } from "@/components/dial/Dial";
 import { Chip } from "@/components/ui/Chip";
+import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
 import { Sheet } from "@/components/ui/Sheet";
 import { tick, confirm as confirmHaptic } from "@/lib/haptics";
 import { createPriority, setMove, updateMove, updatePriority } from "@/app/actions";
@@ -32,17 +34,14 @@ export function PriorityBoard({
 
   if (priorities.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center gap-3 px-8 text-center">
-        <p className="text-[16px] leading-relaxed text-ink2">
+      <div className="room-canvas items-center justify-center gap-4 px-8 text-center">
+        <p className="t-lede leading-relaxed text-ink2">
           No priorities set yet. The table usually keeps three to five going, each with someone leading it.
         </p>
         {operator && (
-          <button
-            onClick={() => setAdding(true)}
-            className="rounded-full bg-ink px-4 py-2 text-[14px] font-medium text-bg"
-          >
+          <Button onClick={() => setAdding(true)} size="sm">
             Seed the first one
-          </button>
+          </Button>
         )}
         <PriorityEditor
           open={adding}
@@ -57,26 +56,26 @@ export function PriorityBoard({
   }
 
   return (
-    <div className="min-h-0 px-5 pb-3">
+    <div className="room-canvas">
       {open === null ? (
-        <div className="flex h-full flex-col gap-2">
+        <div className="flex flex-col gap-3">
           {priorities.map((p) => {
             const st = PRIORITY_STATE[p.state];
             return (
-              <button
+              <Card
                 key={p.id}
+                as="button"
+                accent={st.color}
                 onClick={() => {
                   tick();
                   setOpenId(p.id);
                 }}
-                className="flex min-h-0 flex-1 items-center gap-3 rounded-xl border border-line bg-paper px-3.5 py-2 text-left"
-                style={{ borderLeft: `3px solid ${st.color}` }}
+                className="flex items-center gap-3 text-left"
+                style={{ padding: "var(--space-3) var(--space-4)" }}
               >
                 <div className="min-w-0 flex-1">
-                  <div className="truncate text-[16px] font-medium leading-snug text-ink">
-                    {p.name}
-                  </div>
-                  <div className="mt-0.5 flex items-center gap-2">
+                  <div className="t-lede truncate text-ink">{p.name}</div>
+                  <div className="mt-1 flex items-center gap-2.5">
                     <span className="eyebrow" style={{ color: st.color }}>
                       {st.label}
                     </span>
@@ -94,15 +93,17 @@ export function PriorityBoard({
                   </div>
                 </div>
                 {p.confidence != null && (
-                  <Dial value={p.confidence} size="micro" />
+                  <div className="shrink-0">
+                    <Dial value={p.confidence} size="micro" />
+                  </div>
                 )}
-              </button>
+              </Card>
             );
           })}
           {operator && priorities.length < 5 && (
             <button
               onClick={() => setAdding(true)}
-              className="rounded-xl border border-dashed border-line py-1.5 text-[13px] text-ink3"
+              className="t-label rounded-[var(--r-md)] border border-dashed border-line py-2.5 text-ink3"
             >
               Add a priority ({priorities.length} of 5)
             </button>
@@ -273,9 +274,10 @@ function PriorityCard({
     (p.move.state === "agreed" || p.move.state === "proposed");
 
   return (
-    <article
-      className="grid h-full min-h-0 grid-rows-[auto_auto_1fr_auto] gap-3 rounded-xl border border-line bg-paper p-4"
-      style={{ borderLeft: `3px solid ${st.color}` }}
+    <Card
+      accent={st.color}
+      className="flex flex-col gap-[var(--space-5)]"
+      style={{ padding: "var(--space-5)" }}
     >
       <div className="flex items-start justify-between gap-2">
         <button onClick={onBack} className="eyebrow underline underline-offset-2">
@@ -289,27 +291,29 @@ function PriorityCard({
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="num-display min-w-0 text-[27px] font-medium leading-tight text-ink">
-          {p.name}
-        </h2>
+      {/* Title on its own line; the dial sits in a reserved, unshrinkable stat
+         column so a long title can never squeeze or clip the metric. */}
+      <div className="flex items-start justify-between gap-4">
+        <h2 className="t-title min-w-0 flex-1 text-ink">{p.name}</h2>
         {p.confidence != null && (
-          <Dial
-            value={p.confidence}
-            size="standard"
-            label="Confidence"
-            delta={p.confidenceDelta}
-          />
+          <div className="shrink-0">
+            <Dial
+              value={p.confidence}
+              size="standard"
+              label="Confidence"
+              delta={p.confidenceDelta}
+            />
+          </div>
         )}
       </div>
 
-      <div className="flex min-h-0 flex-col gap-2.5 overflow-hidden">
+      <div className="flex flex-col gap-[var(--space-4)]">
         <div>
-          <div className="eyebrow mb-0.5">This week&apos;s move</div>
+          <div className="eyebrow mb-1">This week&apos;s move</div>
           {p.move ? (
             <div>
-              <p className="text-[15px] leading-snug text-ink">{p.move.text}</p>
-              <div className="mt-1 flex items-center gap-2">
+              <p className="t-lede text-ink">{p.move.text}</p>
+              <div className="mt-1.5 flex items-center gap-2.5">
                 <span className="eyebrow">{SEATS[p.move.owner_seat].initials}</span>
                 <span
                   className="eyebrow"
@@ -318,7 +322,7 @@ function PriorityCard({
                   {MOVE_STATE[p.move.state].label}
                 </span>
               </div>
-              <div className="mt-1.5 flex flex-wrap gap-1.5">
+              <div className="mt-3 flex flex-wrap gap-1.5">
                 {canAgree && (
                   <Chip
                     active
@@ -359,11 +363,11 @@ function PriorityCard({
             </div>
           ) : (
             <div>
-              <p className="text-[15px] text-ink3">
+              <p className="t-body text-ink3">
                 No move set. Monday&apos;s brief proposes one.
               </p>
               {operator && (
-                <div className="mt-1.5">
+                <div className="mt-2">
                   <Chip active onClick={() => setMoveOpen(true)}>
                     Set this week&apos;s move
                   </Chip>
@@ -374,17 +378,17 @@ function PriorityCard({
         </div>
 
         {p.blocker && (
-          <div className="rounded-lg border border-line bg-risk-wash px-3 py-2">
+          <div className="rounded-[var(--r-md)] border border-line bg-risk-wash px-3.5 py-2.5">
             <div className="eyebrow mb-0.5" style={{ color: "var(--risk)" }}>
               Blocker · {p.blockerOwner ? SEATS[p.blockerOwner].shortName : ""}
             </div>
-            <p className="text-[14px] leading-snug text-ink">{p.blocker}</p>
+            <p className="t-secondary text-ink">{p.blocker}</p>
           </div>
         )}
 
         <div className="flex items-center gap-2">
           <span className="eyebrow">Sponsor</span>
-          <span className="text-[14px] font-medium text-ink2">
+          <span className="t-secondary font-medium text-ink2">
             {SEATS[p.sponsor_seat].name}
           </span>
         </div>
@@ -393,7 +397,7 @@ function PriorityCard({
       <button
         onClick={onDetail}
         disabled={pending}
-        className="rounded-full border border-line py-2 text-[14px] font-medium text-ink2"
+        className="t-secondary rounded-[var(--r-pill)] border border-line py-2.5 font-medium text-ink2"
       >
         History and links
       </button>
@@ -426,7 +430,7 @@ function PriorityCard({
           onChanged();
         }}
       />
-    </article>
+    </Card>
   );
 }
 

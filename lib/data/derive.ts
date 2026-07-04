@@ -12,6 +12,7 @@ import type {
 } from "@/lib/types";
 import { SEATS, type SeatId } from "@/lib/seats";
 import type {
+  DecisionReceipt,
   PlotPoint,
   PriorityView,
   TableData,
@@ -171,6 +172,7 @@ export function deriveTable(
   pulses: Pulse[],
   decisions: Decision[],
   receipts: { seat: SeatId; brief: boolean; pulse: boolean }[],
+  decisionReceipts: Record<string, DecisionReceipt>,
   isoWeek: string,
   currentWeek?: string,
 ): TableData {
@@ -224,7 +226,15 @@ export function deriveTable(
     new Set(pulses.filter((p) => p.iso_week === week).map((p) => p.seat)),
   ) as SeatId[];
 
-  return { plot, widestSplit, decisions: lastDecisions, receipts, isoWeek, votedThisWeek };
+  return {
+    plot,
+    widestSplit,
+    decisions: lastDecisions,
+    receipts,
+    decisionReceipts,
+    isoWeek,
+    votedThisWeek,
+  };
 }
 
 export function formatDue(iso: string): string {

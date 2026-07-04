@@ -3,15 +3,26 @@
 /* The signal deck: snap-paged cards, lane filter, three actions.
    Act, Hold, Kill act on the local deal now; they feed the learning loop at gate two. */
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type { Signal } from "@/lib/types";
 import { LANES, LANE_IDS, type LaneId } from "@/lib/copy/lanes";
 import { Chip } from "@/components/ui/Chip";
 import { Sheet } from "@/components/ui/Sheet";
+import { Button } from "@/components/ui/Button";
 import { tick, confirm as confirmHaptic } from "@/lib/haptics";
 import { signalVerdict } from "@/app/actions";
+
+/* Honest narration of what the sweep is actually doing, in order:
+   gather → cluster → filter → score → synthesize. */
+const SWEEP_STAGES = [
+  "Scanning partner platforms and the category…",
+  "Reading trust, capital, and agentic moves…",
+  "Clustering the same story told twice…",
+  "Scoring each one against the house view…",
+  "Writing what it means for Amperity…",
+];
 
 export function Deck({ signals, operator }: { signals: Signal[]; operator: boolean }) {
   const router = useRouter();
@@ -20,6 +31,8 @@ export function Deck({ signals, operator }: { signals: Signal[]; operator: boole
   const [sources, setSources] = useState<Signal | null>(null);
   const [acted, setActed] = useState<string | null>(null);
   const [sweeping, setSweeping] = useState(false);
+  const [active, setActive] = useState(0);
+  const pagerRef = useRef<HTMLDivElement | null>(null);
 
   const deck = useMemo(
     () =>
@@ -28,6 +41,19 @@ export function Deck({ signals, operator }: { signals: Signal[]; operator: boole
       ),
     [signals, lane, gone],
   );
+
+  /* Track which card is in view so the rail can show position — and, quietly,
+     teach that the deck pages vertically. */
+  useEffect(() => {
+    const el = pagerRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      const i = Math.round(el.scrollTop / el.clientHeight);
+      setActive((prev) => (prev === i ? prev : i));
+    };
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => el.removeEventListener("scroll", onScroll);
+  }, [deck.length]);
 
   const dismiss = (id: string, kind: "act" | "hold" | "kill") => {
     if (kind === "act") confirmHaptic();
@@ -52,7 +78,7 @@ export function Deck({ signals, operator }: { signals: Signal[]; operator: boole
 
   return (
     <div className="grid h-full min-h-0 grid-rows-[auto_1fr]">
-      <div className="flex gap-1.5 overflow-x-auto px-5 pb-2 [scrollbar-width:none]">
+      <div className="flex gap-1.5 overflow-x-auto px-[var(--pad-x)] pb-2 [scrollbar-width:none]">
         <Chip active={lane === null} onClick={() => setLane(null)}>
           All lanes
         </Chip>
@@ -70,31 +96,34 @@ export function Deck({ signals, operator }: { signals: Signal[]; operator: boole
         ))}
       </div>
 
-      {deck.length === 0 ? (
-        <div className="flex flex-col items-center justify-center gap-3 px-8 text-center">
-          <p className="text-[16px] leading-relaxed text-ink2">
+      {sweeping ? (
+        <SweepingDeck />
+      ) : deck.length === 0 ? (
+        <div className="room-canvas items-center justify-center gap-4 px-8 text-center">
+          <p className="t-lede leading-relaxed text-ink2">
             Nothing more from the market today. A quiet day, which happens.
           </p>
           {operator && (
-            <button
-              onClick={sweep}
-              disabled={sweeping}
-              className="rounded-full bg-ink px-4 py-2 text-[14px] font-medium text-bg disabled:opacity-60"
-            >
-              {sweeping ? "Sweeping. This takes a minute." : "Run a sweep now"}
-            </button>
+            <Button size="sm" onClick={sweep}>
+              Run a sweep now
+            </Button>
           )}
         </div>
       ) : (
-        <div className="snap-pager">
-          {deck.map((s) => (
-            <SignalCard
-              key={s.id}
-              signal={s}
-              onSources={() => setSources(s)}
-              onAction={dismiss}
-            />
-          ))}
+        <div className="relative min-h-0">
+          <div className="snap-pager" ref={pagerRef}>
+            {deck.map((s, i) => (
+              <SignalCard
+                key={s.id}
+                signal={s}
+                index={i}
+                total={deck.length}
+                onSources={() => setSources(s)}
+                onAction={dismiss}
+              />
+            ))}
+          </div>
+          {deck.length > 1 && <PageRail total={deck.length} active={active} />}
         </div>
       )}
 
@@ -114,12 +143,12 @@ export function Deck({ signals, operator }: { signals: Signal[]; operator: boole
               href={c.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="rounded-lg border border-line px-3 py-2.5"
+              className="rounded-[var(--r-md)] border border-line px-3 py-2.5"
             >
-              <div className="text-[14px] font-medium leading-snug text-ink">
+              <div className="t-secondary font-medium leading-snug text-ink">
                 {c.title}
               </div>
-              <div className="mt-0.5 text-[12px] text-ink3">{c.source}</div>
+              <div className="t-label mt-0.5 text-ink3">{c.source}</div>
             </a>
           ))}
         </div>
@@ -128,12 +157,130 @@ export function Deck({ signals, operator }: { signals: Signal[]; operator: boole
   );
 }
 
+/* A vertical rail of dots on the right edge: which card you're on, and that
+   there are more below. Purely a wayfinding hint. */
+function PageRail({ total, active }: { total: number; active: number }) {
+  return (
+    <div className="pointer-events-none absolute right-1.5 top-1/2 z-10 flex -translate-y-1/2 flex-col items-center gap-1.5">
+      {Array.from({ length: total }, (_, i) => (
+        <span
+          key={i}
+          className="rounded-full transition-all duration-200"
+          style={{
+            width: 5,
+            height: i === active ? 16 : 5,
+            background: i === active ? "var(--mint-deep)" : "var(--line)",
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+/* The sweep in progress: skeleton cards that page vertically, so the shape and
+   the scroll are obvious before anything lands, plus honest narration of the
+   stage the pipeline is on. */
+function SweepingDeck() {
+  const [stage, setStage] = useState(0);
+  useEffect(() => {
+    const t = setInterval(
+      () => setStage((s) => (s + 1) % SWEEP_STAGES.length),
+      2400,
+    );
+    return () => clearInterval(t);
+  }, []);
+
+  return (
+    <div className="relative min-h-0 overflow-hidden">
+      <div className="flex h-full flex-col gap-3 px-[var(--pad-x)] pt-1">
+        <SkeletonCard live>
+          <div className="flex flex-col items-center gap-3 py-4 text-center">
+            <Spinner />
+            <p className="t-lede text-ink">Sweeping the market</p>
+            <p className="t-secondary min-h-[2.4em] text-ink3 transition-opacity duration-300">
+              {SWEEP_STAGES[stage]}
+            </p>
+            <span className="eyebrow mt-1">This takes about a minute</span>
+          </div>
+        </SkeletonCard>
+        {/* A peek of the next card, so the vertical stack reads immediately. */}
+        <div className="h-24 shrink-0">
+          <SkeletonCard />
+        </div>
+      </div>
+      <div className="pointer-events-none absolute inset-x-0 bottom-2 flex justify-center">
+        <span className="eyebrow flex items-center gap-1 text-ink3">
+          Cards stack below
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M6 9l6 6 6-6" />
+          </svg>
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function SkeletonCard({
+  children,
+  live,
+}: {
+  children?: React.ReactNode;
+  live?: boolean;
+}) {
+  return (
+    <div
+      className={`flex flex-col gap-3 rounded-[var(--r-lg)] border border-line bg-paper p-4 shadow-[var(--elev-card)] ${live ? "flex-1" : "h-full"}`}
+    >
+      <div className="flex gap-1.5">
+        <Shimmer className="h-5 w-16 rounded-full" />
+        <Shimmer className="h-5 w-20 rounded-full" />
+      </div>
+      <Shimmer className="h-6 w-4/5 rounded" />
+      <Shimmer className="h-6 w-3/5 rounded" />
+      {children}
+      {!children && (
+        <div className="mt-2 flex flex-col gap-2">
+          <Shimmer className="h-4 w-full rounded" />
+          <Shimmer className="h-4 w-11/12 rounded" />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Shimmer({ className = "" }: { className?: string }) {
+  return (
+    <span
+      className={`block ${className}`}
+      style={{
+        background:
+          "linear-gradient(90deg, var(--line) 0%, var(--bg) 50%, var(--line) 100%)",
+        backgroundSize: "200% 100%",
+        animation: "shimmer 1.4s ease-in-out infinite",
+      }}
+    />
+  );
+}
+
+function Spinner() {
+  return (
+    <svg width="28" height="28" viewBox="0 0 24 24" className="animate-spin" style={{ animationDuration: "0.9s" }}>
+      <circle cx="12" cy="12" r="9" fill="none" stroke="var(--line)" strokeWidth="2.5" />
+      <path d="M12 3a9 9 0 0 1 9 9" fill="none" stroke="var(--mint-deep)" strokeWidth="2.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 function SignalCard({
   signal: s,
+  index,
+  total,
   onSources,
   onAction,
 }: {
   signal: Signal;
+  index: number;
+  total: number;
   onSources: () => void;
   onAction: (id: string, kind: "act" | "hold" | "kill") => void;
 }) {
@@ -172,36 +319,41 @@ function SignalCard({
   };
 
   return (
-    <div className="snap-page px-5 pb-3">
+    <div className="snap-page px-[var(--pad-x)] pb-3">
       <article
         onPointerDown={pressStart}
         onPointerUp={pressEnd}
         onPointerLeave={pressEnd}
-        className="grid h-full min-h-0 grid-rows-[auto_auto_1fr_auto_auto] gap-2 rounded-xl border border-line bg-paper p-4"
+        className="flex h-full min-h-0 flex-col gap-3 rounded-[var(--r-lg)] border border-line bg-paper p-[var(--space-5)] shadow-[var(--elev-card)]"
         style={{ borderLeft: `3px solid var(${lane.cssVar})` }}
       >
         <audio ref={audioRef} className="hidden" />
-        <div className="flex items-center gap-1.5">
-          <Chip color={`var(${lane.cssVar})`}>{lane.glyph}</Chip>
-          <Chip>
-            {s.corroboration} source{s.corroboration === 1 ? "" : "s"}
-          </Chip>
-          {s.illustrative && <Chip>Sample</Chip>}
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5">
+            <Chip color={`var(${lane.cssVar})`}>{lane.glyph}</Chip>
+            <Chip>
+              {s.corroboration} source{s.corroboration === 1 ? "" : "s"}
+            </Chip>
+            {s.illustrative && <Chip>Sample</Chip>}
+          </div>
+          <span className="eyebrow shrink-0 text-ink3">
+            {index + 1} / {total}
+          </span>
         </div>
 
-        <h2 className="num-display text-[23px] font-medium leading-tight text-ink">
-          {s.headline}
-        </h2>
+        <h2 className="t-headline text-ink">{s.headline}</h2>
 
-        <div className="flex min-h-0 flex-col gap-2 overflow-hidden">
+        {/* Content flows on the rhythm grid; the action bar is pinned to the
+           bottom with mt-auto — no dead 1fr gap. */}
+        <div className="flex flex-col gap-3">
           <div>
-            <div className="eyebrow mb-0.5">For Amperity</div>
-            <p className="text-[15px] leading-snug text-ink2">{s.for_amperity}</p>
+            <div className="eyebrow mb-1">For Amperity</div>
+            <p className="t-body text-ink2">{s.for_amperity}</p>
           </div>
           {s.posture && (
             <div>
-              <div className="eyebrow mb-0.5">The move</div>
-              <p className="text-[15px] leading-snug text-ink">{s.posture}</p>
+              <div className="eyebrow mb-1">The move</div>
+              <p className="t-body text-ink">{s.posture}</p>
             </div>
           )}
           {s.assumption_id && s.assumption_direction != null && s.assumption_direction !== 0 && (
@@ -220,7 +372,7 @@ function SignalCard({
 
         <button
           onClick={onSources}
-          className="flex items-center gap-1.5 text-[12px] text-ink3 underline underline-offset-2"
+          className="flex items-center gap-1.5 text-[var(--t-label)] text-ink3 underline underline-offset-2"
         >
           {s.cluster
             .slice(0, 3)
@@ -228,22 +380,24 @@ function SignalCard({
             .join(", ")}
         </button>
 
-        <div className="grid grid-cols-3 gap-2">
+        {/* Action bar sits in the thumb zone; the slack lands here, below the
+           content, not as a void between the body and its sources. */}
+        <div className="mt-auto grid grid-cols-3 gap-2 pt-2">
           <button
             onClick={() => onAction(s.id, "act")}
-            className="rounded-full bg-ink py-2 text-[14px] font-medium text-bg"
+            className="rounded-[var(--r-pill)] bg-ink py-2.5 text-[var(--t-secondary)] font-medium text-bg"
           >
             Act
           </button>
           <button
             onClick={() => onAction(s.id, "hold")}
-            className="rounded-full border border-line py-2 text-[14px] font-medium text-ink2"
+            className="rounded-[var(--r-pill)] border border-line py-2.5 text-[var(--t-secondary)] font-medium text-ink2"
           >
             Hold
           </button>
           <button
             onClick={() => onAction(s.id, "kill")}
-            className="rounded-full border border-line py-2 text-[14px] font-medium text-ink3"
+            className="rounded-[var(--r-pill)] border border-line py-2.5 text-[var(--t-secondary)] font-medium text-ink3"
           >
             Kill
           </button>
