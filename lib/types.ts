@@ -35,6 +35,9 @@ export interface Signal {
   assumption_direction: -1 | 0 | 1 | null;
   created_at: string;
   illustrative?: boolean;
+  /* 'act' is the daily deck; 'shift' is a structural read that only accretes
+     evidence onto a Watch item and feeds the themes graph. Defaults to 'act'. */
+  channel?: "act" | "shift";
 }
 
 export interface Assumption {

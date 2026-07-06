@@ -446,6 +446,35 @@ export async function voteAssumption(input: {
   return { ok: true };
 }
 
+/* The operator opens a Watch item: a slow-moving belief the table wants to track
+   as the market argues with it. Structural trends live here and accrete evidence
+   over weeks. Operator only; the table reads on it once it is up. */
+export async function openWatch(input: {
+  statement: string;
+  rationale?: string;
+}): Promise<ActionResult> {
+  const seat = await seatOrNull();
+  if (!seat) return DEMO_REFUSAL;
+  if (seat !== 4) return { ok: false, message: "Krish opens the watch items, but the table reads on every one." };
+  const sb = await supabaseServer();
+
+  const statement = input.statement.trim().slice(0, 120);
+  if (!statement) return { ok: false, message: "A watch needs a one-line belief to track." };
+
+  const { error } = await sb.from("assumptions").insert({
+    statement,
+    rationale: input.rationale?.trim() || null,
+    kind: "force",
+    confidence: 50,
+    status: "holding",
+  });
+  if (error) return { ok: false, message: "That did not save. Mind trying again?" };
+
+  await logAudit(seat, "watch_open", { statement });
+  revalidatePath("/ledger");
+  return { ok: true };
+}
+
 /* The fifteen second undo on a voice logged decision: the logger can take
    back their own entry while it is still warm. */
 

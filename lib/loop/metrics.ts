@@ -32,6 +32,7 @@ export async function learnMetrics(): Promise<LearnMetrics> {
       .from("signals")
       .select("id", { count: "exact", head: true })
       .eq("illustrative", false)
+      .eq("channel", "act")
       .gte("created_at", weekAgo),
   ]);
 

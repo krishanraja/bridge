@@ -8,6 +8,7 @@ import type {
   LedgerData,
   PriorityView,
   TableData,
+  ThemeView,
   TodayData,
 } from "./views";
 import {
@@ -16,6 +17,7 @@ import {
   demoLedger,
   demoPriorityViews,
   demoTable,
+  demoThemes,
   demoToday,
 } from "./demo";
 
@@ -53,4 +55,10 @@ export async function getDecisionLog(): Promise<Decision[]> {
   if (useSeedData()) return demoDecisionLog();
   const db = await import("./db");
   return db.dbDecisionLog();
+}
+
+export async function getThemes(): Promise<ThemeView[]> {
+  if (useSeedData()) return demoThemes();
+  const db = await import("./db");
+  return db.dbThemes();
 }

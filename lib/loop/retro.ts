@@ -24,7 +24,7 @@ export async function writeRetro(proposal: LearnProposal): Promise<RetroMemo> {
   const [actedQ, killedQ, weekSignalsQ, sourcesQ] = await Promise.all([
     sb.from("events").select("subject_id").eq("type", "signal_act").gte("created_at", weekAgo),
     sb.from("events").select("subject_id").eq("type", "signal_kill").gte("created_at", weekAgo),
-    sb.from("signals").select("headline, cluster").eq("illustrative", false).gte("created_at", weekAgo),
+    sb.from("signals").select("headline, cluster").eq("illustrative", false).eq("channel", "act").gte("created_at", weekAgo),
     sb.from("sources").select("*").eq("active", true),
   ]);
 

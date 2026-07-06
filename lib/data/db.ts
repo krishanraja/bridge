@@ -19,6 +19,7 @@ import type {
   PriorityView,
   SeatReaction,
   TableData,
+  ThemeView,
   TodayData,
 } from "./views";
 import { computeAffinity, personalize } from "@/lib/learn/affinity";
@@ -37,6 +38,7 @@ async function latestSignalDay(
   const { data } = await sb
     .from("signals")
     .select("day")
+    .eq("channel", "act")
     .lte("day", onOrBefore)
     .order("day", { ascending: false })
     .limit(1)
@@ -52,7 +54,7 @@ export async function dbToday(): Promise<TodayData> {
 
   const [signalsQ, prioritiesQ, movesQ, decisionsQ, threadsQ, briefQ] =
     await Promise.all([
-      sb.from("signals").select("*").eq("day", deckDay),
+      sb.from("signals").select("*").eq("day", deckDay).eq("channel", "act"),
       sb.from("priorities").select("*").is("retired_at", null),
       sb.from("moves").select("*").eq("iso_week", week),
       sb.from("decisions").select("*").eq("state", "open"),
@@ -148,6 +150,7 @@ export async function dbDeck(): Promise<DeckView> {
       .from("signals")
       .select("*")
       .eq("day", day)
+      .eq("channel", "act")
       .order("score", { ascending: false })
       .limit(12),
     sb
@@ -408,6 +411,55 @@ export async function dbLedger(): Promise<LedgerData> {
         }),
     })),
   };
+}
+
+export async function dbThemes(): Promise<ThemeView[]> {
+  const sb = await supabaseServer();
+  const seatQ = await sb.auth.getUser();
+  const email = seatQ.data.user?.email?.toLowerCase();
+  const { seatForEmail } = await import("@/lib/seats");
+  const seat = email ? seatForEmail(email) : null;
+
+  const [themesQ, myReactionsQ] = await Promise.all([
+    sb
+      .from("themes")
+      .select("id, label, lane, importance, consensus, acceleration, member_count")
+      .order("importance", { ascending: false })
+      .limit(6),
+    seat
+      ? sb
+          .from("reactions")
+          .select("subject_id, sentiment, reason_tags")
+          .eq("seat", seat)
+          .eq("subject_type", "theme")
+      : Promise.resolve({ data: [] as ReactionRow[] }),
+  ]);
+
+  const myReactions: Record<string, SeatReaction> = {};
+  for (const r of (myReactionsQ.data ?? []) as ReactionRow[]) {
+    myReactions[r.subject_id] = { sentiment: r.sentiment, tags: r.reason_tags ?? [] };
+  }
+
+  return (
+    (themesQ.data ?? []) as {
+      id: string;
+      label: string;
+      lane: number | null;
+      importance: number;
+      consensus: number | null;
+      acceleration: number;
+      member_count: number;
+    }[]
+  ).map((t) => ({
+    id: t.id,
+    label: t.label,
+    lane: t.lane,
+    importance: Number(t.importance),
+    consensus: t.consensus == null ? null : Number(t.consensus),
+    acceleration: Number(t.acceleration ?? 0),
+    member_count: t.member_count,
+    myReaction: myReactions[t.id] ?? null,
+  }));
 }
 
 export async function dbDecisionLog(): Promise<Decision[]> {

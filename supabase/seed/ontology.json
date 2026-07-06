@@ -127,6 +127,12 @@
     "8": {
       "name": "Talent and org signal",
       "queries": [
+        "forward deployed engineer",
+        "enterprise AI deployment",
+        "AI adoption enterprise",
+        "AI implementation gap",
+        "where AI value is captured",
+        "field engineering enterprise AI",
         "CDP executive hire",
         "martech executive departure",
         "Databricks executive",
@@ -167,6 +173,8 @@
     { "name": "IAB Tech Lab", "kind": "rss", "url": "https://iabtechlab.com/feed/", "lane": 7, "tier": 2 },
     { "name": "GeekWire", "kind": "rss", "url": "https://www.geekwire.com/feed/", "lane": 8, "tier": 2 },
     { "name": "Business Wire Tech", "kind": "rss", "url": "https://feed.businesswire.com/rss/home/?rss=G1QFDERJXkJeEFpRWQ==", "lane": 8, "tier": 1 },
+    { "name": "Andreessen Horowitz", "kind": "rss", "url": "https://a16z.com/feed/", "lane": 8, "tier": 2 },
+    { "name": "Benedict Evans", "kind": "rss", "url": "https://www.ben-evans.com/benedictevans?format=rss", "lane": 8, "tier": 2 },
     { "name": "LiveRamp Blog", "kind": "rss", "url": "https://liveramp.com/blog/feed/", "lane": 1, "tier": 3 },
     { "name": "AdMonsters", "kind": "rss", "url": "https://www.admonsters.com/feed/", "lane": 1, "tier": 2 },
     { "name": "Digiday", "kind": "rss", "url": "https://digiday.com/feed/", "lane": 1, "tier": 2 }

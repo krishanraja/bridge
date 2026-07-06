@@ -19,6 +19,7 @@ export interface RunSummary {
   clustered: number;
   filtered: number;
   written: number;
+  shifted: number;
   tensions: number;
   redFlags: number;
   day: string;
@@ -32,7 +33,7 @@ export async function runPipeline(): Promise<RunSummary> {
 
   const [{ data: sourceRows }, { data: assumptionRows }] = await Promise.all([
     sb.from("sources").select("*").eq("active", true),
-    sb.from("assumptions").select("id, statement, confidence, status, history").is("retired_at", null),
+    sb.from("assumptions").select("id, statement, confidence, status, history, kind").is("retired_at", null),
   ]);
   const sources = (sourceRows ?? []) as SourceRow[];
   const assumptions = (assumptionRows ?? []) as {
@@ -41,12 +42,18 @@ export async function runPipeline(): Promise<RunSummary> {
     confidence: number;
     status: string;
     history: { day: string; confidence: number }[];
+    kind: string;
   }[];
   const houseView = assumptions.map((a) => a.statement);
   const assumptionRefs: AssumptionRef[] = assumptions.map((a) => ({
     id: a.id,
     statement: a.statement,
   }));
+  /* Watch items (forces) are the home for structural shifts: a shift only counts
+     if it lands on one of these slow-moving beliefs. */
+  const forceRefs: AssumptionRef[] = assumptions
+    .filter((a) => a.kind === "force")
+    .map((a) => ({ id: a.id, statement: a.statement }));
 
   /* Idempotence: a rerun for the same day replaces the day's deck.
      Evidence rows go first or the foreign key blocks the delete. */
@@ -66,6 +73,13 @@ export async function runPipeline(): Promise<RunSummary> {
   const clusters = cluster(raw);
   const kept = await filterCandidates(clusters, houseView, notes);
   notes.push(`filter kept ${kept.length} of ${Math.min(clusters.length, 48)}`);
+
+  /* One filter, two channels. 'act' clusters compete for the scarce daily deck.
+     'shift' clusters never touch the deck; they exist only to accrete evidence
+     onto a Watch item and feed the themes graph. */
+  const actKept = kept.filter((c) => c.tag !== "shift");
+  const shiftKept = kept.filter((c) => c.tag === "shift");
+  if (shiftKept.length > 0) notes.push(`shift channel: ${shiftKept.length}`);
 
   /* Resonance centroids from the last 30 days of verdicts. */
   const since = new Date(Date.now() - 30 * 86400000).toISOString();
@@ -104,54 +118,15 @@ export async function runPipeline(): Promise<RunSummary> {
     notes.push(`team appetite from ${reactionRows!.length} reactions`);
   }
 
-  const scored = await scoreClusters(kept, centroids, appetite);
-
-  /* Synthesize the top survivors, gently: bounded concurrency, retries inside. */
-  const { pool } = await import("./llm");
-  const top = scored.slice(0, 16);
-  const drafts = await pool(
-    top.map((c) => () => synthesizeCard(c, assumptionRefs, notes)),
-    3,
-  );
-  let cards: FinishedCard[] = top.flatMap((c, i) =>
-    drafts[i] ? [{ cluster: c, draft: drafts[i]! }] : [],
-  );
-
-  /* Cited or silent: a card without a source URL does not render. */
-  cards = cards.filter((c) => c.cluster.items.length > 0 && c.cluster.items[0].url);
-
-  /* Same story told twice slips token clustering; embeddings catch it. */
-  const { cosine } = await import("./llm");
-  const deduped: FinishedCard[] = [];
-  for (const card of [...cards].sort((a, b) => b.cluster.score - a.cluster.score)) {
-    const dupe = deduped.some(
-      (kept) =>
-        kept.cluster.embedding &&
-        card.cluster.embedding &&
-        cosine(kept.cluster.embedding, card.cluster.embedding) >= 0.85,
-    );
-    if (dupe) notes.push(`deduped: ${card.draft.headline.slice(0, 60)}`);
-    else deduped.push(card);
-  }
-  cards = deduped;
-
-  cards = mergeTensions(cards);
-  const tensions = cards.filter((c) => c.draft.headline.startsWith("The market is arguing")).length;
-
-  /* Lanes quiet for five days get a seat at the table if anything cleared. */
-  const fiveDaysAgo = new Date(Date.now() - 5 * 86400000).toISOString().slice(0, 10);
-  const { data: recentLanes } = await sb
-    .from("signals")
-    .select("lane")
-    .gte("day", fiveDaysAgo);
-  const activeLanes = new Set((recentLanes ?? []).map((r) => r.lane));
-  const quietLanes = LANE_IDS.filter((l) => !activeLanes.has(l)) as LaneId[];
-
-  const finalCards = balance(cards, quietLanes);
-
-  /* Write signals, evidence, ledger updates, and the red flag check. */
+  /* A single writer for both channels: insert the signal, link the evidence
+     edge, and move the belief's confidence. The red flag interrupt only fires on
+     the deck, where a corroborated challenge on a load bearing belief is news. */
   let redFlags = 0;
-  for (const card of finalCards) {
+  const writeCard = async (
+    channel: "act" | "shift",
+    card: FinishedCard,
+    checkRedFlag: boolean,
+  ): Promise<boolean> => {
     const { data: sig, error } = await sb
       .from("signals")
       .insert({
@@ -171,13 +146,14 @@ export async function runPipeline(): Promise<RunSummary> {
         embedding: card.cluster.embedding ? JSON.stringify(card.cluster.embedding) : null,
         assumption_id: card.draft.assumption_id,
         assumption_direction: card.draft.assumption_direction,
+        channel,
         illustrative: false,
       })
       .select("id")
       .single();
     if (error || !sig) {
       notes.push(`write failed: ${error?.message}`);
-      continue;
+      return false;
     }
 
     if (card.draft.assumption_id && card.draft.assumption_direction !== 0) {
@@ -222,6 +198,7 @@ export async function runPipeline(): Promise<RunSummary> {
 
         /* Interrupt grade: corroborated challenge on a load bearing belief. */
         if (
+          checkRedFlag &&
           direction === -1 &&
           card.cluster.corroboration >= 3 &&
           card.cluster.score >= 12 &&
@@ -238,13 +215,89 @@ export async function runPipeline(): Promise<RunSummary> {
         }
       }
     }
+    return true;
+  };
+
+  /* The deck (act channel): score, synthesize the top survivors, dedupe, pair
+     tensions, inject a quiet lane, cap at twelve. */
+  const scored = await scoreClusters(actKept, centroids, appetite);
+
+  /* Synthesize the top survivors, gently: bounded concurrency, retries inside. */
+  const { pool } = await import("./llm");
+  const top = scored.slice(0, 16);
+  const drafts = await pool(
+    top.map((c) => () => synthesizeCard(c, assumptionRefs, notes)),
+    3,
+  );
+  let cards: FinishedCard[] = top.flatMap((c, i) =>
+    drafts[i] ? [{ cluster: c, draft: drafts[i]! }] : [],
+  );
+
+  /* Cited or silent: a card without a source URL does not render. */
+  cards = cards.filter((c) => c.cluster.items.length > 0 && c.cluster.items[0].url);
+
+  /* Same story told twice slips token clustering; embeddings catch it. */
+  const { cosine } = await import("./llm");
+  const deduped: FinishedCard[] = [];
+  for (const card of [...cards].sort((a, b) => b.cluster.score - a.cluster.score)) {
+    const dupe = deduped.some(
+      (kept) =>
+        kept.cluster.embedding &&
+        card.cluster.embedding &&
+        cosine(kept.cluster.embedding, card.cluster.embedding) >= 0.85,
+    );
+    if (dupe) notes.push(`deduped: ${card.draft.headline.slice(0, 60)}`);
+    else deduped.push(card);
+  }
+  cards = deduped;
+
+  cards = mergeTensions(cards);
+  const tensions = cards.filter((c) => c.draft.headline.startsWith("The market is arguing")).length;
+
+  /* Lanes quiet for five days get a seat at the table if anything cleared. Only
+     the deck's own act signals count toward "quiet". */
+  const fiveDaysAgo = new Date(Date.now() - 5 * 86400000).toISOString().slice(0, 10);
+  const { data: recentLanes } = await sb
+    .from("signals")
+    .select("lane")
+    .eq("channel", "act")
+    .gte("day", fiveDaysAgo);
+  const activeLanes = new Set((recentLanes ?? []).map((r) => r.lane));
+  const quietLanes = LANE_IDS.filter((l) => !activeLanes.has(l)) as LaneId[];
+
+  const finalCards = balance(cards, quietLanes);
+
+  let written = 0;
+  for (const card of finalCards) {
+    if (await writeCard("act", card, true)) written++;
+  }
+
+  /* The structural channel (shift): synthesize against the Watch items only, so a
+     shift lands on a belief, then write it off-deck as accreting evidence. No
+     deck competition, no dedupe, no red flag. A shift that names no Watch item is
+     dropped rather than guessed at. */
+  let shifted = 0;
+  if (shiftKept.length > 0 && forceRefs.length > 0) {
+    const scoredShift = await scoreClusters(shiftKept, centroids, appetite);
+    const shiftDrafts = await pool(
+      scoredShift.map((c) => () => synthesizeCard(c, forceRefs, notes)),
+      3,
+    );
+    for (let i = 0; i < scoredShift.length; i++) {
+      const draft = shiftDrafts[i];
+      const c = scoredShift[i];
+      if (!draft || c.items.length === 0 || !c.items[0].url) continue;
+      if (!draft.assumption_id || draft.assumption_direction === 0) continue;
+      if (await writeCard("shift", { cluster: c, draft }, false)) shifted++;
+    }
   }
 
   return {
     gathered: raw.length,
     clustered: clusters.length,
     filtered: kept.length,
-    written: finalCards.length,
+    written,
+    shifted,
     tensions,
     redFlags,
     day,

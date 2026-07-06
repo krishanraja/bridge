@@ -10,6 +10,7 @@ import briefsSeedJson from "@/supabase/seed/demo/briefs.json";
 import threadsSeedJson from "@/supabase/seed/demo/threads.json";
 import receiptsSeedJson from "@/supabase/seed/demo/receipts.json";
 import historySeedJson from "@/supabase/seed/demo/assumption_history.json";
+import themesSeedJson from "@/supabase/seed/demo/themes.json";
 import type {
   AssumptionsSeed,
   BriefSeed,
@@ -18,6 +19,7 @@ import type {
   PulseSeed,
   ReceiptSeed,
   SignalSeed,
+  ThemeSeed,
   ThreadSeed,
 } from "./seed-types";
 
@@ -29,6 +31,7 @@ const pulsesSeed = pulsesSeedJson as PulseSeed[];
 const briefsSeed = briefsSeedJson as BriefSeed[];
 const threadsSeed = threadsSeedJson as ThreadSeed[];
 const receiptsSeed = receiptsSeedJson as ReceiptSeed[];
+const themesSeed = themesSeedJson as ThemeSeed[];
 const historySeed = historySeedJson as unknown as Record<string, [number, number][]>;
 
 import type {
@@ -55,6 +58,7 @@ import type {
   DecisionReceipt,
   LedgerData,
   TableData,
+  ThemeView,
   TodayData,
 } from "./views";
 
@@ -115,6 +119,7 @@ export function demoSignals(): Signal[] {
       assumption_id: s.assumption_key ?? null,
       assumption_direction: (s.assumption_direction ??
         null) as Signal["assumption_direction"],
+      channel: s.channel ?? "act",
       created_at: ts(s.day_offset, 6),
       illustrative: true,
     }))
@@ -209,7 +214,9 @@ export function demoThreads(): Thread[] {
 /* Room views */
 
 export async function demoToday(): Promise<TodayData> {
-  const signals = demoSignals().filter((s) => s.day === dayISO(0));
+  const signals = demoSignals().filter(
+    (s) => s.day === dayISO(0) && s.channel !== "shift",
+  );
   const { priorities, moves } = demoPriorities();
   const decisions = demoDecisions();
   const threads = demoThreads();
@@ -246,7 +253,7 @@ export async function demoToday(): Promise<TodayData> {
 export async function demoDeck(): Promise<DeckView> {
   const today = dayISO(0);
   const signals = demoSignals()
-    .filter((s) => s.day === today)
+    .filter((s) => s.day === today && s.channel !== "shift")
     .sort((a, b) => b.score - a.score)
     .slice(0, 12);
   /* Demo shows the primitive live but writes nothing; no saved reactions and a
@@ -351,4 +358,20 @@ export async function demoLedger(): Promise<LedgerData> {
 
 export async function demoDecisionLog(): Promise<Decision[]> {
   return demoDecisions().sort((a, b) => (a.created_at < b.created_at ? 1 : -1));
+}
+
+export async function demoThemes(): Promise<ThemeView[]> {
+  /* Sample shows the trend readout live but writes nothing, so no saved reaction. */
+  return themesSeed
+    .map((t) => ({
+      id: t.id,
+      label: t.label,
+      lane: t.lane,
+      importance: t.importance,
+      consensus: t.consensus,
+      acceleration: t.acceleration,
+      member_count: t.member_count,
+      myReaction: null,
+    }))
+    .sort((a, b) => b.importance - a.importance);
 }

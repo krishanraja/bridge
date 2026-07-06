@@ -8,7 +8,7 @@ import "server-only";
 import { cosine, centroid } from "@/lib/intel/llm";
 import type { LaneId } from "@/lib/copy/lanes";
 
-const LOOKBACK_MS = 30 * 86400000;
+const LOOKBACK_MS = 60 * 86400000;
 const JOIN_THRESHOLD = 0.8; // cosine similarity to join an existing theme
 const MAX_THEMES = 14;
 
@@ -52,6 +52,18 @@ function modalLane(members: SignalRow[]): number {
   );
 }
 
+/* How fast a theme is building, from the spread of its members' days across the
+   window. Recent half minus older half, normalized to -1..1: near +1 means most
+   of the theme landed lately (an emerging trend), near -1 means it is fading.
+   Derived within this run, so no snapshot history is needed. */
+function accelerationOf(members: SignalRow[], midpointDay: string): number {
+  let recent = 0;
+  let older = 0;
+  for (const m of members) (m.day >= midpointDay ? recent++ : older++);
+  const total = recent + older;
+  return total === 0 ? 0 : Math.round(((recent - older) / total) * 100) / 100;
+}
+
 /* Agreement across seats on a theme's member signals, 0..1. Null when fewer
    than two seats have reacted — not enough to call. */
 function consensusOf(
@@ -76,6 +88,8 @@ export async function computeThemes(): Promise<{ count: number }> {
   const svc = supabaseService();
 
   const since = new Date(Date.now() - LOOKBACK_MS).toISOString().slice(0, 10);
+  /* The window's midpoint splits recent members from older ones for acceleration. */
+  const midpoint = new Date(Date.now() - LOOKBACK_MS / 2).toISOString().slice(0, 10);
   const { data: sigRows } = await svc
     .from("signals")
     .select("id, lane, headline, score, embedding, day")
@@ -147,6 +161,7 @@ export async function computeThemes(): Promise<{ count: number }> {
         centroid: c.centroid,
         importance: Math.round((scoreSum + reactionNet * 3) * 10) / 10,
         consensus: consensusOf(idSet, reactions),
+        acceleration: accelerationOf(c.members, midpoint),
         member_ids: memberIds,
         member_count: c.members.length,
       };
@@ -164,6 +179,7 @@ export async function computeThemes(): Promise<{ count: number }> {
         centroid: t.centroid,
         importance: t.importance,
         consensus: t.consensus,
+        acceleration: t.acceleration,
         member_ids: t.member_ids,
         member_count: t.member_count,
         updated_at: new Date().toISOString(),

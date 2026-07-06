@@ -27,6 +27,7 @@ export interface SignalSeed {
   assumption_key: string | null;
   assumption_direction: number | null;
   assumption_weight: number;
+  channel?: "act" | "shift";
 }
 
 export interface MoveSeed {
@@ -89,4 +90,14 @@ export interface ReceiptSeed {
   seat: number;
   brief: boolean;
   pulse: boolean;
+}
+
+export interface ThemeSeed {
+  id: string;
+  label: string;
+  lane: number | null;
+  importance: number;
+  consensus: number | null;
+  acceleration: number;
+  member_count: number;
 }

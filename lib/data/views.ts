@@ -149,3 +149,17 @@ export interface LedgerData {
   assumptions: AssumptionView[];
   retro: RetroView | null;
 }
+
+/* A theme: a cluster of signals the market keeps returning to. Importance is how
+   much it matters, consensus is how much the table agrees, acceleration is how
+   fast it is building (an emerging trend when high). */
+export interface ThemeView {
+  id: string;
+  label: string;
+  lane: number | null;
+  importance: number;
+  consensus: number | null;
+  acceleration: number;
+  member_count: number;
+  myReaction: SeatReaction | null;
+}

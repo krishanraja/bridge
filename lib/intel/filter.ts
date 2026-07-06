@@ -33,8 +33,11 @@ ${ontologySummary()}
 House view:
 ${houseView.map((s) => `- ${s}`).join("\n")}
 
-For each numbered candidate decide: does this plausibly change what Amperity should build, sell, buy, or say. Marketing fluff, product listicles, and generic AI news die here. Assign a lane: 1 identity and the moat, 2 partner platforms, 3 the category (CDP and composable), 4 agentic AI, 5 customers and verticals (retail, travel), 6 capital and consolidation, 7 trust and regulation, 8 talent and org signal.
-Reply with ONLY a JSON array: [{"i": number, "keep": boolean, "reason": "12 words max", "lane": 1-8}].`;
+For each numbered candidate decide two things.
+First, keep or discard: keep only if this plausibly changes what Amperity should build, sell, buy, or say, OR names a durable structural shift in how customer data, identity, or AI value gets created or captured. Marketing fluff, product listicles, and generic AI news still die here.
+Second, tag the kind of change. Use "act" for a concrete same-day development the table might respond to now. Use "shift" only for a slow, structural change in how the market or its buyers work that maps to one of the house beliefs above, where the value is being ready for it, not acting today. "shift" is a higher bar on a different axis, not a second chance for weak news; when unsure, use "act".
+Assign a lane: 1 identity and the moat, 2 partner platforms, 3 the category (CDP and composable), 4 agentic AI, 5 customers and verticals (retail, travel), 6 capital and consolidation, 7 trust and regulation, 8 talent and org signal.
+Reply with ONLY a JSON array: [{"i": number, "keep": boolean, "reason": "12 words max", "lane": 1-8, "tag": "act" | "shift"}].`;
 
   const batches: Cluster[][] = [];
   for (let i = 0; i < candidates.length; i += 24) batches.push(candidates.slice(i, i + 24));
@@ -49,12 +52,15 @@ Reply with ONLY a JSON array: [{"i": number, "keep": boolean, "reason": "12 word
       .join("\n");
     try {
       const reply = await claude({ model: MODELS.filter, system, user, maxTokens: 2000 });
-      const rows = extractJson<{ i: number; keep: boolean; reason: string; lane: number }[]>(reply);
+      const rows = extractJson<
+        { i: number; keep: boolean; reason: string; lane: number; tag?: string }[]
+      >(reply);
       for (const r of rows) {
         const c = batch[r.i];
         if (!c || !r.keep) continue;
         const lane = (r.lane >= 1 && r.lane <= 8 ? r.lane : (c.laneHint ?? 3)) as LaneId;
-        kept.push({ ...c, lane, reason: r.reason ?? "" });
+        const tag = r.tag === "shift" ? "shift" : "act";
+        kept.push({ ...c, lane, reason: r.reason ?? "", tag });
       }
     } catch (e) {
       /* A failed batch discards its candidates rather than guessing, but the

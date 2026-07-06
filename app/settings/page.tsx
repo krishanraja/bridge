@@ -7,6 +7,8 @@ import { ThreadsManager, type ThreadRow } from "@/components/rooms/ThreadsManage
 import { PushToggle } from "@/components/rooms/PushToggle";
 import { LearnReview, type StagedProposal } from "@/components/rooms/LearnReview";
 import { Chip } from "@/components/ui/Chip";
+import { Reaction } from "@/components/ui/Reaction";
+import { getThemes } from "@/lib/data";
 import { LANES, type LaneId } from "@/lib/copy/lanes";
 
 export const dynamic = "force-dynamic";
@@ -122,26 +124,6 @@ async function tableLearning(seedMode: boolean, seat: number) {
   return summarizeReactions(data as never[], seat);
 }
 
-interface ThemeRow {
-  label: string;
-  lane: number | null;
-  importance: number;
-  consensus: number | null;
-  member_count: number;
-}
-
-async function topThemes(seedMode: boolean): Promise<ThemeRow[]> {
-  if (seedMode) return [];
-  const { supabaseServer } = await import("@/lib/supabase/server");
-  const sb = await supabaseServer();
-  const { data } = await sb
-    .from("themes")
-    .select("label, lane, importance, consensus, member_count")
-    .order("importance", { ascending: false })
-    .limit(6);
-  return (data ?? []) as ThemeRow[];
-}
-
 function consensusRead(c: number | null): { label: string; color: string } {
   if (c == null) return { label: "forming", color: "var(--ink-3)" };
   if (c >= 0.66) return { label: "aligned", color: "var(--mint-deep)" };
@@ -159,7 +141,7 @@ export default async function SettingsPage() {
   const { threads, priorities } = await threadsData(seedMode);
   const { proposal, metrics } = await operatorLearning(seedMode, seat);
   const learning = await tableLearning(seedMode, seat);
-  const themes = await topThemes(seedMode);
+  const themes = await getThemes();
 
   return (
     <div className="grid h-full min-h-0 auto-rows-min gap-2 overflow-hidden pb-3">
@@ -257,37 +239,50 @@ export default async function SettingsPage() {
       {themes.length > 0 && (
         <section className="mx-5 rounded-xl border border-line bg-paper p-3.5">
           <div className="eyebrow mb-2">What the market&apos;s doing</div>
-          <div className="flex flex-col gap-2">
-            {themes.map((t, i) => {
+          <div className="flex flex-col gap-2.5">
+            {themes.map((t) => {
               const con = consensusRead(t.consensus);
+              const rising = t.acceleration >= 0.34;
               return (
-                <div key={i} className="flex items-start gap-2.5">
-                  {t.lane != null && (
+                <div key={t.id} className="flex flex-col gap-1.5">
+                  <div className="flex items-start gap-2.5">
+                    {t.lane != null && (
+                      <span
+                        className="mt-1.5 h-2 w-2 shrink-0 rounded-full"
+                        style={{ background: `var(${LANES[t.lane as LaneId].cssVar})` }}
+                      />
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[14px] leading-snug text-ink">{t.label}</p>
+                      <p className="text-[12px] text-ink3">
+                        {t.member_count} signal{t.member_count === 1 ? "" : "s"}
+                        {t.lane != null ? ` · ${LANES[t.lane as LaneId].glyph}` : ""}
+                        {rising && (
+                          <span style={{ color: "var(--mint-deep)" }}> · rising</span>
+                        )}
+                      </p>
+                    </div>
                     <span
-                      className="mt-1.5 h-2 w-2 shrink-0 rounded-full"
-                      style={{ background: `var(${LANES[t.lane as LaneId].cssVar})` }}
-                    />
-                  )}
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[14px] leading-snug text-ink">{t.label}</p>
-                    <p className="text-[12px] text-ink3">
-                      {t.member_count} signal{t.member_count === 1 ? "" : "s"}
-                      {t.lane != null ? ` · ${LANES[t.lane as LaneId].glyph}` : ""}
-                    </p>
+                      className="mt-0.5 shrink-0 rounded-full border px-2 py-0.5 text-[11px] font-medium"
+                      style={{ borderColor: con.color, color: con.color }}
+                    >
+                      {con.label}
+                    </span>
                   </div>
-                  <span
-                    className="mt-0.5 shrink-0 rounded-full border px-2 py-0.5 text-[11px] font-medium"
-                    style={{ borderColor: con.color, color: con.color }}
-                  >
-                    {con.label}
-                  </span>
+                  <Reaction
+                    subjectType="theme"
+                    subjectId={t.id}
+                    initial={t.myReaction}
+                    prompt="Your read on this trend?"
+                  />
                 </div>
               );
             })}
           </div>
           <p className="mt-2.5 text-[12px] text-ink3">
             Signals clustered by meaning, ranked by importance and how much the
-            table agrees. Refreshes with the weekly loop.
+            table agrees. Rising marks a trend that is building. Refreshes with the
+            weekly loop.
           </p>
         </section>
       )}

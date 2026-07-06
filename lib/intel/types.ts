@@ -22,6 +22,9 @@ export interface Cluster {
 export interface FilteredCluster extends Cluster {
   lane: LaneId;
   reason: string;
+  /* 'act' is a same-day move for the deck; 'shift' is a durable structural
+     change routed to the ledger and themes, never the scarce deck. */
+  tag: "act" | "shift";
 }
 
 export interface ScoredCluster extends FilteredCluster {

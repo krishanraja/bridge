@@ -83,6 +83,27 @@
       "rationale": "Copilots draft; agents do. When the agent executes the campaign, the system of record for customer identity becomes the system of trust.",
       "confidence": 80,
       "status": "strengthening"
+    },
+    {
+      "key": "deployment-wins-value",
+      "statement": "Value is won at deployment, not the model.",
+      "rationale": "The model layer commoditizes. The paid work is wiring AI into messy enterprise systems and real workflows. That favors whoever owns the integration and the identity spine beneath it, which is the ground Amperity stands on.",
+      "confidence": 55,
+      "status": "holding"
+    },
+    {
+      "key": "forward-deployed-unit",
+      "statement": "The forward deployed engineer is the unit of enterprise AI.",
+      "rationale": "Leaders are staffing engineers embedded with customers to make AI work in production, not behind tickets. It reshapes how vendors sell, staff, and prove value, and it rewards a delivery motion over a demo. Watch whether our own model needs to shift with it.",
+      "confidence": 50,
+      "status": "holding"
+    },
+    {
+      "key": "integration-not-prompting",
+      "statement": "Integration, not prompting, is where enterprise AI fails.",
+      "rationale": "Pilots stall at the last mile: dirty data, brittle plumbing, no clean identity. That is exactly the ground Amperity already owns, so the way others fail is a claim we can press.",
+      "confidence": 52,
+      "status": "holding"
     }
   ]
 }

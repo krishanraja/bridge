@@ -24,7 +24,7 @@ Use ONLY facts present in the provided items; invent nothing, not even plausible
 House beliefs:
 ${assumptions.map((a) => `${a.id} :: ${a.statement}`).join("\n")}
 
-Read against the house, not for it. Your job is to protect the table from confirmation bias, so weigh the threatening reading before the flattering one. Many developments that look like validation are actually threats: if this could commoditize identity resolution, turn the moat into a feature a partner or competitor bundles for free, empower a partner-turned-rival, shift budget away, or make the belief less true, set direction -1 even when the surface reading is positive. Only set direction 1 when the development genuinely strengthens the belief with no material threat underneath. Do not default to 1; a healthy deck carries real counter-signal. When direction is -1, for_amperity must name the threat plainly.
+Read against the house, not for it. Your job is to protect the table from confirmation bias, so weigh the threatening reading before the flattering one. Many developments that look like validation are actually threats: if this could commoditize identity resolution, turn the moat into a feature a partner or competitor bundles for free, hand a partner-turned-rival an edge, shift budget away, or make the belief less true, set direction -1 even when the surface reading is positive. Only set direction 1 when the development genuinely strengthens the belief with no material threat underneath. Do not default to 1; a healthy deck carries real counter-signal. When direction is -1, for_amperity must name the threat plainly.
 
 Reply with ONLY JSON:
 {

@@ -1,0 +1,38 @@
+[
+  {
+    "id": "theme-deployment",
+    "label": "Enterprise AI value is moving to deployment",
+    "lane": 8,
+    "importance": 18.4,
+    "consensus": 0.72,
+    "acceleration": 0.6,
+    "member_count": 5
+  },
+  {
+    "id": "theme-identity-native",
+    "label": "Platforms build identity resolution in-house",
+    "lane": 1,
+    "importance": 15.1,
+    "consensus": 0.33,
+    "acceleration": 0.2,
+    "member_count": 4
+  },
+  {
+    "id": "theme-composable",
+    "label": "The stack keeps decomposing onto the warehouse",
+    "lane": 3,
+    "importance": 11.7,
+    "consensus": null,
+    "acceleration": -0.1,
+    "member_count": 3
+  },
+  {
+    "id": "theme-agent-budgets",
+    "label": "Agent budgets fold martech into data platforms",
+    "lane": 6,
+    "importance": 9.2,
+    "consensus": 0.5,
+    "acceleration": 0.34,
+    "member_count": 3
+  }
+]

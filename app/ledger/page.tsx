@@ -24,7 +24,11 @@ export default async function LedgerPage() {
           Back to radar
         </Link>
       </header>
-      <LedgerDeck assumptions={data.assumptions} retro={data.retro} />
+      <LedgerDeck
+        assumptions={data.assumptions}
+        retro={data.retro}
+        isOperator={seat === 4}
+      />
     </div>
   );
 }

@@ -11,7 +11,7 @@ import { Chip } from "@/components/ui/Chip";
 import { Sheet } from "@/components/ui/Sheet";
 import { Reaction } from "@/components/ui/Reaction";
 import { confirm as confirmHaptic } from "@/lib/haptics";
-import { voteAssumption } from "@/app/actions";
+import { openWatch, voteAssumption } from "@/app/actions";
 
 const STATUS: Record<string, { label: string; color: string }> = {
   holding: { label: "Holding", color: "var(--ink-2)" },
@@ -24,13 +24,18 @@ const STATUS: Record<string, { label: string; color: string }> = {
 export function LedgerDeck({
   assumptions,
   retro,
+  isOperator = false,
 }: {
   assumptions: AssumptionView[];
   retro: RetroView | null;
+  isOperator?: boolean;
 }) {
   const router = useRouter();
   const [voting, setVoting] = useState<AssumptionView | null>(null);
   const [voteValue, setVoteValue] = useState(60);
+  const [openingWatch, setOpeningWatch] = useState(false);
+  const [watchStatement, setWatchStatement] = useState("");
+  const [watchRationale, setWatchRationale] = useState("");
   const [pending, startTransition] = useTransition();
 
   if (assumptions.length === 0) {
@@ -179,6 +184,20 @@ export function LedgerDeck({
         );
       })}
 
+      {isOperator && (
+        <div className="snap-page px-5 pb-3">
+          <article className="grid h-full place-items-center rounded-xl border border-dashed border-line bg-paper p-4 text-center">
+            <div className="flex flex-col items-center gap-3">
+              <p className="text-[15px] leading-relaxed text-ink2">
+                Seeing a shift the ledger should track? Open a watch and the
+                market starts arguing with it.
+              </p>
+              <Chip onClick={() => setOpeningWatch(true)}>Open a watch</Chip>
+            </div>
+          </article>
+        </div>
+      )}
+
       <Sheet
         open={voting !== null}
         onClose={() => setVoting(null)}
@@ -224,6 +243,59 @@ export function LedgerDeck({
             </button>
           </div>
         )}
+      </Sheet>
+
+      <Sheet
+        open={openingWatch}
+        onClose={() => setOpeningWatch(false)}
+        title="Open a watch"
+      >
+        <div className="flex flex-col gap-3 pt-1">
+          <div className="flex flex-col gap-1">
+            <label className="eyebrow">The belief to track</label>
+            <input
+              value={watchStatement}
+              onChange={(e) => setWatchStatement(e.target.value)}
+              placeholder="Value is won at deployment, not the model."
+              maxLength={120}
+              className="rounded-lg border border-line bg-bg px-3 py-2 text-[15px] text-ink"
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="eyebrow">Why it matters (optional)</label>
+            <textarea
+              value={watchRationale}
+              onChange={(e) => setWatchRationale(e.target.value)}
+              rows={3}
+              className="rounded-lg border border-line bg-bg px-3 py-2 text-[14px] text-ink2"
+            />
+          </div>
+          <p className="text-[13px] text-ink3">
+            It starts at fifty and holding. The pipeline and the table move it
+            from there.
+          </p>
+          <button
+            disabled={pending || !watchStatement.trim()}
+            onClick={() =>
+              startTransition(async () => {
+                const res = await openWatch({
+                  statement: watchStatement,
+                  rationale: watchRationale,
+                });
+                if (res.ok) {
+                  confirmHaptic();
+                  setOpeningWatch(false);
+                  setWatchStatement("");
+                  setWatchRationale("");
+                  router.refresh();
+                }
+              })
+            }
+            className="rounded-full bg-ink py-2.5 text-[15px] font-medium text-bg disabled:opacity-60"
+          >
+            {pending ? "Opening" : "Open it"}
+          </button>
+        </div>
       </Sheet>
     </div>
   );

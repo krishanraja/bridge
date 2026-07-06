@@ -588,5 +588,89 @@
     "assumption_key": "ai-changed-purpose",
     "assumption_direction": 1,
     "assumption_weight": 1
+  },
+  {
+    "key": "sig-fde-hiring",
+    "day_offset": -9,
+    "lane": 8,
+    "channel": "shift",
+    "headline": "Every major AI lab is now hiring forward deployed engineers",
+    "for_amperity": "Anthropic, OpenAI, and Palantir are staffing engineers embedded with customers to make AI work in production, which points at a delivery motion over a demo motion.",
+    "posture": "Worth asking whether our own deployment model needs an embedded engineering answer for the top accounts.",
+    "score": 6.4,
+    "corroboration": 3,
+    "cluster": [
+      {
+        "title": "The rise of the forward deployed engineer",
+        "url": "https://www.linkedin.com/posts/forward-deployed-engineer",
+        "source": "LinkedIn"
+      }
+    ],
+    "assumption_key": "forward-deployed-unit",
+    "assumption_direction": 1,
+    "assumption_weight": 2
+  },
+  {
+    "key": "sig-fde-deploy-essay",
+    "day_offset": -6,
+    "lane": 8,
+    "channel": "shift",
+    "headline": "Where enterprise AI value is actually captured",
+    "for_amperity": "Analysts keep finding the paid work is wiring models into messy systems, not the model itself, which is the ground our identity spine already holds.",
+    "posture": "A field note on where AI stalls without clean identity could sharpen the sales story.",
+    "score": 5.8,
+    "corroboration": 2,
+    "cluster": [
+      {
+        "title": "The new AI stack ends at deployment and business outcome",
+        "url": "https://a16z.com/enterprise-ai-deployment",
+        "source": "Andreessen Horowitz"
+      }
+    ],
+    "assumption_key": "deployment-wins-value",
+    "assumption_direction": 1,
+    "assumption_weight": 2
+  },
+  {
+    "key": "sig-fde-integration",
+    "day_offset": -3,
+    "lane": 8,
+    "channel": "shift",
+    "headline": "Most enterprise AI pilots fail at the last mile of messy data",
+    "for_amperity": "A fresh survey puts the failure at integration and data quality, not model choice, which is a claim we are well placed to press.",
+    "posture": "Could be worth a proof point that ties a clean identity layer to pilots that actually ship.",
+    "score": 5.2,
+    "corroboration": 2,
+    "cluster": [
+      {
+        "title": "Why enterprise AI pilots stall before production",
+        "url": "https://www.ben-evans.com/benedictevans/enterprise-ai-last-mile",
+        "source": "Benedict Evans"
+      }
+    ],
+    "assumption_key": "integration-not-prompting",
+    "assumption_direction": 1,
+    "assumption_weight": 2
+  },
+  {
+    "key": "sig-fde-services",
+    "day_offset": 0,
+    "lane": 8,
+    "channel": "shift",
+    "headline": "AI value is moving to whoever owns the deployment",
+    "for_amperity": "The money is following the teams that wire models into real workflows, which rewards owning the integration and the identity beneath it.",
+    "posture": "Keep our name on the deployment reference lists these firms carry into accounts.",
+    "score": 4.9,
+    "corroboration": 2,
+    "cluster": [
+      {
+        "title": "Forward deployed engineering as the enterprise AI motion",
+        "url": "https://a16z.com/the-new-ai-stack",
+        "source": "Andreessen Horowitz"
+      }
+    ],
+    "assumption_key": "deployment-wins-value",
+    "assumption_direction": 1,
+    "assumption_weight": 1
   }
 ]

@@ -50,6 +50,7 @@ async function assemble(kind: "morning" | "close") {
       .from("signals")
       .select("id, headline, for_amperity, posture, lane, score, cluster, assumption_id, assumption_direction")
       .eq("day", day)
+      .eq("channel", "act")
       .order("score", { ascending: false })
       .limit(6),
     sb
