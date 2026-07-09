@@ -1,0 +1,18 @@
+[
+  {
+    "key": "routed-1",
+    "from_seat": 2,
+    "headline": "Databricks keeps stacking AI tools and cloud partners onto its data platform",
+    "posture": "Get ahead of it with a calm coexistence line before the story gets told for us.",
+    "lane": 2,
+    "day_offset": 0
+  },
+  {
+    "key": "routed-2",
+    "from_seat": 3,
+    "headline": "Two mid-market CDPs merge as consolidation picks up in the category",
+    "posture": "Name what this protects for our named accounts, and where it opens a wedge.",
+    "lane": 6,
+    "day_offset": -1
+  }
+]

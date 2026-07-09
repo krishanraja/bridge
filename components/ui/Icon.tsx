@@ -33,6 +33,8 @@ export type IconName =
   | "settings"
   | "chevron-right"
   | "sparkle"
+  | "bolt"
+  | "bookmark"
   | "play"
   | "pause"
   | "close";
@@ -159,6 +161,8 @@ const PATHS: Record<IconName, React.ReactNode> = {
       <path d="M18.2 14.5l.6 1.9 1.9.6-1.9.6-.6 1.9-.6-1.9-1.9-.6 1.9-.6z" />
     </>
   ),
+  bolt: <path d="M13 2.5L5.5 13H11l-1 8.5L18.5 10.5H12z" />,
+  bookmark: <path d="M6.5 4h11v16l-5.5-3.6L6.5 20z" />,
   play: <path d="M7 5v14l11-7z" />,
   pause: <path d="M9 5v14M15 5v14" />,
   close: <path d="M6 6l12 12M18 6L6 18" />,

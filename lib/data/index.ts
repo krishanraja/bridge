@@ -2,7 +2,8 @@
    then the database source. Same view models either way. */
 
 import { useSeedData } from "@/lib/mode";
-import type { Decision } from "@/lib/types";
+import type { Decision, SeatPrefs } from "@/lib/types";
+import type { SeatId } from "@/lib/seats";
 import type {
   DeckView,
   LedgerData,
@@ -16,6 +17,8 @@ import {
   demoDecisionLog,
   demoLedger,
   demoPriorityViews,
+  demoPrefs,
+  demoAllPrefs,
   demoTable,
   demoThemes,
   demoToday,
@@ -61,4 +64,16 @@ export async function getThemes(): Promise<ThemeView[]> {
   if (useSeedData()) return demoThemes();
   const db = await import("./db");
   return db.dbThemes();
+}
+
+export async function getSeatPrefs(seat: SeatId): Promise<SeatPrefs | null> {
+  if (useSeedData()) return demoPrefs(seat);
+  const db = await import("./db");
+  return db.dbSeatPrefs(seat);
+}
+
+export async function getAllSeatPrefs(): Promise<SeatPrefs[]> {
+  if (useSeedData()) return demoAllPrefs();
+  const db = await import("./db");
+  return db.dbAllSeatPrefs();
 }

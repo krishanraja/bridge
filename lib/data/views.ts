@@ -6,6 +6,7 @@ import type {
   FocusItem,
   Move,
   Priority,
+  RoutedSignal,
   Signal,
 } from "@/lib/types";
 import type { SeatId } from "@/lib/seats";
@@ -44,6 +45,9 @@ export interface TodayData {
   topSignals: Signal[];
   weekMoves: WeekMoveDot[];
   review: OperatorReview | null;
+  /* Signals leaders acted on, waiting for the operator to turn into moves.
+     Populated for the operator (seat 4) only; empty for everyone else. */
+  routed: RoutedSignal[];
   demo: boolean;
 }
 

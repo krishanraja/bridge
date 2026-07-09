@@ -145,6 +145,53 @@ export interface Thread {
   created_at: string;
 }
 
+/* How a leader likes to work and be reached, recorded in the setup wizard. Every
+   field is optional: a half finished row still produces a clean summary. The
+   values are stable slugs (never the on screen label) so the wording can change
+   without touching data. */
+export interface SeatPrefs {
+  seat: SeatId;
+  reach_daily: string | null;
+  reach_urgent: string | null;
+  after_hours: string | null;
+  update_depth: string | null;
+  long_form: string | null;
+  order_pref: string | null;
+  morning_brief: string | null;
+  autonomy_default: string | null;
+  disagree: string | null;
+  visibility: string | null;
+  numbers: string | null;
+  frequency: string | null;
+  money: string | null;
+  speed: string | null;
+  feedback: string | null;
+  trust: string | null;
+  top_focus: string | null;
+  focus_set_on: string | null;
+  sharp_time: string | null;
+  autonomy_scheduling: string | null;
+  autonomy_messages: string | null;
+  autonomy_research: string | null;
+  summary_text: string | null;
+  completed_at: string | null;
+  updated_at: string | null;
+}
+
+/* A signal a leader acted on, handed to the operator's inbox to turn into a move
+   or a decision. Headline/posture are snapshotted so it survives signal churn. */
+export interface RoutedSignal {
+  id: string;
+  signal_id: string;
+  from_seat: SeatId;
+  headline: string;
+  posture: string | null;
+  lane: LaneId | null;
+  note: string | null;
+  status: "open" | "converted" | "dismissed";
+  created_at: string;
+}
+
 /* The one thing Today asks. Derived, not stored. `reason` is Bridge's plain-words
    rationale for why this is the one thing; `lane` tags it when the subject carries
    one (market signals do), so the card can frame it in the viewer's lane. */

@@ -8,7 +8,9 @@ import { PushToggle } from "@/components/rooms/PushToggle";
 import { LearnReview, type StagedProposal } from "@/components/rooms/LearnReview";
 import { Chip } from "@/components/ui/Chip";
 import { Reaction } from "@/components/ui/Reaction";
-import { getThemes } from "@/lib/data";
+import { PreferenceGraph } from "@/components/rooms/PreferenceGraph";
+import { PrefsEntry } from "@/components/rooms/PrefsEntry";
+import { getThemes, getSeatPrefs } from "@/lib/data";
 import { LANES, type LaneId } from "@/lib/copy/lanes";
 
 export const dynamic = "force-dynamic";
@@ -112,16 +114,27 @@ async function operatorLearning(seedMode: boolean, seat: number) {
 }
 
 async function tableLearning(seedMode: boolean, seat: number) {
-  if (seedMode) return null;
-  const { supabaseServer } = await import("@/lib/supabase/server");
-  const { summarizeReactions } = await import("@/lib/learn/reflection");
-  const sb = await supabaseServer();
-  const { data } = await sb
-    .from("reactions")
-    .select("seat, sentiment, lane, reason_tags")
-    .limit(2000);
-  if (!data || data.length === 0) return null;
-  return summarizeReactions(data as never[], seat);
+  const { summarizeReactions, allSeatsAffinity } = await import(
+    "@/lib/learn/reflection"
+  );
+  let rows: { seat: number; sentiment: number; lane: number | null; reason_tags: string[] | null }[];
+  if (seedMode) {
+    const seed = (await import("@/supabase/seed/demo/reactions.json")).default;
+    rows = seed as typeof rows;
+  } else {
+    const { supabaseServer } = await import("@/lib/supabase/server");
+    const sb = await supabaseServer();
+    const { data } = await sb
+      .from("reactions")
+      .select("seat, sentiment, lane, reason_tags")
+      .limit(2000);
+    rows = (data ?? []) as typeof rows;
+  }
+  if (rows.length === 0) return null;
+  return {
+    ...summarizeReactions(rows, seat),
+    graph: allSeatsAffinity(rows),
+  };
 }
 
 function consensusRead(c: number | null): { label: string; color: string } {
@@ -142,12 +155,16 @@ export default async function SettingsPage() {
   const { proposal, metrics } = await operatorLearning(seedMode, seat);
   const learning = await tableLearning(seedMode, seat);
   const themes = await getThemes();
+  const prefs = await getSeatPrefs(seat);
 
   return (
-    <div className="grid h-full min-h-0 auto-rows-min gap-2 overflow-hidden pb-3">
+    <div className="grid h-full min-h-0 auto-rows-min gap-2 overflow-y-auto pb-3 [scrollbar-width:none]">
       <header className="px-5 pt-4">
         <div className="eyebrow">Settings</div>
       </header>
+
+      <PrefsEntry summary={prefs?.summary_text ?? null} name={SEATS[seat].shortName} />
+
 
       <section className="mx-5 rounded-xl border border-line bg-paper p-3.5">
         <div className="eyebrow mb-2">The four seats</div>
@@ -200,7 +217,13 @@ export default async function SettingsPage() {
 
       {learning && learning.total > 0 && (
         <section className="mx-5 rounded-xl border border-line bg-paper p-3.5">
-          <div className="eyebrow mb-2">What Bridge is learning</div>
+          <div className="eyebrow mb-2">The table&apos;s preferences</div>
+          <PreferenceGraph data={learning.graph} />
+          <p className="mb-3 mt-2.5 text-[12px] text-ink3">
+            The pattern behind each leader and the table, from {learning.total} reaction
+            {learning.total === 1 ? "" : "s"}. Each radar re-ranks to what that seat leans into.
+          </p>
+          <div className="eyebrow mb-2 border-t border-line pt-3">What Bridge is learning</div>
           <div className="flex flex-col gap-2.5">
             <LearnLine
               label="You lean into"
@@ -229,10 +252,6 @@ export default async function SettingsPage() {
               </div>
             )}
           </div>
-          <p className="mt-2.5 text-[12px] text-ink3">
-            Learned from {learning.total} reaction{learning.total === 1 ? "" : "s"}.
-            Your radar re-ranks to what you lean into.
-          </p>
         </section>
       )}
 

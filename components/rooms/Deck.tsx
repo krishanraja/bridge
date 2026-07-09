@@ -1,20 +1,22 @@
 "use client";
 
-/* The signal deck: snap-paged cards, lane filter, three actions.
-   Act, Hold, Kill act on the local deal now; they feed the learning loop at gate two. */
+/* The signal deck: snap-paged cards, lane filter, one verdict control.
+   A leader's single choice — not for me, worth knowing, act on it — teaches the
+   deck and, on act, hands the item to the operator. The optional "why" follows. */
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type { Signal } from "@/lib/types";
-import type { DeckView, SeatReaction } from "@/lib/data/views";
+import type { DeckView } from "@/lib/data/views";
 import { LANES, LANE_IDS, type LaneId } from "@/lib/copy/lanes";
 import { Chip } from "@/components/ui/Chip";
 import { Sheet } from "@/components/ui/Sheet";
 import { Button } from "@/components/ui/Button";
-import { Reaction } from "@/components/ui/Reaction";
-import { tick, confirm as confirmHaptic, warning } from "@/lib/haptics";
-import { signalVerdict } from "@/app/actions";
+import { SignalVerdict, type Intent } from "@/components/rooms/SignalVerdict";
+import { reasonsFor } from "@/lib/copy/reasons";
+import { tick } from "@/lib/haptics";
+import { signalFeedback, react } from "@/app/actions";
 
 /* Honest narration of what the sweep is actually doing, in order:
    gather → cluster → filter → score → synthesize. */
@@ -32,10 +34,17 @@ export function Deck({ deck: deckView, operator }: { deck: DeckView; operator: b
   const [lane, setLane] = useState<LaneId | null>(null);
   const [gone, setGone] = useState<Set<string>>(new Set());
   const [sources, setSources] = useState<Signal | null>(null);
-  const [acted, setActed] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<{
+    message: string;
+    signalId: string;
+    sentiment: 1 | -1;
+    lane: number | null;
+  } | null>(null);
+  const [whyOpen, setWhyOpen] = useState(false);
   const [sweeping, setSweeping] = useState(false);
   const [active, setActive] = useState(0);
   const pagerRef = useRef<HTMLDivElement | null>(null);
+  const feedbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const deck = useMemo(
     () =>
@@ -58,16 +67,47 @@ export function Deck({ deck: deckView, operator }: { deck: DeckView; operator: b
     return () => el.removeEventListener("scroll", onScroll);
   }, [deck.length]);
 
-  const dismiss = (id: string, kind: "act" | "hold" | "kill") => {
-    if (kind === "act") confirmHaptic();
-    else if (kind === "kill") warning();
-    else tick();
-    setGone((g) => new Set(g).add(id));
-    void signalVerdict({ signal_id: id, kind });
-    if (kind === "act") {
-      setActed("Routed to the operator as a draft move.");
-      setTimeout(() => setActed(null), 2600);
-    }
+  /* The single verdict. The haptic fires in the control; here we advance the
+     deck, teach the learning loop, and confirm the effect in plain words. */
+  const choose = (s: Signal, intent: Intent) => {
+    setGone((g) => new Set(g).add(s.id));
+    void signalFeedback({
+      signal_id: s.id,
+      intent,
+      lane: s.lane,
+      headline: s.headline,
+      posture: s.posture,
+    });
+    const message =
+      intent === "act"
+        ? "Handed to Krish to turn into a move."
+        : intent === "know"
+          ? "More like this from now on."
+          : "Fewer like this from now on.";
+    setFeedback({
+      message,
+      signalId: s.id,
+      sentiment: intent === "dismiss" ? -1 : 1,
+      lane: s.lane,
+    });
+    if (feedbackTimer.current) clearTimeout(feedbackTimer.current);
+    feedbackTimer.current = setTimeout(() => setFeedback(null), 4200);
+  };
+
+  /* The optional "why", added after the choice: one reason tag, upserted onto
+     the same reaction the verdict already recorded. */
+  const applyWhy = (tag: string) => {
+    if (!feedback) return;
+    tick();
+    void react({
+      subject_type: "signal",
+      subject_id: feedback.signalId,
+      sentiment: feedback.sentiment,
+      reason_tags: [tag],
+      lane: feedback.lane,
+    });
+    setWhyOpen(false);
+    setFeedback(null);
   };
 
   const sweep = async () => {
@@ -115,34 +155,64 @@ export function Deck({ deck: deckView, operator }: { deck: DeckView; operator: b
           )}
         </div>
       ) : (
-        <div className="relative min-h-0">
-          <div className="snap-pager" ref={pagerRef}>
-            {deck.map((s, i) => (
-              <SignalCard
-                key={s.id}
-                signal={s}
-                index={i}
-                total={deck.length}
-                reaction={reactions[s.id] ?? null}
-                onSources={() => setSources(s)}
-                onAction={dismiss}
-              />
-            ))}
-          </div>
-          {deck.length > 1 && <PageRail total={deck.length} active={active} />}
+        <div className="relative flex min-h-0 flex-col">
           {(topLanes.length > 0 || mutedLanes.length > 0) && (
             <LearnedBanner topLanes={topLanes} mutedLanes={mutedLanes} />
           )}
+          <div className="relative min-h-0 flex-1">
+            <div className="snap-pager" ref={pagerRef}>
+              {deck.map((s, i) => (
+                <SignalCard
+                  key={s.id}
+                  signal={s}
+                  index={i}
+                  total={deck.length}
+                  onSources={() => setSources(s)}
+                  onChoose={(intent) => choose(s, intent)}
+                />
+              ))}
+            </div>
+            {deck.length > 1 && <PageRail total={deck.length} active={active} />}
+          </div>
         </div>
       )}
 
-      {acted && (
-        <div className="pointer-events-none fixed inset-x-0 bottom-20 z-40 flex justify-center">
-          <span className="rounded-full bg-ink px-4 py-2 text-[14px] text-bg">
-            {acted}
-          </span>
+      {feedback && (
+        <div className="fixed inset-x-0 bottom-20 z-40 flex justify-center px-[var(--pad-x)]">
+          <div className="flex items-center gap-3 rounded-full bg-ink px-4 py-2 text-[14px] text-bg shadow-[var(--elev-card)]">
+            <span>{feedback.message}</span>
+            <button
+              onClick={() => {
+                tick();
+                setWhyOpen(true);
+              }}
+              className="underline underline-offset-2 opacity-80"
+            >
+              why?
+            </button>
+          </div>
         </div>
       )}
+
+      <Sheet open={whyOpen} onClose={() => setWhyOpen(false)} title="Add a reason">
+        <div className="flex flex-col gap-3 pt-1">
+          <p className="t-secondary text-ink3">
+            Optional. It sharpens what the deck learns for you.
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {feedback &&
+              reasonsFor("signal", feedback.sentiment).map((c) => (
+                <button
+                  key={c.tag}
+                  onClick={() => applyWhy(c.tag)}
+                  className="rounded-full border border-line px-3 py-1.5 text-[13px] font-medium text-ink2"
+                >
+                  {c.label}
+                </button>
+              ))}
+          </div>
+        </div>
+      </Sheet>
 
       <Sheet open={sources !== null} onClose={() => setSources(null)} title="Sources">
         <div className="flex flex-col gap-2 pt-1">
@@ -201,7 +271,7 @@ function LearnedBanner({
   const names = (ids: number[]) =>
     ids.map((id) => LANES[id as LaneId].glyph).join(", ");
   return (
-    <div className="pointer-events-auto absolute inset-x-[var(--pad-x)] top-1 z-10 flex items-center gap-2 rounded-[var(--r-pill)] border border-line bg-paper/95 px-3 py-1.5 shadow-[var(--elev-card)] backdrop-blur">
+    <div className="mx-[var(--pad-x)] mb-2 flex items-center gap-2 rounded-[var(--r-pill)] border border-line bg-paper px-3 py-1.5">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--mint-deep)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
         <path d="M12 3l1.9 5.8H20l-4.9 3.6 1.9 5.8L12 14.6 7 18.2l1.9-5.8L4 8.8h6.1z" />
       </svg>
@@ -321,16 +391,14 @@ function SignalCard({
   signal: s,
   index,
   total,
-  reaction,
   onSources,
-  onAction,
+  onChoose,
 }: {
   signal: Signal;
   index: number;
   total: number;
-  reaction: SeatReaction | null;
   onSources: () => void;
-  onAction: (id: string, kind: "act" | "hold" | "kill") => void;
+  onChoose: (intent: Intent) => void;
 }) {
   const lane = LANES[s.lane];
   const challenges = s.assumption_id != null && s.assumption_direction === -1;
@@ -370,14 +438,19 @@ function SignalCard({
 
   return (
     <div className="snap-page px-[var(--pad-x)] pb-3">
+      {/* A fixed three-row grid: the chrome and the one control are pinned, and
+         only the middle body scrolls if it must. This keeps every card inside
+         its own page, so a long story can never bleed onto the next card. */}
       <article
         onPointerDown={pressStart}
         onPointerUp={pressEnd}
         onPointerLeave={pressEnd}
-        className="flex h-full min-h-0 flex-col gap-3 rounded-[var(--r-lg)] border border-line bg-paper p-[var(--space-5)] shadow-[var(--elev-card)]"
+        className="grid h-full min-h-0 grid-rows-[auto_minmax(0,1fr)_auto] gap-3 overflow-hidden rounded-[var(--r-lg)] border border-line bg-paper p-[var(--space-5)] shadow-[var(--elev-card)]"
         style={{ borderLeft: `3px solid ${edgeColor}` }}
       >
         <audio ref={audioRef} className="hidden" />
+
+        {/* Pinned header: lane, corroboration, position. */}
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-1.5">
             <Chip color={`var(${lane.cssVar})`} icon={lane.icon}>{lane.glyph}</Chip>
@@ -391,11 +464,9 @@ function SignalCard({
           </span>
         </div>
 
-        <h2 className="t-headline text-ink">{s.headline}</h2>
-
-        {/* Content flows on the rhythm grid; the action bar is pinned to the
-           bottom with mt-auto — no dead 1fr gap. */}
-        <div className="flex flex-col gap-3">
+        {/* The body: the one region allowed to scroll inside the card. */}
+        <div className="flex min-h-0 flex-col gap-3 overflow-y-auto overscroll-contain [scrollbar-width:none]">
+          <h2 className="t-headline text-ink">{s.headline}</h2>
           <div>
             <div className="eyebrow mb-1">For Amperity</div>
             <p className="t-body text-ink2">{s.for_amperity}</p>
@@ -418,50 +489,21 @@ function SignalCard({
               </Chip>
             </Link>
           )}
+          <button
+            onClick={onSources}
+            className="self-start text-[var(--t-label)] text-ink3 underline underline-offset-2"
+          >
+            {s.cluster
+              .slice(0, 3)
+              .map((c) => c.source)
+              .join(", ")}
+          </button>
         </div>
 
-        <button
-          onClick={onSources}
-          className="flex items-center gap-1.5 text-[var(--t-label)] text-ink3 underline underline-offset-2"
-        >
-          {s.cluster
-            .slice(0, 3)
-            .map((c) => c.source)
-            .join(", ")}
-        </button>
-
-        {/* The universal feedback primitive. Teaches the deck this leader's
-           taste; separate from the Act/Hold/Kill triage below. */}
-        <div className="mt-auto border-t border-line pt-3">
-          <Reaction
-            subjectType="signal"
-            subjectId={s.id}
-            lane={s.lane}
-            initial={reaction}
-            prompt="Matters to you?"
-          />
-        </div>
-
-        {/* Act/Hold/Kill triage in the thumb zone. */}
-        <div className="grid grid-cols-3 gap-2 pt-3">
-          <button
-            onClick={() => onAction(s.id, "act")}
-            className="rounded-[var(--r-pill)] bg-ink py-2.5 text-[var(--t-secondary)] font-medium text-bg"
-          >
-            Act
-          </button>
-          <button
-            onClick={() => onAction(s.id, "hold")}
-            className="rounded-[var(--r-pill)] border border-line py-2.5 text-[var(--t-secondary)] font-medium text-ink2"
-          >
-            Hold
-          </button>
-          <button
-            onClick={() => onAction(s.id, "kill")}
-            className="rounded-[var(--r-pill)] border border-line py-2.5 text-[var(--t-secondary)] font-medium text-ink3"
-          >
-            Kill
-          </button>
+        {/* Pinned footer: the one clear thing to decide. */}
+        <div className="border-t border-line pt-3">
+          <div className="eyebrow mb-2 text-center">What is this to you?</div>
+          <SignalVerdict onChoose={onChoose} />
         </div>
       </article>
     </div>

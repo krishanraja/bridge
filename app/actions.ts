@@ -9,6 +9,8 @@ import { currentSeat } from "@/lib/auth";
 import { isDemoMode, hasSupabaseEnv } from "@/lib/mode";
 import { currentIsoWeek } from "@/lib/weeks";
 import type { SeatId } from "@/lib/seats";
+import type { SeatPrefs } from "@/lib/types";
+import { buildSummary } from "@/lib/copy/prefs";
 
 export interface ActionResult {
   ok: boolean;
@@ -204,6 +206,7 @@ export async function logDecision(input: {
   due_date?: string | null;
   logged_via?: "voice" | "typed";
   transcript?: string | null;
+  source_ref?: Record<string, string> | null;
 }): Promise<ActionResult> {
   const seat = await seatOrNull();
   if (!seat) return DEMO_REFUSAL;
@@ -221,6 +224,7 @@ export async function logDecision(input: {
       logged_by: seat,
       logged_via: input.logged_via ?? "typed",
       transcript: input.transcript ?? null,
+      source_ref: input.source_ref ?? null,
     })
     .select("id")
     .single();
@@ -348,16 +352,80 @@ export async function updateThread(input: {
   return { ok: true };
 }
 
-/* Radar verdicts: Act routes to the operator, Hold archives, Kill teaches. */
+/* The one radar verdict. A leader's single choice on a signal — not for me,
+   worth knowing, or act on it — writes the whole learning loop at once, so there
+   is one control instead of two:
+     - it upserts a reaction (the canonical taste store the deck re-ranks by and
+       the team appetite reads), sentiment negative only for "not for me";
+     - it emits the verdict event the pipeline resonance and the weekly jobs
+       already consume, and that hides the card on reload;
+     - "act on it" also hands the item to the operator's inbox (routed_signals).
+   The optional "why" comes later via react(), which upserts the same reaction. */
 
-export async function signalVerdict(input: {
+export async function signalFeedback(input: {
   signal_id: string;
-  kind: "act" | "hold" | "kill";
-}): Promise<ActionResult> {
+  intent: "dismiss" | "know" | "act";
+  lane?: number | null;
+  headline?: string;
+  posture?: string | null;
+}): Promise<ActionResult & { routed?: boolean }> {
   const seat = await seatOrNull();
   if (!seat) return { ok: true };
-  await logEvent(seat, `signal_${input.kind}`, "signal", input.signal_id);
+  const sb = await supabaseServer();
+
+  const sentiment: 1 | -1 = input.intent === "dismiss" ? -1 : 1;
+  await sb.from("reactions").upsert(
+    {
+      seat,
+      subject_type: "signal",
+      subject_id: input.signal_id,
+      sentiment,
+      lane: input.lane ?? null,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "seat,subject_type,subject_id" },
+  );
+
+  const kind =
+    input.intent === "act" ? "act" : input.intent === "know" ? "hold" : "kill";
+  await logEvent(seat, `signal_${kind}`, "signal", input.signal_id, {
+    intent: input.intent,
+  });
+
+  if (input.intent === "act") {
+    await sb.from("routed_signals").insert({
+      signal_id: input.signal_id,
+      from_seat: seat,
+      headline: input.headline ?? "",
+      posture: input.posture ?? null,
+      lane: input.lane ?? null,
+    });
+  }
+
   revalidatePath("/radar");
+  revalidatePath("/today");
+  return { ok: true, routed: input.intent === "act" };
+}
+
+/* The operator clears an item from the inbox, once it is a move or a decision,
+   or when it is not worth carrying. Operator only, enforced again by RLS. */
+export async function resolveRoutedSignal(input: {
+  id: string;
+  status: "converted" | "dismissed";
+}): Promise<ActionResult> {
+  const seat = await seatOrNull();
+  if (!seat) return DEMO_REFUSAL;
+  if (seat !== 4) return { ok: false, message: "Only the operator can clear these." };
+  const sb = await supabaseServer();
+  const { error } = await sb
+    .from("routed_signals")
+    .update({
+      status: input.status,
+      handled_by: seat,
+      handled_at: new Date().toISOString(),
+    })
+    .eq("id", input.id);
+  if (error) return { ok: false, message: "That didn't save. Mind trying again?" };
   revalidatePath("/today");
   return { ok: true };
 }
@@ -560,4 +628,94 @@ export async function leaveDecisionFeedback(
   await logEvent(seat, "decision_feedback", "decision", decisionId, { note: text });
   revalidatePath("/table");
   return { ok: true };
+}
+
+/* The setup wizard writes. One tap saves one field. The writable columns are
+   allowlisted so a stray field name cannot touch the row. */
+const PREF_FIELDS = new Set([
+  "reach_daily", "reach_urgent", "after_hours", "update_depth", "long_form",
+  "order_pref", "morning_brief", "autonomy_default", "disagree", "visibility",
+  "numbers", "frequency", "money", "speed", "feedback", "trust", "top_focus",
+  "sharp_time", "autonomy_scheduling", "autonomy_messages", "autonomy_research",
+]);
+
+export async function savePref(input: {
+  field: string;
+  value: string;
+  /* The operator may set up another seat; principals write only their own. */
+  seat?: SeatId;
+}): Promise<ActionResult> {
+  const seat = await seatOrNull();
+  if (!seat) return { ok: true };
+  if (!PREF_FIELDS.has(input.field)) return { ok: false, message: "Unknown field." };
+
+  const target = input.seat ?? seat;
+  if (target !== seat && seat !== 4) {
+    return { ok: false, message: "You can only set up your own." };
+  }
+
+  const sb = await supabaseServer();
+  const row: Record<string, unknown> = {
+    seat: target,
+    [input.field]: input.value,
+    updated_at: new Date().toISOString(),
+  };
+  /* top_focus goes stale, so stamp the day it was set. */
+  if (input.field === "top_focus") row.focus_set_on = new Date().toISOString().slice(0, 10);
+
+  const { error } = await sb.from("seat_prefs").upsert(row, { onConflict: "seat" });
+  if (error) return { ok: false, message: "That didn't save. Mind trying again?" };
+
+  await logEvent(seat, "pref_set", "seat_prefs", input.field, { value: input.value, seat: target });
+  if (target !== seat) await logAudit(seat, "pref_set_other", { seat: target, field: input.field });
+
+  revalidatePath("/setup");
+  revalidatePath("/settings");
+  return { ok: true };
+}
+
+/* Assemble the summary from the saved row and stamp completion. Called on Done
+   and after any single card edit, so summary_text always reflects the answers. */
+export async function finishPrefs(input?: { seat?: SeatId }): Promise<ActionResult> {
+  const seat = await seatOrNull();
+  if (!seat) return { ok: true };
+  const target = input?.seat ?? seat;
+  if (target !== seat && seat !== 4) return { ok: false, message: "You can only set up your own." };
+
+  const sb = await supabaseServer();
+  const { data } = await sb.from("seat_prefs").select("*").eq("seat", target).maybeSingle();
+  const row = (data ?? { seat: target }) as SeatPrefs;
+  const summary = buildSummary(row);
+
+  const { error } = await sb.from("seat_prefs").upsert(
+    {
+      seat: target,
+      summary_text: summary,
+      completed_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "seat" },
+  );
+  if (error) return { ok: false, message: "That didn't save. Mind trying again?" };
+  if (target !== seat) await logAudit(seat, "pref_finish_other", { seat: target });
+
+  revalidatePath("/setup");
+  revalidatePath("/settings");
+  revalidatePath("/today");
+  return { ok: true };
+}
+
+/* Compose this seat's morning brief on demand, without saving, so the wizard can
+   show how their answers change the read. Operator or self only. */
+export async function previewBrief(seat: SeatId): Promise<{ ok: boolean; script?: string; message?: string }> {
+  const viewer = await seatOrNull();
+  if (!viewer) return { ok: false, message: "Previews run on live data." };
+  if (viewer !== seat && viewer !== 4) return { ok: false, message: "You can only preview your own." };
+  try {
+    const { compose } = await import("@/lib/loop/compose");
+    const result = await compose("morning", seat);
+    return { ok: true, script: result.script };
+  } catch {
+    return { ok: false, message: "The preview did not come through. Try again in a moment." };
+  }
 }

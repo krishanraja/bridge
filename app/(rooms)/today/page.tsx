@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { PresenceDots } from "@/components/rooms/PresenceDots";
 import { BriefBlock } from "@/components/rooms/BriefBlock";
 import { FocusCard } from "@/components/rooms/FocusCard";
+import { OperatorInbox } from "@/components/rooms/OperatorInbox";
 import { ReviewCard } from "@/components/rooms/ReviewCard";
 import { Icon } from "@/components/ui/Icon";
 import { LANES } from "@/lib/copy/lanes";
@@ -52,6 +53,15 @@ export default async function TodayPage() {
           <FocusCard focus={data.focus} seat={seat} />
         ) : (
           <BriefBlock brief={data.brief} />
+        )}
+
+        {/* The operator's inbox: signals leaders acted on, waiting to become
+           moves. Operator only; empty for principals. */}
+        {seat === 4 && (
+          <OperatorInbox
+            routed={data.routed}
+            priorities={data.weekMoves.map((m) => ({ id: m.priorityId, name: m.priorityName }))}
+          />
         )}
 
         {/* The calm secondary tier, demoted below the hero. The brief only

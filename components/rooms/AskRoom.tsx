@@ -47,7 +47,13 @@ const GRAMMAR = [
 
 const FALLBACK = "I do not have anything on that here.";
 
-export function AskRoom({ operator }: { operator: boolean }) {
+export function AskRoom({
+  operator,
+  autonomy = "ask",
+}: {
+  operator: boolean;
+  autonomy?: "ask" | "tell" | "handle";
+}) {
   const router = useRouter();
   const [phase, setPhase] = useState<Phase>({ name: "idle" });
   const [typed, setTyped] = useState("");
@@ -134,6 +140,13 @@ export function AskRoom({ operator }: { operator: boolean }) {
       if (intent.kind === "navigate" && intent.room) {
         router.push(`/${intent.room === "ask" ? "ask" : intent.room}`);
         setPhase({ name: "idle" });
+        return;
+      }
+      /* The trust setting decides here. When the seat asked to be consulted first,
+         show the confirm card. When they said do it (tell) or just handle it,
+         run the command straight away; a sweep is operator gated regardless. */
+      if (autonomy !== "ask" && intent.kind !== "sweep") {
+        await confirmCommand(query, intent);
         return;
       }
       setPhase({ name: "confirm", utterance: query, intent });
