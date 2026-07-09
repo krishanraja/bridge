@@ -464,19 +464,21 @@ function SignalCard({
           </span>
         </div>
 
-        {/* The body clips rather than scrolls, so a swipe anywhere on the card
-           pages the deck instead of being trapped here. Content fits with room to
-           spare; a rare long read clamps cleanly and the footer stays pinned. */}
-        <div className="flex min-h-0 flex-col gap-3 overflow-hidden">
+        {/* The body shows the full read. Most cards fit with room to spare; a rare
+           long one scrolls here without truncating anything. Crucially it does NOT
+           set overscroll-behavior: contain, so once the body is at its edge (or has
+           nothing to scroll) a swipe chains to the pager and moves to the next card
+           from anywhere on the card, not only the footer. */}
+        <div className="flex min-h-0 flex-col gap-3 overflow-y-auto [scrollbar-width:none]">
           <h2 className="t-headline text-ink">{s.headline}</h2>
           <div>
             <div className="eyebrow mb-1">For Amperity</div>
-            <p className="t-body line-clamp-6 text-ink2">{s.for_amperity}</p>
+            <p className="t-body text-ink2">{s.for_amperity}</p>
           </div>
           {s.posture && (
             <div>
               <div className="eyebrow mb-1">The move</div>
-              <p className="t-body line-clamp-4 text-ink">{s.posture}</p>
+              <p className="t-body text-ink">{s.posture}</p>
             </div>
           )}
           {s.assumption_id && s.assumption_direction != null && s.assumption_direction !== 0 && (
