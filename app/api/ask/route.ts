@@ -66,9 +66,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ intent });
   }
 
+  /* This leader's own setup answers shape how the answer lands, when set. */
+  const { data: prefsRow } = await sb.from("seat_prefs").select("*").eq("seat", seat).maybeSingle();
+  const { styleDirectives } = await import("@/lib/copy/prefs");
+  const memo = styleDirectives(prefsRow as never).memo;
+  const styleLine = memo ? `\nThis reader prefers: ${memo}` : "";
+
   const system = `${VOICE}
 
-You are answering a question from one of Amperity's four leaders. Answer from the house context below and from nothing else. Cite with reference markers like [S3] or [P2] placed after the claims they support. Never use a reference code as a noun; name the thing in plain words and put the marker after it. Warm, plain, and brief, the way you would answer a colleague who asked you across the table. No em dashes, none of these words: ${BANNED_LIST}. Keep it under 150 words.
+You are answering a question from one of Amperity's four leaders. Answer from the house context below and from nothing else. Cite with reference markers like [S3] or [P2] placed after the claims they support. Never use a reference code as a noun; name the thing in plain words and put the marker after it. Warm, plain, and brief, the way you would answer a colleague who asked you across the table. No em dashes, none of these words: ${BANNED_LIST}. Keep it under 150 words.${styleLine}
 If the context cannot ground an answer, reply with exactly: ${FALLBACK}
 
 HOUSE CONTEXT

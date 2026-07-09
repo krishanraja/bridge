@@ -8,7 +8,7 @@
 import { chromium } from "playwright-core";
 
 const BASE = process.env.BASE_URL ?? "http://localhost:3000";
-const ROUTES = ["/today", "/radar", "/priorities", "/table", "/ask", "/ledger", "/settings", "/login"];
+const ROUTES = ["/today", "/radar", "/priorities", "/table", "/ask", "/ledger", "/settings", "/setup", "/login"];
 const VIEWPORTS = [
   { width: 390, height: 844, label: "iPhone 390x844" },
   { width: 430, height: 932, label: "iPhone 430x932" },

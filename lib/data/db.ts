@@ -1,7 +1,7 @@
 /* Database data source. Raw rows in, shared derivations out. */
 
 import { supabaseServer } from "@/lib/supabase/server";
-import type { Decision, Move, Priority, Pulse, RoutedSignal, Signal, Thread } from "@/lib/types";
+import type { Decision, Move, Priority, Pulse, RoutedSignal, SeatPrefs, Signal, Thread } from "@/lib/types";
 import type { SeatId } from "@/lib/seats";
 import { SEAT_IDS } from "@/lib/seats";
 import { currentIsoWeek, isoWeekShift } from "@/lib/weeks";
@@ -26,6 +26,20 @@ import { computeAffinity, personalize } from "@/lib/learn/affinity";
 
 function todayISO(): string {
   return new Date().toISOString().slice(0, 10);
+}
+
+/* Setup prefs. RLS returns only the rows this seat may see (own, team, or all
+   for the operator), so the reader trusts the database to scope it. */
+export async function dbSeatPrefs(seat: SeatId): Promise<SeatPrefs | null> {
+  const sb = await supabaseServer();
+  const { data } = await sb.from("seat_prefs").select("*").eq("seat", seat).maybeSingle();
+  return (data as SeatPrefs | null) ?? null;
+}
+
+export async function dbAllSeatPrefs(): Promise<SeatPrefs[]> {
+  const sb = await supabaseServer();
+  const { data } = await sb.from("seat_prefs").select("*").order("seat");
+  return (data ?? []) as SeatPrefs[];
 }
 
 /* The freshest day that actually carries signals, on or before today. The deck

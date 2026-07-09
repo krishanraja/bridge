@@ -8,6 +8,8 @@ import { claude, extractJson } from "@/lib/intel/llm";
 import { BANNED_LIST } from "@/lib/copy/banned";
 import { VOICE } from "@/lib/copy/voice";
 import { STYLE_PROFILES } from "@/lib/copy/styles";
+import { styleDirectives } from "@/lib/copy/prefs";
+import type { SeatPrefs } from "@/lib/types";
 import { currentIsoWeek, isoWeekShift } from "@/lib/weeks";
 import { SEATS, type SeatId } from "@/lib/seats";
 import { LANES, type LaneId } from "@/lib/copy/lanes";
@@ -139,17 +141,35 @@ export async function compose(
   const { day, context, refs } = await assemble(kind);
   const style = STYLE_PROFILES[seat];
 
+  /* The leader's own setup answers, when they have filled them in, shape depth,
+     format, and order. They override the static style profile; a seat that has
+     not run the wizard falls back to it. */
+  const sbPrefs = supabaseService();
+  const { data: prefsRow } = await sbPrefs
+    .from("seat_prefs")
+    .select("*")
+    .eq("seat", seat)
+    .maybeSingle();
+  const directives = styleDirectives(prefsRow as SeatPrefs | null);
+  const styleLine = directives.memo
+    ? `This reader's own preferences, follow them closely: ${directives.memo}`
+    : `This reader likes it delivered like this: ${style.memo}`;
+  /* When the reader wants just the headline, the fixed length rule is relaxed. */
+  const lengthRule = directives.length
+    ? directives.length
+    : "220 to 280 words";
+
   const refList = refs.map((r) => r.ref).join(", ");
   const system =
     kind === "morning"
       ? `${VOICE}
 
-Write the morning brief: a spoken read of 220 to 280 words the four leaders hear over coffee. Four short sections with these exact headers: Market, Our thinking, The week, The call.
+Write the morning brief: a spoken read of ${lengthRule} the four leaders hear over coffee. Four short sections with these exact headers: Market, Our thinking, The week, The call.
 Market: the two or three things that actually moved, in plain language, and a light word on why each matters to us.
 Our thinking: how the beliefs behind the strategy are holding up, one that shifted.
 The week: where the moves stand. If something slipped, say so kindly, without blame.
 The call: the one thing worth deciding today. Offer it as a suggestion and say whose call it feels like. Never tell them what they will do.
-This reader likes it delivered like this: ${style.memo}
+${styleLine}
 Sound like a warm colleague talking, not a report. No em dashes. Do not use any of these words: ${BANNED_LIST}.
 Every sentence must trace to a record. After each sentence, append the reference codes that support it in square brackets, like [S1] or [P4]. Use only these codes: ${refList}.
 Reply with ONLY JSON: {"script": "the full brief with reference codes inline", "line_refs": [{"line": 0, "refs": ["S1"]}]} where line is the zero-based index of each non-empty line and refs are the codes on that line.`

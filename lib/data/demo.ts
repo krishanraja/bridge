@@ -13,6 +13,7 @@ import historySeedJson from "@/supabase/seed/demo/assumption_history.json";
 import themesSeedJson from "@/supabase/seed/demo/themes.json";
 import routedSeedJson from "@/supabase/seed/demo/routed_signals.json";
 import reactionsSeedJson from "@/supabase/seed/demo/reactions.json";
+import prefsSeedJson from "@/supabase/seed/demo/seat_prefs.json";
 import type {
   AssumptionsSeed,
   BriefSeed,
@@ -43,9 +44,11 @@ import type {
   Priority,
   Pulse,
   RoutedSignal,
+  SeatPrefs,
   Signal,
   Thread,
 } from "@/lib/types";
+import { buildSummary } from "@/lib/copy/prefs";
 import type { LaneId } from "@/lib/copy/lanes";
 import type { SeatId } from "@/lib/seats";
 import { currentIsoWeek, isoWeekShift } from "@/lib/weeks";
@@ -413,4 +416,39 @@ export async function demoThemes(): Promise<ThemeView[]> {
       myReaction: null,
     }))
     .sort((a, b) => b.importance - a.importance);
+}
+
+/* The four seats' setup answers, seeded so the wizard and its summary are never
+   hollow in the demo. Each partial seed is filled to a complete row and its
+   summary is generated the same way the live finish action does. */
+const PREF_KEYS: (keyof SeatPrefs)[] = [
+  "reach_daily", "reach_urgent", "after_hours", "update_depth", "long_form",
+  "order_pref", "morning_brief", "autonomy_default", "disagree", "visibility",
+  "numbers", "frequency", "money", "speed", "feedback", "trust", "top_focus",
+  "sharp_time", "autonomy_scheduling", "autonomy_messages", "autonomy_research",
+];
+
+function materializePrefs(raw: Record<string, unknown>): SeatPrefs {
+  const seat = raw.seat as SeatId;
+  const row = { seat } as SeatPrefs;
+  const bag = row as unknown as Record<string, unknown>;
+  for (const k of PREF_KEYS) {
+    bag[k] = (raw[k] as string | undefined) ?? null;
+  }
+  row.focus_set_on = row.top_focus ? dayISO(-3) : null;
+  row.summary_text = buildSummary(row);
+  row.completed_at = ts(-2, 9);
+  row.updated_at = ts(-2, 9);
+  return row;
+}
+
+export async function demoPrefs(seat: SeatId): Promise<SeatPrefs | null> {
+  const raw = (prefsSeedJson as Record<string, unknown>[]).find(
+    (r) => r.seat === seat,
+  );
+  return raw ? materializePrefs(raw) : null;
+}
+
+export async function demoAllPrefs(): Promise<SeatPrefs[]> {
+  return (prefsSeedJson as Record<string, unknown>[]).map(materializePrefs);
 }

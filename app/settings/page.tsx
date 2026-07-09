@@ -9,7 +9,8 @@ import { LearnReview, type StagedProposal } from "@/components/rooms/LearnReview
 import { Chip } from "@/components/ui/Chip";
 import { Reaction } from "@/components/ui/Reaction";
 import { PreferenceGraph } from "@/components/rooms/PreferenceGraph";
-import { getThemes } from "@/lib/data";
+import { PrefsEntry } from "@/components/rooms/PrefsEntry";
+import { getThemes, getSeatPrefs } from "@/lib/data";
 import { LANES, type LaneId } from "@/lib/copy/lanes";
 
 export const dynamic = "force-dynamic";
@@ -154,12 +155,16 @@ export default async function SettingsPage() {
   const { proposal, metrics } = await operatorLearning(seedMode, seat);
   const learning = await tableLearning(seedMode, seat);
   const themes = await getThemes();
+  const prefs = await getSeatPrefs(seat);
 
   return (
-    <div className="grid h-full min-h-0 auto-rows-min gap-2 overflow-hidden pb-3">
+    <div className="grid h-full min-h-0 auto-rows-min gap-2 overflow-y-auto pb-3 [scrollbar-width:none]">
       <header className="px-5 pt-4">
         <div className="eyebrow">Settings</div>
       </header>
+
+      <PrefsEntry summary={prefs?.summary_text ?? null} name={SEATS[seat].shortName} />
+
 
       <section className="mx-5 rounded-xl border border-line bg-paper p-3.5">
         <div className="eyebrow mb-2">The four seats</div>

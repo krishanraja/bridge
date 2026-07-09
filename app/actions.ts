@@ -9,6 +9,8 @@ import { currentSeat } from "@/lib/auth";
 import { isDemoMode, hasSupabaseEnv } from "@/lib/mode";
 import { currentIsoWeek } from "@/lib/weeks";
 import type { SeatId } from "@/lib/seats";
+import type { SeatPrefs } from "@/lib/types";
+import { buildSummary } from "@/lib/copy/prefs";
 
 export interface ActionResult {
   ok: boolean;
@@ -626,4 +628,94 @@ export async function leaveDecisionFeedback(
   await logEvent(seat, "decision_feedback", "decision", decisionId, { note: text });
   revalidatePath("/table");
   return { ok: true };
+}
+
+/* The setup wizard writes. One tap saves one field. The writable columns are
+   allowlisted so a stray field name cannot touch the row. */
+const PREF_FIELDS = new Set([
+  "reach_daily", "reach_urgent", "after_hours", "update_depth", "long_form",
+  "order_pref", "morning_brief", "autonomy_default", "disagree", "visibility",
+  "numbers", "frequency", "money", "speed", "feedback", "trust", "top_focus",
+  "sharp_time", "autonomy_scheduling", "autonomy_messages", "autonomy_research",
+]);
+
+export async function savePref(input: {
+  field: string;
+  value: string;
+  /* The operator may set up another seat; principals write only their own. */
+  seat?: SeatId;
+}): Promise<ActionResult> {
+  const seat = await seatOrNull();
+  if (!seat) return { ok: true };
+  if (!PREF_FIELDS.has(input.field)) return { ok: false, message: "Unknown field." };
+
+  const target = input.seat ?? seat;
+  if (target !== seat && seat !== 4) {
+    return { ok: false, message: "You can only set up your own." };
+  }
+
+  const sb = await supabaseServer();
+  const row: Record<string, unknown> = {
+    seat: target,
+    [input.field]: input.value,
+    updated_at: new Date().toISOString(),
+  };
+  /* top_focus goes stale, so stamp the day it was set. */
+  if (input.field === "top_focus") row.focus_set_on = new Date().toISOString().slice(0, 10);
+
+  const { error } = await sb.from("seat_prefs").upsert(row, { onConflict: "seat" });
+  if (error) return { ok: false, message: "That didn't save. Mind trying again?" };
+
+  await logEvent(seat, "pref_set", "seat_prefs", input.field, { value: input.value, seat: target });
+  if (target !== seat) await logAudit(seat, "pref_set_other", { seat: target, field: input.field });
+
+  revalidatePath("/setup");
+  revalidatePath("/settings");
+  return { ok: true };
+}
+
+/* Assemble the summary from the saved row and stamp completion. Called on Done
+   and after any single card edit, so summary_text always reflects the answers. */
+export async function finishPrefs(input?: { seat?: SeatId }): Promise<ActionResult> {
+  const seat = await seatOrNull();
+  if (!seat) return { ok: true };
+  const target = input?.seat ?? seat;
+  if (target !== seat && seat !== 4) return { ok: false, message: "You can only set up your own." };
+
+  const sb = await supabaseServer();
+  const { data } = await sb.from("seat_prefs").select("*").eq("seat", target).maybeSingle();
+  const row = (data ?? { seat: target }) as SeatPrefs;
+  const summary = buildSummary(row);
+
+  const { error } = await sb.from("seat_prefs").upsert(
+    {
+      seat: target,
+      summary_text: summary,
+      completed_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "seat" },
+  );
+  if (error) return { ok: false, message: "That didn't save. Mind trying again?" };
+  if (target !== seat) await logAudit(seat, "pref_finish_other", { seat: target });
+
+  revalidatePath("/setup");
+  revalidatePath("/settings");
+  revalidatePath("/today");
+  return { ok: true };
+}
+
+/* Compose this seat's morning brief on demand, without saving, so the wizard can
+   show how their answers change the read. Operator or self only. */
+export async function previewBrief(seat: SeatId): Promise<{ ok: boolean; script?: string; message?: string }> {
+  const viewer = await seatOrNull();
+  if (!viewer) return { ok: false, message: "Previews run on live data." };
+  if (viewer !== seat && viewer !== 4) return { ok: false, message: "You can only preview your own." };
+  try {
+    const { compose } = await import("@/lib/loop/compose");
+    const result = await compose("morning", seat);
+    return { ok: true, script: result.script };
+  } catch {
+    return { ok: false, message: "The preview did not come through. Try again in a moment." };
+  }
 }
