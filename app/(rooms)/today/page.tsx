@@ -33,7 +33,7 @@ export default async function TodayPage() {
           </div>
         </div>
         <div className="flex items-center gap-2.5 pt-1.5">
-          <PresenceDots demo={data.demo} currentSeat={seat} seedPresent={[1, 2]} />
+          <PresenceDots demo={data.demo} currentSeat={seat} seedPresent={[2, 3]} />
           <Link
             href="/settings"
             aria-label="Settings"

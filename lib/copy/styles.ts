@@ -35,20 +35,21 @@ export const STYLE_PROFILES: Record<SeatId, StyleProfile> = {
   },
 };
 
-/* The lanes each principal owns, from their style memo. When the day's one thing
-   lands in a seat's lane, the Today hero says so in their voice, so the same
-   focus feels like it was chosen for them. Kabir reads the whole board and Krish
-   reads everything, so neither claims a single lane. */
-const SEAT_LANES: Partial<Record<SeatId, { lanes: LaneId[]; phrase: string }>> = {
-  2: { lanes: [1, 2, 4], phrase: "product and platform" },
-  3: { lanes: [3, 5, 6], phrase: "capital and customers" },
+/* The lanes each principal owns, and the whole clause the Today hero says when
+   the day's one thing lands in one of them, so the focus feels chosen for them.
+   Kabir reads the whole board as Co-CEO, so his lanes span it. Krish reads
+   everything as the operator, so he claims no single lane. */
+const SEAT_LANES: Partial<Record<SeatId, { lanes: LaneId[]; clause: string }>> = {
+  1: { lanes: [1, 2, 3, 4, 5, 6, 7, 8], clause: "This is the kind of call a Co-CEO makes." },
+  2: { lanes: [1, 2, 4], clause: "This sits in your lane, product and platform." },
+  3: { lanes: [3, 5, 6], clause: "This sits in your lane, capital and customers." },
 };
 
-/* A short line framing the focus in the viewer's lane, or null when it is not
-   theirs to lean into. Pure; safe to call from server or client. */
+/* A short line framing the focus for the viewer, or null when it is not theirs to
+   lean into. Pure; safe to call from server or client. */
 export function seatFraming(seat: SeatId, lane?: LaneId | null): string | null {
   if (lane == null) return null;
   const owned = SEAT_LANES[seat];
   if (!owned || !owned.lanes.includes(lane)) return null;
-  return `This is ${owned.phrase}, your lane.`;
+  return owned.clause;
 }
