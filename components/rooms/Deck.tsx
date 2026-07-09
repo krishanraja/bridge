@@ -18,6 +18,20 @@ import { reasonsFor } from "@/lib/copy/reasons";
 import { tick } from "@/lib/haptics";
 import { signalFeedback, react } from "@/app/actions";
 
+/* Bound a field to what fits the fixed card, cut on a whole sentence so it reads
+   as complete, never with a dangling ellipsis. Content within the bound (the
+   normal case) is returned untouched, so nothing is trimmed unless it genuinely
+   would not fit. */
+function clampText(text: string | null | undefined, max: number): string {
+  const t = (text ?? "").trim();
+  if (t.length <= max) return t;
+  const slice = t.slice(0, max);
+  const sentence = slice.match(/^[\s\S]*[.!?]/);
+  if (sentence && sentence[0].length >= max * 0.5) return sentence[0].trim();
+  const lastSpace = slice.lastIndexOf(" ");
+  return (lastSpace > 0 ? slice.slice(0, lastSpace) : slice).trim();
+}
+
 /* Honest narration of what the sweep is actually doing, in order:
    gather → cluster → filter → score → synthesize. */
 const SWEEP_STAGES = [
@@ -438,47 +452,47 @@ function SignalCard({
 
   return (
     <div className="snap-page px-[var(--pad-x)] pb-3">
-      {/* A fixed three-row grid: the chrome and the one control are pinned, and
-         only the middle body scrolls if it must. This keeps every card inside
-         its own page, so a long story can never bleed onto the next card. */}
+      {/* A fixed object, identical height on every card. The chrome and the one
+         control are pinned; the body never scrolls and never resizes. Content is
+         bounded to fit, so a card never expands, scrolls, or clips a headline. */}
       <article
         onPointerDown={pressStart}
         onPointerUp={pressEnd}
         onPointerLeave={pressEnd}
-        className="grid h-full min-h-0 grid-rows-[auto_minmax(0,1fr)_auto] gap-3 overflow-hidden rounded-[var(--r-lg)] border border-line bg-paper p-[var(--space-5)] shadow-[var(--elev-card)]"
+        className="grid h-full min-h-0 grid-rows-[auto_minmax(0,1fr)_auto] gap-3 overflow-hidden rounded-[var(--r-lg)] border border-line bg-paper p-[var(--space-4)] shadow-[var(--elev-card)]"
         style={{ borderLeft: `3px solid ${edgeColor}` }}
       >
         <audio ref={audioRef} className="hidden" />
 
-        {/* Pinned header: lane, corroboration, position. */}
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-1.5">
-            <Chip color={`var(${lane.cssVar})`} icon={lane.icon}>{lane.glyph}</Chip>
-            <Chip>
-              {s.corroboration} source{s.corroboration === 1 ? "" : "s"}
-            </Chip>
-            {s.illustrative && <Chip>Sample</Chip>}
+        {/* Pinned header: lane, corroboration, position, and the headline, so the
+           headline is always visible and never scrolls away. */}
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5">
+              <Chip color={`var(${lane.cssVar})`} icon={lane.icon}>{lane.glyph}</Chip>
+              <Chip>
+                {s.corroboration} source{s.corroboration === 1 ? "" : "s"}
+              </Chip>
+              {s.illustrative && <Chip>Sample</Chip>}
+            </div>
+            <span className="eyebrow shrink-0 text-ink3">
+              {index + 1} / {total}
+            </span>
           </div>
-          <span className="eyebrow shrink-0 text-ink3">
-            {index + 1} / {total}
-          </span>
+          <h2 className="t-headline text-ink">{s.headline}</h2>
         </div>
 
-        {/* The body shows the full read. Most cards fit with room to spare; a rare
-           long one scrolls here without truncating anything. Crucially it does NOT
-           set overscroll-behavior: contain, so once the body is at its edge (or has
-           nothing to scroll) a swipe chains to the pager and moves to the next card
-           from anywhere on the card, not only the footer. */}
-        <div className="flex min-h-0 flex-col gap-3 overflow-y-auto [scrollbar-width:none]">
-          <h2 className="t-headline text-ink">{s.headline}</h2>
+        {/* The body: fixed space, no scroll. The read and the move are bounded to
+           what fits, cut on a whole sentence with no dangling ellipsis. */}
+        <div className="flex min-h-0 flex-col gap-3 overflow-hidden">
           <div>
             <div className="eyebrow mb-1">For Amperity</div>
-            <p className="t-body text-ink2">{s.for_amperity}</p>
+            <p className="t-body text-ink2">{clampText(s.for_amperity, 240)}</p>
           </div>
           {s.posture && (
             <div>
               <div className="eyebrow mb-1">The move</div>
-              <p className="t-body text-ink">{s.posture}</p>
+              <p className="t-body text-ink">{clampText(s.posture, 180)}</p>
             </div>
           )}
           {s.assumption_id && s.assumption_direction != null && s.assumption_direction !== 0 && (
@@ -506,7 +520,6 @@ function SignalCard({
 
         {/* Pinned footer: the one clear thing to decide. */}
         <div className="border-t border-line pt-3">
-          <div className="eyebrow mb-2 text-center">What is this to you?</div>
           <SignalVerdict onChoose={onChoose} />
         </div>
       </article>
