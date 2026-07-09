@@ -72,6 +72,7 @@ export function deriveFocus(args: {
       text: `${d.text} Feels like ${SEATS[d.owner_seat].shortName}'s call, ideally ${formatDue(d.due_date!)}.`,
       actionLabel: "Take a look",
       href: "/table",
+      reason: `Your nearest open decision, due ${formatDue(d.due_date!)}.`,
     };
   }
 
@@ -88,6 +89,10 @@ export function deriveFocus(args: {
         : `${atRisk.name} ${label}, and there is no move set for it yet.`,
       actionLabel: "Take a look",
       href: "/priorities",
+      reason:
+        atRisk.state === "blocked"
+          ? "A priority is blocked and needs a hand."
+          : "A priority slipped to at risk.",
     };
   }
 
@@ -98,6 +103,8 @@ export function deriveFocus(args: {
       text: `Worth a look: ${redFlag.headline}`,
       actionLabel: "See the radar",
       href: "/radar",
+      reason: `${redFlag.corroboration} sources now point the same way.`,
+      lane: redFlag.lane,
     };
   }
 
@@ -107,6 +114,7 @@ export function deriveFocus(args: {
       text: `A good day to reach out to ${dueThread.name} at ${dueThread.org}${dueThread.next_touch_note ? `: ${dueThread.next_touch_note}` : ""}.`,
       actionLabel: "Take a look",
       href: "/priorities",
+      reason: "You said today was the day to reach out.",
     };
   }
 

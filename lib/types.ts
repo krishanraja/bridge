@@ -145,10 +145,14 @@ export interface Thread {
   created_at: string;
 }
 
-/* The one thing Today asks. Derived, not stored. */
+/* The one thing Today asks. Derived, not stored. `reason` is Bridge's plain-words
+   rationale for why this is the one thing; `lane` tags it when the subject carries
+   one (market signals do), so the card can frame it in the viewer's lane. */
 export interface FocusItem {
   kind: "decision" | "move" | "signal" | "thread";
   text: string;
   actionLabel: string;
   href: string;
+  reason?: string;
+  lane?: LaneId;
 }

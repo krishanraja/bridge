@@ -285,6 +285,48 @@ body {
   }
 }
 
+/* Entrance motion. Content rises a few pixels and fades in on mount; the Today
+   secondary tier staggers so the hero settles first, then the calm tier follows.
+   All under the 150 to 220ms ease-out law; the reduced-motion block above
+   collapses every one of these to nothing. */
+@keyframes rise {
+  from {
+    transform: translateY(8px);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+.rise {
+  animation: rise 180ms ease-out both;
+}
+.rise-1 {
+  animation-delay: 0ms;
+}
+.rise-2 {
+  animation-delay: 40ms;
+}
+.rise-3 {
+  animation-delay: 80ms;
+}
+
+/* A small pop for a mark landing: the focus icon halo, the active tab. */
+@keyframes pop {
+  from {
+    transform: scale(0.94);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+.pop {
+  animation: pop 160ms ease-out both;
+}
+
 /* Skeleton shimmer for the radar sweep. */
 @keyframes shimmer {
   from {
