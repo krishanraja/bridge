@@ -158,7 +158,7 @@ export default async function SettingsPage() {
   const prefs = await getSeatPrefs(seat);
 
   return (
-    <div className="grid h-full min-h-0 auto-rows-min gap-2 overflow-y-auto pb-3 [scrollbar-width:none]">
+    <div className="grid h-full min-h-0 auto-rows-min grid-cols-[minmax(0,1fr)] gap-2 overflow-y-auto pb-3 [scrollbar-width:none]">
       <header className="px-5 pt-4">
         <div className="eyebrow">Settings</div>
       </header>
@@ -206,7 +206,7 @@ export default async function SettingsPage() {
       {metrics && (metrics.actRate != null || metrics.killRate != null) && (
         <section className="mx-5 rounded-xl border border-line bg-paper px-3.5 py-2.5">
           <div className="eyebrow mb-1.5">How it is learning</div>
-          <div className="flex justify-between">
+          <div className="grid grid-cols-4 gap-1">
             <Metric label="Act rate" value={metrics.actRate != null ? `${metrics.actRate}%` : "-"} />
             <Metric label="Kill rate" value={metrics.killRate != null ? `${metrics.killRate}%` : "-"} />
             <Metric label="Briefs" value={metrics.briefCompletion != null ? `${metrics.briefCompletion}/4` : "-"} />
