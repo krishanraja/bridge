@@ -204,6 +204,7 @@ export async function logDecision(input: {
   due_date?: string | null;
   logged_via?: "voice" | "typed";
   transcript?: string | null;
+  source_ref?: Record<string, string> | null;
 }): Promise<ActionResult> {
   const seat = await seatOrNull();
   if (!seat) return DEMO_REFUSAL;
@@ -221,6 +222,7 @@ export async function logDecision(input: {
       logged_by: seat,
       logged_via: input.logged_via ?? "typed",
       transcript: input.transcript ?? null,
+      source_ref: input.source_ref ?? null,
     })
     .select("id")
     .single();
@@ -348,16 +350,80 @@ export async function updateThread(input: {
   return { ok: true };
 }
 
-/* Radar verdicts: Act routes to the operator, Hold archives, Kill teaches. */
+/* The one radar verdict. A leader's single choice on a signal — not for me,
+   worth knowing, or act on it — writes the whole learning loop at once, so there
+   is one control instead of two:
+     - it upserts a reaction (the canonical taste store the deck re-ranks by and
+       the team appetite reads), sentiment negative only for "not for me";
+     - it emits the verdict event the pipeline resonance and the weekly jobs
+       already consume, and that hides the card on reload;
+     - "act on it" also hands the item to the operator's inbox (routed_signals).
+   The optional "why" comes later via react(), which upserts the same reaction. */
 
-export async function signalVerdict(input: {
+export async function signalFeedback(input: {
   signal_id: string;
-  kind: "act" | "hold" | "kill";
-}): Promise<ActionResult> {
+  intent: "dismiss" | "know" | "act";
+  lane?: number | null;
+  headline?: string;
+  posture?: string | null;
+}): Promise<ActionResult & { routed?: boolean }> {
   const seat = await seatOrNull();
   if (!seat) return { ok: true };
-  await logEvent(seat, `signal_${input.kind}`, "signal", input.signal_id);
+  const sb = await supabaseServer();
+
+  const sentiment: 1 | -1 = input.intent === "dismiss" ? -1 : 1;
+  await sb.from("reactions").upsert(
+    {
+      seat,
+      subject_type: "signal",
+      subject_id: input.signal_id,
+      sentiment,
+      lane: input.lane ?? null,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "seat,subject_type,subject_id" },
+  );
+
+  const kind =
+    input.intent === "act" ? "act" : input.intent === "know" ? "hold" : "kill";
+  await logEvent(seat, `signal_${kind}`, "signal", input.signal_id, {
+    intent: input.intent,
+  });
+
+  if (input.intent === "act") {
+    await sb.from("routed_signals").insert({
+      signal_id: input.signal_id,
+      from_seat: seat,
+      headline: input.headline ?? "",
+      posture: input.posture ?? null,
+      lane: input.lane ?? null,
+    });
+  }
+
   revalidatePath("/radar");
+  revalidatePath("/today");
+  return { ok: true, routed: input.intent === "act" };
+}
+
+/* The operator clears an item from the inbox, once it is a move or a decision,
+   or when it is not worth carrying. Operator only, enforced again by RLS. */
+export async function resolveRoutedSignal(input: {
+  id: string;
+  status: "converted" | "dismissed";
+}): Promise<ActionResult> {
+  const seat = await seatOrNull();
+  if (!seat) return DEMO_REFUSAL;
+  if (seat !== 4) return { ok: false, message: "Only the operator can clear these." };
+  const sb = await supabaseServer();
+  const { error } = await sb
+    .from("routed_signals")
+    .update({
+      status: input.status,
+      handled_by: seat,
+      handled_at: new Date().toISOString(),
+    })
+    .eq("id", input.id);
+  if (error) return { ok: false, message: "That didn't save. Mind trying again?" };
   revalidatePath("/today");
   return { ok: true };
 }

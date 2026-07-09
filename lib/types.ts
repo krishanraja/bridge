@@ -145,6 +145,20 @@ export interface Thread {
   created_at: string;
 }
 
+/* A signal a leader acted on, handed to the operator's inbox to turn into a move
+   or a decision. Headline/posture are snapshotted so it survives signal churn. */
+export interface RoutedSignal {
+  id: string;
+  signal_id: string;
+  from_seat: SeatId;
+  headline: string;
+  posture: string | null;
+  lane: LaneId | null;
+  note: string | null;
+  status: "open" | "converted" | "dismissed";
+  created_at: string;
+}
+
 /* The one thing Today asks. Derived, not stored. `reason` is Bridge's plain-words
    rationale for why this is the one thing; `lane` tags it when the subject carries
    one (market signals do), so the card can frame it in the viewer's lane. */

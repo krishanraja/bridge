@@ -351,4 +351,8 @@ body {
   height: 100%;
   scroll-snap-align: start;
   scroll-snap-stop: always;
+  /* Defensive clip: a card that somehow exceeds its page is contained to it and
+     can never paint over the neighboring card. The card itself scrolls its own
+     body, so nothing is lost. */
+  overflow: hidden;
 }

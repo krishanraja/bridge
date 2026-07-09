@@ -2,9 +2,10 @@
    readout: what this leader leans into, what the table collectively rates, and
    the reasons that come up most. This is the "it's listening" surface. */
 
-import { computeAffinity } from "./affinity";
+import { computeAffinity, type SeatAffinity } from "./affinity";
 import { LANE_IDS, type LaneId } from "@/lib/copy/lanes";
 import { reasonLabel } from "@/lib/copy/reasons";
+import { SEAT_IDS, type SeatId } from "@/lib/seats";
 
 export interface ReactionRowLite {
   seat: number;
@@ -60,4 +61,28 @@ export function summarizeReactions(
     topReasons,
     total: rows.length,
   };
+}
+
+export interface PreferenceGraphData {
+  /* Each seat's lane appetite, plus the whole table's, over the same reactions.
+     perLane runs roughly -1..1 per lane; this is the pattern behind each leader
+     and behind the group. */
+  perSeat: Record<SeatId, SeatAffinity>;
+  group: SeatAffinity;
+  total: number;
+}
+
+export function allSeatsAffinity(rows: ReactionRowLite[]): PreferenceGraphData {
+  const perSeat = {} as Record<SeatId, SeatAffinity>;
+  for (const seat of SEAT_IDS) {
+    perSeat[seat] = computeAffinity(
+      rows
+        .filter((r) => r.seat === seat)
+        .map((r) => ({ lane: r.lane, sentiment: r.sentiment })),
+    );
+  }
+  const group = computeAffinity(
+    rows.map((r) => ({ lane: r.lane, sentiment: r.sentiment })),
+  );
+  return { perSeat, group, total: rows.length };
 }

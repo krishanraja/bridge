@@ -11,6 +11,8 @@ import threadsSeedJson from "@/supabase/seed/demo/threads.json";
 import receiptsSeedJson from "@/supabase/seed/demo/receipts.json";
 import historySeedJson from "@/supabase/seed/demo/assumption_history.json";
 import themesSeedJson from "@/supabase/seed/demo/themes.json";
+import routedSeedJson from "@/supabase/seed/demo/routed_signals.json";
+import reactionsSeedJson from "@/supabase/seed/demo/reactions.json";
 import type {
   AssumptionsSeed,
   BriefSeed,
@@ -40,6 +42,7 @@ import type {
   Move,
   Priority,
   Pulse,
+  RoutedSignal,
   Signal,
   Thread,
 } from "@/lib/types";
@@ -246,8 +249,28 @@ export async function demoToday(): Promise<TodayData> {
     topSignals: topSignals(signals, 3),
     weekMoves: weekMoveDots(priorities, moves, week),
     review: null,
+    routed: (routedSeedJson as RoutedSeed[]).map((r) => ({
+      id: r.key,
+      signal_id: r.key,
+      from_seat: r.from_seat as SeatId,
+      headline: r.headline,
+      posture: r.posture ?? null,
+      lane: (r.lane ?? null) as LaneId | null,
+      note: null,
+      status: "open" as const,
+      created_at: ts(r.day_offset ?? 0, 9),
+    })),
     demo: true,
   };
+}
+
+interface RoutedSeed {
+  key: string;
+  from_seat: number;
+  headline: string;
+  posture?: string;
+  lane?: number;
+  day_offset?: number;
 }
 
 export async function demoDeck(): Promise<DeckView> {
@@ -256,9 +279,25 @@ export async function demoDeck(): Promise<DeckView> {
     .filter((s) => s.day === today && s.channel !== "shift")
     .sort((a, b) => b.score - a.score)
     .slice(0, 12);
-  /* Demo shows the primitive live but writes nothing; no saved reactions and a
-     neutral appetite, so the deck reads in pooled order. */
-  return { signals, reactions: {}, topLanes: [], mutedLanes: [] };
+  /* Demo writes nothing, but a seeded spread of reactions lets the learned banner
+     and the preference graph read as a live table. The demo viewer is seat 4. */
+  const { computeAffinity } = await import("@/lib/learn/affinity");
+  const reactions = reactionsSeedJson as {
+    seat: number;
+    lane: number | null;
+    sentiment: number;
+  }[];
+  const affinity = computeAffinity(
+    reactions
+      .filter((r) => r.seat === 4)
+      .map((r) => ({ lane: r.lane, sentiment: r.sentiment })),
+  );
+  return {
+    signals,
+    reactions: {},
+    topLanes: affinity.topLanes,
+    mutedLanes: affinity.mutedLanes,
+  };
 }
 
 export async function demoPriorityViews() {

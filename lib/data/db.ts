@@ -1,7 +1,7 @@
 /* Database data source. Raw rows in, shared derivations out. */
 
 import { supabaseServer } from "@/lib/supabase/server";
-import type { Decision, Move, Priority, Pulse, Signal, Thread } from "@/lib/types";
+import type { Decision, Move, Priority, Pulse, RoutedSignal, Signal, Thread } from "@/lib/types";
 import type { SeatId } from "@/lib/seats";
 import { SEAT_IDS } from "@/lib/seats";
 import { currentIsoWeek, isoWeekShift } from "@/lib/weeks";
@@ -85,6 +85,7 @@ export async function dbToday(): Promise<TodayData> {
   /* Operator review: an unreleased morning draft waiting on the review window.
      Only the operator sees it. */
   let review = null;
+  let routed: RoutedSignal[] = [];
   const { data: userData } = await sb.auth.getUser();
   const { seatForEmail } = await import("@/lib/seats");
   const viewer = userData.user?.email ? seatForEmail(userData.user.email) : null;
@@ -105,6 +106,12 @@ export async function dbToday(): Promise<TodayData> {
         releaseAt: "07:25",
       };
     }
+    const { data: routedRows } = await sb
+      .from("routed_signals")
+      .select("*")
+      .eq("status", "open")
+      .order("created_at", { ascending: false });
+    routed = (routedRows ?? []) as RoutedSignal[];
   }
 
   return {
@@ -133,6 +140,7 @@ export async function dbToday(): Promise<TodayData> {
     }),
     topSignals: topSignals(signals, 3),
     weekMoves: weekMoveDots(priorities, moves, week),
+    routed,
     demo: false,
   };
 }
