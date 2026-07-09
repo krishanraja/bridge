@@ -44,13 +44,18 @@ export default async function TodayPage() {
         </div>
       </header>
 
-      <div className="flex min-h-0 flex-1 flex-col justify-center gap-3 overflow-hidden">
+      {/* A calm, top-aligned canvas: the hero leads and holds the first screen,
+         the rest flows below to be explored with a gentle scroll rather than
+         crammed in. Inner scroll only, so the page itself never scrolls. */}
+      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overscroll-contain pb-4 [scrollbar-width:none]">
         {/* The hero: the one clear thing. Falls back to the brief on a quiet day,
            or to the operator's draft review when there is one to release. */}
         {data.review ? (
           <ReviewCard review={data.review} />
         ) : data.focus ? (
-          <FocusCard focus={data.focus} seat={seat} />
+          <div className="mx-5">
+            <FocusCard focus={data.focus} seat={seat} />
+          </div>
         ) : (
           <BriefBlock brief={data.brief} />
         )}
