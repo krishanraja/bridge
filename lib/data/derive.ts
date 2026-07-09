@@ -54,8 +54,11 @@ export function deriveFocus(args: {
   threads: Thread[];
   todayISO: string;
   isoWeek: string;
+  /* Who is looking, so the one thing can be phrased in the first person when it
+     is their own call. */
+  viewerSeat?: SeatId;
 }): FocusItem | null {
-  const { decisions, priorities, moves, signals, threads, todayISO, isoWeek } =
+  const { decisions, priorities, moves, signals, threads, todayISO, isoWeek, viewerSeat } =
     args;
 
   const dueThread = threads.find(
@@ -67,9 +70,13 @@ export function deriveFocus(args: {
     .sort((a, b) => (a.due_date! < b.due_date! ? -1 : 1));
   if (openDecisions.length > 0) {
     const d = openDecisions[0];
+    const whose =
+      d.owner_seat === viewerSeat
+        ? `Yours to make, ideally ${formatDue(d.due_date!)}.`
+        : `Feels like ${SEATS[d.owner_seat].shortName}'s call, ideally ${formatDue(d.due_date!)}.`;
     return {
       kind: "decision",
-      text: `${d.text} Feels like ${SEATS[d.owner_seat].shortName}'s call, ideally ${formatDue(d.due_date!)}.`,
+      text: `${d.text} ${whose}`,
       actionLabel: "Take a look",
       href: "/table",
       reason: `Your nearest open decision, due ${formatDue(d.due_date!)}.`,

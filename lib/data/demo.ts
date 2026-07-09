@@ -228,6 +228,8 @@ export async function demoToday(): Promise<TodayData> {
   const threads = demoThreads();
   const week = currentIsoWeek();
   const brief = briefsSeed.find((b) => b.day_offset === 0);
+  const { currentSeat } = await import("@/lib/auth");
+  const viewer = (await currentSeat()) ?? undefined;
 
   return {
     brief: brief
@@ -248,6 +250,7 @@ export async function demoToday(): Promise<TodayData> {
       threads,
       todayISO: dayISO(0),
       isoWeek: week,
+      viewerSeat: viewer,
     }),
     topSignals: topSignals(signals, 3),
     weekMoves: weekMoveDots(priorities, moves, week),

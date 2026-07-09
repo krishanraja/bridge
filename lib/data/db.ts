@@ -151,6 +151,7 @@ export async function dbToday(): Promise<TodayData> {
       threads,
       todayISO: day,
       isoWeek: week,
+      viewerSeat: viewer ?? undefined,
     }),
     topSignals: topSignals(signals, 3),
     weekMoves: weekMoveDots(priorities, moves, week),
