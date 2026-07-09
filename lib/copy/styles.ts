@@ -4,6 +4,7 @@
    Section 2 of the brief; named by the leadership as what they want from AI. */
 
 import type { SeatId } from "@/lib/seats";
+import type { LaneId } from "@/lib/copy/lanes";
 
 export interface StyleProfile {
   seat: SeatId;
@@ -33,3 +34,21 @@ export const STYLE_PROFILES: Record<SeatId, StyleProfile> = {
     laneWeighting: "everything, ordered by what needs a hand before it lands",
   },
 };
+
+/* The lanes each principal owns, from their style memo. When the day's one thing
+   lands in a seat's lane, the Today hero says so in their voice, so the same
+   focus feels like it was chosen for them. Kabir reads the whole board and Krish
+   reads everything, so neither claims a single lane. */
+const SEAT_LANES: Partial<Record<SeatId, { lanes: LaneId[]; phrase: string }>> = {
+  2: { lanes: [1, 2, 4], phrase: "product and platform" },
+  3: { lanes: [3, 5, 6], phrase: "capital and customers" },
+};
+
+/* A short line framing the focus in the viewer's lane, or null when it is not
+   theirs to lean into. Pure; safe to call from server or client. */
+export function seatFraming(seat: SeatId, lane?: LaneId | null): string | null {
+  if (lane == null) return null;
+  const owned = SEAT_LANES[seat];
+  if (!owned || !owned.lanes.includes(lane)) return null;
+  return `This is ${owned.phrase}, your lane.`;
+}

@@ -7,7 +7,8 @@ import { useRef, useState } from "react";
 import type { BriefView } from "@/lib/data/views";
 import { Sheet } from "@/components/ui/Sheet";
 import { Chip } from "@/components/ui/Chip";
-import { tick } from "@/lib/haptics";
+import { Icon } from "@/components/ui/Icon";
+import { tick, impact } from "@/lib/haptics";
 import { markBriefSeen } from "@/app/actions";
 
 function BriefText({ brief }: { brief: BriefView }) {
@@ -55,7 +56,13 @@ function BriefText({ brief }: { brief: BriefView }) {
   );
 }
 
-export function BriefBlock({ brief }: { brief: BriefView | null }) {
+export function BriefBlock({
+  brief,
+  compact = false,
+}: {
+  brief: BriefView | null;
+  compact?: boolean;
+}) {
   const [open, setOpen] = useState(false);
   const [playing, setPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -68,6 +75,15 @@ export function BriefBlock({ brief }: { brief: BriefView | null }) {
   };
 
   if (!brief) {
+    if (compact) {
+      return (
+        <section className="mx-5 rounded-[var(--r-md)] border border-line bg-paper px-3.5 py-2.5">
+          <p className="t-label leading-snug text-ink3">
+            The morning read lands each weekday around half past seven.
+          </p>
+        </section>
+      );
+    }
     return (
       <section className="mx-5 flex flex-col items-center justify-center rounded-xl border border-line bg-paper px-6 py-4 text-center">
         <p className="text-[14px] leading-snug text-ink3">
@@ -80,7 +96,8 @@ export function BriefBlock({ brief }: { brief: BriefView | null }) {
   const hasAudio = Boolean(brief.audioPath);
 
   const onPress = () => {
-    tick();
+    if (hasAudio) impact();
+    else tick();
     markSeen();
     if (!hasAudio) {
       setOpen(true);
@@ -96,6 +113,47 @@ export function BriefBlock({ brief }: { brief: BriefView | null }) {
       setPlaying(true);
     }
   };
+
+  if (compact) {
+    return (
+      <section className="mx-5">
+        <button
+          onClick={onPress}
+          aria-label={hasAudio ? "Play the brief" : "Read the brief"}
+          className="flex w-full items-center gap-3 rounded-[var(--r-md)] border border-line bg-paper px-3.5 py-2.5 text-left transition-colors active:bg-bg"
+        >
+          <span
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
+            style={{
+              background: "var(--ink)",
+              color: "var(--bg)",
+              boxShadow: "0 0 0 3px var(--mint-wash)",
+            }}
+          >
+            <Icon name={playing ? "pause" : "play"} size={14} />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="eyebrow block">The morning read</span>
+            <span className="t-label block text-ink3">
+              {hasAudio ? "Ninety seconds, tap to listen" : "Tap to read it"}
+            </span>
+          </span>
+          <Icon name="chevron-right" size={16} strokeWidth={1.8} className="shrink-0 text-ink3" />
+        </button>
+        {hasAudio && (
+          <audio
+            ref={audioRef}
+            src={brief.audioPath!}
+            onEnded={() => setPlaying(false)}
+            preload="none"
+          />
+        )}
+        <Sheet open={open} onClose={() => setOpen(false)} title="The morning read">
+          <BriefText brief={brief} />
+        </Sheet>
+      </section>
+    );
+  }
 
   return (
     <section className="mx-5 flex min-h-0 flex-col items-center justify-center gap-3 px-6">

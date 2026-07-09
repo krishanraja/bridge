@@ -36,7 +36,7 @@ export function Sheet({ open, onClose, title, children }: SheetProps) {
         className="absolute inset-x-0 bottom-0 mx-auto flex max-h-[82%] w-full max-w-[430px] flex-col rounded-t-2xl border-t border-line bg-paper"
         style={{
           paddingBottom: "env(safe-area-inset-bottom)",
-          animation: "sheet-up 200ms ease-out",
+          animation: "sheet-up 200ms cubic-bezier(0.2, 0.8, 0.2, 1)",
         }}
       >
         <div className="flex items-center justify-between px-5 pt-4 pb-2">

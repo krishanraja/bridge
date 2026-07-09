@@ -13,7 +13,7 @@ import { Chip } from "@/components/ui/Chip";
 import { Sheet } from "@/components/ui/Sheet";
 import { Button } from "@/components/ui/Button";
 import { Reaction } from "@/components/ui/Reaction";
-import { tick, confirm as confirmHaptic } from "@/lib/haptics";
+import { tick, confirm as confirmHaptic, warning } from "@/lib/haptics";
 import { signalVerdict } from "@/app/actions";
 
 /* Honest narration of what the sweep is actually doing, in order:
@@ -60,6 +60,7 @@ export function Deck({ deck: deckView, operator }: { deck: DeckView; operator: b
 
   const dismiss = (id: string, kind: "act" | "hold" | "kill") => {
     if (kind === "act") confirmHaptic();
+    else if (kind === "kill") warning();
     else tick();
     setGone((g) => new Set(g).add(id));
     void signalVerdict({ signal_id: id, kind });
@@ -89,6 +90,7 @@ export function Deck({ deck: deckView, operator }: { deck: DeckView; operator: b
           <Chip
             key={id}
             active={lane === id}
+            icon={LANES[id].icon}
             onClick={() => {
               tick();
               setLane(lane === id ? null : id);
@@ -378,7 +380,7 @@ function SignalCard({
         <audio ref={audioRef} className="hidden" />
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-1.5">
-            <Chip color={`var(${lane.cssVar})`}>{lane.glyph}</Chip>
+            <Chip color={`var(${lane.cssVar})`} icon={lane.icon}>{lane.glyph}</Chip>
             <Chip>
               {s.corroboration} source{s.corroboration === 1 ? "" : "s"}
             </Chip>
