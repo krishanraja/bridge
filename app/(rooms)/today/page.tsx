@@ -1,4 +1,11 @@
-import { getToday } from "@/lib/data";
+import {
+  getToday,
+  getDeck,
+  getPriorities,
+  getTable,
+  getDecisionLog,
+  getThemes,
+} from "@/lib/data";
 import { currentSeat } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { PresenceDots } from "@/components/rooms/PresenceDots";
@@ -6,6 +13,7 @@ import { BriefBlock } from "@/components/rooms/BriefBlock";
 import { FocusCard } from "@/components/rooms/FocusCard";
 import { OperatorInbox } from "@/components/rooms/OperatorInbox";
 import { ReviewCard } from "@/components/rooms/ReviewCard";
+import { CommandCenter } from "@/components/rooms/CommandCenter";
 import { Icon } from "@/components/ui/Icon";
 import { LANES } from "@/lib/copy/lanes";
 import Link from "next/link";
@@ -15,16 +23,46 @@ export const dynamic = "force-dynamic";
 export default async function TodayPage() {
   const seat = await currentSeat();
   if (!seat) redirect("/login");
-  const data = await getToday();
+  /* One fetch feeds both surfaces: the phone Today reads the first field, the
+     desktop command center fans across the rest. All getters are independent and
+     force-dynamic-safe, so they resolve together. */
+  const [data, deck, priorities, table, decisions, themes] = await Promise.all([
+    getToday(),
+    getDeck(),
+    getPriorities(),
+    getTable(),
+    getDecisionLog(),
+    getThemes(),
+  ]);
 
   const dateLabel = new Date().toLocaleDateString("en-US", {
     weekday: "long",
     month: "long",
     day: "numeric",
   });
+  const asOf = new Date().toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+  });
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-3 pb-3">
+    <>
+      {/* Desktop: the cockpit. Hidden on the phone, where Today stays a task list. */}
+      <div className="only-desktop h-full min-h-0">
+        <CommandCenter
+          seat={seat}
+          today={data}
+          deck={deck}
+          priorities={priorities}
+          table={table}
+          decisions={decisions}
+          themes={themes}
+          asOf={asOf}
+        />
+      </div>
+
+      {/* Phone: unchanged, one thing at a time. Hidden on desktop. */}
+      <div className="only-mobile flex h-full min-h-0 flex-col gap-3 pb-3">
       <header className="flex items-start justify-between px-5 pt-4">
         <div>
           <div className="eyebrow">Today{data.demo ? " · Sample" : ""}</div>
@@ -135,6 +173,7 @@ export default async function TodayPage() {
           </Link>
         </section>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

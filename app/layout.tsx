@@ -48,7 +48,7 @@ const nightScript = `(function(){try{var h=new Date().getHours();if(h>=21||h<6){
    whatever CSS width the device reports (a low pixel-ratio or screen-zoom
    phone can report ~900px). Runs before paint to avoid a flash, and re-fits on
    resize and rotation. Capped so it never blows up on a true desktop. */
-const fitScript = `(function(){function f(){try{document.documentElement.style.zoom=Math.min(2.6,window.innerWidth/412);}catch(e){}}f();window.addEventListener("resize",f);window.addEventListener("orientationchange",f);})();`;
+const fitScript = `(function(){function f(){try{var w=window.innerWidth;var el=document.documentElement;if(w>=1024){el.dataset.desktop="1";el.style.zoom="";}else{delete el.dataset.desktop;el.style.zoom=Math.min(2.6,w/412);}}catch(e){}}f();window.addEventListener("resize",f);window.addEventListener("orientationchange",f);})();`;
 
 const swScript = `if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("/sw.js").catch(function(){})})}`;
 

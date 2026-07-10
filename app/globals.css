@@ -356,3 +356,77 @@ body {
      body, so nothing is lost. */
   overflow: hidden;
 }
+
+/* ============================================================================
+   Desktop command center. The fit script sets data-desktop="1" and clears the
+   root zoom at >= 1024px, so these rules run in real pixels and never fight the
+   phone's imperative zoom. Below 1024px none of this applies and the phone
+   experience is untouched.
+   ========================================================================== */
+
+/* A touch more room and a grander display type on the big screen. */
+:root[data-desktop] {
+  --pad-x: 32px;
+  --t-display: 34px;
+  --t-title: 26px;
+}
+
+/* The shell becomes a fixed left rail plus a stage. */
+:root[data-desktop] .app-shell {
+  grid-template-columns: 248px minmax(0, 1fr);
+  grid-template-rows: 100%;
+  padding-top: 0;
+}
+:root[data-desktop] .tabbar {
+  display: none;
+}
+
+/* The sidebar exists only on desktop. */
+.sidebar {
+  display: none;
+}
+:root[data-desktop] .sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  border-right: 1px solid var(--line);
+  background: var(--paper);
+}
+
+/* Rooms that are not the dashboard read as a calm centered column, not a stretch. */
+:root[data-desktop] .room-canvas {
+  max-width: 760px;
+  width: 100%;
+  margin-inline: auto;
+  padding-top: var(--space-6);
+}
+:root[data-desktop] .snap-pager {
+  max-width: 560px;
+  margin-inline: auto;
+}
+
+/* The command center fills the stage and manages its own quiet scroll. */
+.command {
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+.command::-webkit-scrollbar {
+  display: none;
+}
+
+/* Surfaces that render both a phone and a desktop composition toggle here, so
+   each ships one server-rendered tree and CSS picks the right one with no flash.
+   Default (phone) hides the desktop twin; data-desktop flips it. */
+.only-desktop {
+  display: none;
+}
+:root[data-desktop] .only-mobile {
+  display: none;
+}
+:root[data-desktop] .only-desktop {
+  display: block;
+}
