@@ -401,9 +401,80 @@ body {
   margin-inline: auto;
   padding-top: var(--space-6);
 }
+/* Card rooms (Radar, Ledger) stop paging one-at-a-time on the desktop and become
+   a reading wall: every card visible at once in a responsive grid, uniform tiles,
+   the same card chrome and the same one control. The mobile snap-pager is
+   untouched below 1024px. */
 :root[data-desktop] .snap-pager {
-  max-width: 560px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  grid-auto-rows: auto;
+  align-items: start;
+  gap: var(--space-4);
+  align-content: start;
+  padding: var(--space-1) var(--pad-x) var(--space-6);
+  scroll-snap-type: none;
+  max-width: 1160px;
   margin-inline: auto;
+}
+/* On the wall each card sizes to its own content and never clips. The phone card
+   is a fixed-height grid with a clipped body (stable for swiping); here the
+   article flows as a natural block so header, read, move and the one control
+   simply stack to their full height. */
+:root[data-desktop] .snap-page {
+  height: auto;
+  padding: 0;
+  overflow: visible;
+  scroll-snap-align: none;
+  scroll-snap-stop: normal;
+}
+:root[data-desktop] .snap-page > article {
+  display: flex;
+  flex-direction: column;
+  height: auto;
+  overflow: visible;
+}
+:root[data-desktop] .snap-page > article > * {
+  overflow: visible;
+}
+/* The vertical position rail is a phone paging affordance; the wall shows all. */
+:root[data-desktop] .page-rail {
+  display: none;
+}
+
+/* Priorities read as a board on the desktop: every priority a tile in a wide
+   grid, seen at once rather than a scrolled list. The wider frame overrides the
+   generic room centering, and titles wrap here instead of truncating. */
+:root[data-desktop] .priority-canvas {
+  max-width: 1080px;
+}
+:root[data-desktop] .priority-index {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--space-4);
+  align-content: start;
+}
+:root[data-desktop] .priority-index .p-name {
+  overflow: visible;
+  white-space: normal;
+  text-overflow: clip;
+}
+
+/* The table becomes a two-column alignment board: the plot and its read on the
+   left, the decisions on the right, the weekly receipts spanning beneath. Placed
+   after the .room-canvas centering rule so its wider frame wins. minmax(0,1fr)
+   forces the two columns equal regardless of each side's content width. */
+:root[data-desktop] .table-canvas {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--space-5);
+  align-content: start;
+  align-items: start;
+  max-width: 1000px;
+  margin-inline: auto;
+}
+:root[data-desktop] .table-receipts {
+  grid-column: 1 / -1;
 }
 
 /* The command center fills the stage and manages its own quiet scroll. */

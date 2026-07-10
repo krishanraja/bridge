@@ -254,7 +254,7 @@ export function Deck({ deck: deckView, operator }: { deck: DeckView; operator: b
    there are more below. Purely a wayfinding hint. */
 function PageRail({ total, active }: { total: number; active: number }) {
   return (
-    <div className="pointer-events-none absolute right-1.5 top-1/2 z-10 flex -translate-y-1/2 flex-col items-center gap-1.5">
+    <div className="page-rail pointer-events-none absolute right-1.5 top-1/2 z-10 flex -translate-y-1/2 flex-col items-center gap-1.5">
       {Array.from({ length: total }, (_, i) => (
         <span
           key={i}

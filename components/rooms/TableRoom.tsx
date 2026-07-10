@@ -94,7 +94,7 @@ export function TableRoom({
         <span className="eyebrow">{data.isoWeek}</span>
       </header>
 
-      <div className="room-canvas">
+      <div className="room-canvas table-canvas">
         <Card className="flex flex-col gap-3">
           <SectionLabel
             right={
@@ -163,7 +163,7 @@ export function TableRoom({
 
         {/* Weekly cadence, demoted: who has read this week's brief and cast the
            pulse. The substantive receipts now live on each decision above. */}
-        <div className="flex items-center justify-between px-1 pb-1">
+        <div className="table-receipts flex items-center justify-between px-1 pb-1">
           <span className="eyebrow">Caught up this week</span>
           <div className="flex items-center gap-3">
             {data.receipts.map((r) => (

@@ -56,9 +56,9 @@ export function PriorityBoard({
   }
 
   return (
-    <div className="room-canvas">
+    <div className="room-canvas priority-canvas">
       {open === null ? (
-        <div className="flex flex-col gap-3">
+        <div className="priority-index flex flex-col gap-3">
           {priorities.map((p) => {
             const st = PRIORITY_STATE[p.state];
             return (
@@ -74,7 +74,7 @@ export function PriorityBoard({
                 style={{ padding: "var(--space-3) var(--space-4)" }}
               >
                 <div className="min-w-0 flex-1">
-                  <div className="t-lede truncate text-ink">{p.name}</div>
+                  <div className="p-name t-lede truncate text-ink">{p.name}</div>
                   <div className="mt-1 flex items-center gap-2.5">
                     <span className="eyebrow" style={{ color: st.color }}>
                       {st.label}
